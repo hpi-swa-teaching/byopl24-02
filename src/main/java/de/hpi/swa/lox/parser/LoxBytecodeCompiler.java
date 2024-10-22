@@ -9,6 +9,8 @@ import com.oracle.truffle.api.source.Source;
 
 import de.hpi.swa.lox.LoxLanguage;
 import de.hpi.swa.lox.bytecode.LoxBytecodeRootNodeGen;
+import de.hpi.swa.lox.parser.LoxParser.BooleanContext;
+import de.hpi.swa.lox.parser.LoxParser.FalseContext;
 import de.hpi.swa.lox.parser.LoxParser.PrintStmtContext;
 import de.hpi.swa.lox.parser.LoxParser.ProgramContext;
 import de.hpi.swa.lox.parser.LoxParser.TrueContext;
@@ -55,16 +57,27 @@ public final class LoxBytecodeCompiler extends LoxBaseVisitor<Void> {
     }
 
     @Override
+    public Void visitPrintStmt(PrintStmtContext ctx) {
+        b.beginLoxPrint();
+        var result = super.visitPrintStmt(ctx);
+        b.endLoxPrint();
+        return result;
+    }
+
+    @Override
+    public Void visitBoolean(BooleanContext ctx) {
+        return super.visitBoolean(ctx);
+    }
+
+    @Override
     public Void visitTrue(TrueContext ctx) {
         b.emitLoadConstant(true);
         return super.visitTrue(ctx);
     }
 
     @Override
-    public Void visitPrintStmt(PrintStmtContext ctx) {
-        b.beginLoxPrint();
-        var result = super.visitPrintStmt(ctx);
-        b.endLoxPrint();
-        return result;
+    public Void visitFalse(FalseContext ctx) {
+        b.emitLoadConstant(false);
+        return super.visitFalse(ctx);
     }
 }
