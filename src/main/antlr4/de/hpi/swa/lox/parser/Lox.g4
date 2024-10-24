@@ -20,13 +20,33 @@ statement      : printStmt;
 
 printStmt      : 'print' expression ';' ;
 
-expression     : boolean;
+expression     : logic_or ;
 
-boolean        : true | false;
+logic_or       : logic_and ( 'or' logic_and )* ;
 
-true           : 'true';
+logic_and      : equality ( 'and' equality )* ;
 
-false          : 'false';
+equality       : comparison ( ( '!=' | '==' ) comparison )* ;
+
+comparison     : term ( ( '>' | '>=' | '<' | '<=' ) term )* ;
+
+term           : factor ( ( '-' | '+' ) factor )* ;
+
+factor         : unary ( ( '/' | '*' ) unary )* ;
+
+unary          : primary ;
+
+primary        : boolean | string ;
+
+boolean        : true | false ;
+
+true           : 'true' ;
+
+false          : 'false' ;
+
+string         : STRING ;
+
+STRING         : '"' (~["\\])* '"' ;
 
 // more... 
 WS             : [ \t\r\n]+ -> skip ;
