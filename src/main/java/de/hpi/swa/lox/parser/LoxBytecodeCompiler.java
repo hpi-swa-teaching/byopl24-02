@@ -6,6 +6,7 @@ import org.antlr.v4.runtime.CommonTokenStream;
 import com.oracle.truffle.api.RootCallTarget;
 import com.oracle.truffle.api.bytecode.BytecodeParser;
 import com.oracle.truffle.api.source.Source;
+import com.oracle.truffle.api.strings.TruffleString;
 
 import de.hpi.swa.lox.LoxLanguage;
 import de.hpi.swa.lox.bytecode.LoxBytecodeRootNodeGen;
@@ -13,6 +14,7 @@ import de.hpi.swa.lox.parser.LoxParser.BooleanContext;
 import de.hpi.swa.lox.parser.LoxParser.FalseContext;
 import de.hpi.swa.lox.parser.LoxParser.PrintStmtContext;
 import de.hpi.swa.lox.parser.LoxParser.ProgramContext;
+import de.hpi.swa.lox.parser.LoxParser.StringContext;
 import de.hpi.swa.lox.parser.LoxParser.TrueContext;
 
 /**
@@ -79,5 +81,14 @@ public final class LoxBytecodeCompiler extends LoxBaseVisitor<Void> {
     public Void visitFalse(FalseContext ctx) {
         b.emitLoadConstant(false);
         return super.visitFalse(ctx);
+    }
+
+    @Override
+    public Void visitString(StringContext ctx) {
+        // Remove quotes and convert to TruffleString
+        var ts = TruffleString.fromJavaStringUncached(
+                ctx.getText().substring(1, ctx.getText().length() - 1), TruffleString.Encoding.UTF_8);
+        b.emitLoadConstant(ts);
+        return super.visitString(ctx);
     }
 }
