@@ -14,7 +14,6 @@ import de.hpi.swa.lox.LoxLanguage;
 import de.hpi.swa.lox.nodes.LoxRootNode;
 import de.hpi.swa.lox.runtime.LoxContext;
 
-
 @GenerateBytecode(//
         languageClass = LoxLanguage.class, //
         boxingEliminationTypes = { long.class, boolean.class }, //
@@ -38,6 +37,22 @@ public abstract class LoxBytecodeRootNode extends LoxRootNode implements Bytecod
             } catch (IOException e) {
                 e.printStackTrace();
             }
+        }
+    }
+
+    @Operation
+    public static final class LoxInvert {
+        @Specialization
+        static boolean invert(boolean value) {
+            return !value;
+        }
+    }
+
+    @Operation
+    public static final class LoxNegate {
+        @Specialization
+        static long negate(long value) {
+            return -1 * value;
         }
     }
 }
