@@ -12,6 +12,8 @@ import org.antlr.v4.runtime.tree.TerminalNode;
 
 import com.oracle.truffle.api.RootCallTarget;
 import com.oracle.truffle.api.bytecode.BytecodeParser;
+import com.oracle.truffle.api.bytecode.Operation;
+import com.oracle.truffle.api.dsl.Specialization;
 import com.oracle.truffle.api.source.Source;
 import com.oracle.truffle.api.strings.TruffleString;
 
@@ -23,6 +25,7 @@ import de.hpi.swa.lox.parser.LoxParser.PrintStmtContext;
 import de.hpi.swa.lox.parser.LoxParser.ProgramContext;
 import de.hpi.swa.lox.parser.LoxParser.StringContext;
 import de.hpi.swa.lox.parser.LoxParser.TrueContext;
+import de.hpi.swa.lox.parser.LoxParser.UnaryContext;
 
 /**
  * Lox AST visitor that parses to Bytecode DSL bytecode.
@@ -164,4 +167,27 @@ public final class LoxBytecodeCompiler extends LoxBaseVisitor<Void> {
         b.emitLoadConstant(ts);
         return super.visitString(ctx);
     }
+
+    @Override
+    public Void visitUnary(UnaryContext ctx) {
+        // TODO add boundaries for runtime exception handling
+        String text = ctx.getText();
+        if (text.startsWith("!")) {
+            // Invert
+            b.beginLoxInvert();
+            visitUnary(ctx.unary());
+            b.endLoxInvert();
+        } else if (text.startsWith("-")) {
+            // Negate
+            b.beginLoxNegate();
+            visitUnary(ctx.unary());
+            b.endLoxNegate();
+        } else {
+            // primary
+            return super.visitUnary(ctx);
+        }
+        return null;
+
+    }
+
 }
