@@ -53,4 +53,9 @@ public class PrintTest extends AbstractLoxTest {
     public void printFalse() {
         runAndExpect("printTestOutput", "print false;", "false\n");
     }
+
+    @Test
+    public void printString() {
+        runAndExpect("printTestOutput", "print \"hello\";", "hello\n");
+    }
 }
