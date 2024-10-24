@@ -58,4 +58,11 @@ public class PrintTest extends AbstractLoxTest {
     public void printString() {
         runAndExpect("printTestOutput", "print \"hello\";", "hello\n");
     }
+
+    @Test
+    public void printUnary() {
+        runAndExpect("printTestOutput", "print !false", "true\n");
+        runAndExpect("printTestOutput", "print !true", "false\n");
+        // TODO add negation test
+    }
 }
