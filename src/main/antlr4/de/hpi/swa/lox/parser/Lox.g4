@@ -34,7 +34,7 @@ term           : factor ( ( '-' | '+' ) factor )* ;
 
 factor         : unary ( ( '/' | '*' ) unary )* ;
 
-unary          : primary ;
+unary          : ( '!' | '-' ) unary | primary ;
 
 primary        : boolean | string ;
 
