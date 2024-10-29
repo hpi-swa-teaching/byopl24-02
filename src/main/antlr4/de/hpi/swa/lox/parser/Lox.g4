@@ -36,7 +36,7 @@ factor         : unary ( ( '/' | '*' ) unary )* ;
 
 unary          : ( '!' | '-' ) unary | primary ;
 
-primary        : boolean | string ;
+primary        : boolean | string | nil;
 
 boolean        : true | false ;
 
@@ -47,6 +47,8 @@ false          : 'false' ;
 string         : STRING ;
 
 STRING         : '"' (~["\\])* '"' ;
+
+nil            : 'nil' ;
 
 // more... 
 WS             : [ \t\r\n]+ -> skip ;
