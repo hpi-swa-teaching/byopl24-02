@@ -22,11 +22,13 @@ import de.hpi.swa.lox.bytecode.LoxBytecodeRootNodeGen;
 import de.hpi.swa.lox.parser.LoxParser.BooleanContext;
 import de.hpi.swa.lox.parser.LoxParser.FalseContext;
 import de.hpi.swa.lox.parser.LoxParser.NilContext;
+import de.hpi.swa.lox.parser.LoxParser.NumberContext;
 import de.hpi.swa.lox.parser.LoxParser.PrintStmtContext;
 import de.hpi.swa.lox.parser.LoxParser.ProgramContext;
 import de.hpi.swa.lox.parser.LoxParser.StringContext;
 import de.hpi.swa.lox.parser.LoxParser.TrueContext;
 import de.hpi.swa.lox.parser.LoxParser.UnaryContext;
+import de.hpi.swa.lox.runtime.data.LoxNumber;
 import de.hpi.swa.lox.runtime.data.Nil;
 
 /**
@@ -174,7 +176,13 @@ public final class LoxBytecodeCompiler extends LoxBaseVisitor<Void> {
     public Void visitNil(NilContext ctx) {
         b.emitLoadConstant(Nil.INSTANCE);
         return super.visitNil(ctx);
-    } 
+    }
+
+    @Override
+    public Void visitNumber(NumberContext ctx) {
+        b.emitLoadConstant(new LoxNumber(ctx.getText()));
+        return super.visitNumber(ctx);
+    }
 
     @Override
     public Void visitUnary(UnaryContext ctx) {

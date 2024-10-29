@@ -41,6 +41,8 @@
  */
 package de.hpi.swa.lox.test;
 
+import static org.junit.Assert.assertTrue;
+
 import org.junit.Test;
 
 public class PrintTest extends AbstractLoxTest {
@@ -69,5 +71,27 @@ public class PrintTest extends AbstractLoxTest {
     @Test
     public void printNil() {
         runAndExpect("printTestOutput", "print nil;", "nil\n");
+    }
+
+    @Test
+    public void printFloatingNumber() {
+        runAndExpect("printTestOutput", "print 12.34;", "12.34\n");
+    }
+
+    @Test
+    public void printFloatingNumber_withoutDigitsBeforeDecimalPoint() {
+        run("print .12;");
+        assertTrue(outContent.toString().contains("Error(s) parsing script"));
+    }
+
+    @Test
+    public void printFloatingNumber_withoutDigitsAfterDecimalPoint() {
+        run("print 12.;");
+        assertTrue(outContent.toString().contains("Error(s) parsing script"));
+    }
+
+    @Test
+    public void printIntegerNumber() {
+        runAndExpect("printTestOutput", "print 12;", "12\n");
     }
 }

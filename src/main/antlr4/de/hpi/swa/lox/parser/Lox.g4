@@ -36,7 +36,7 @@ factor         : unary ( ( '/' | '*' ) unary )* ;
 
 unary          : ( '!' | '-' ) unary | primary ;
 
-primary        : boolean | string | nil;
+primary        : boolean | string | number | nil;
 
 boolean        : true | false ;
 
@@ -49,6 +49,13 @@ string         : STRING ;
 STRING         : '"' (~["\\])* '"' ;
 
 nil            : 'nil' ;
+
+// Digit as lexer fragment (not a separate token)
+fragment DIGIT : [0-9] ;
+
+NUMBER         : DIGIT+ ('.' DIGIT+)? ;
+
+number         : NUMBER ;
 
 // more... 
 WS             : [ \t\r\n]+ -> skip ;
