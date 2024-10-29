@@ -10,8 +10,9 @@ import java.util.Map;
 import org.graalvm.launcher.AbstractLanguageLauncher;
 import org.graalvm.options.OptionCategory;
 import org.graalvm.polyglot.Context.Builder;
+import org.graalvm.polyglot.Context;
+import org.graalvm.polyglot.PolyglotException;
 import org.graalvm.polyglot.Source;
-
 
 public class LoxMain extends AbstractLanguageLauncher {
     public static void main(String[] args) {
@@ -58,29 +59,85 @@ public class LoxMain extends AbstractLanguageLauncher {
     protected void launch(Builder contextBuilder) {
         Source source;
         try (var context = contextBuilder.build()) {
-            
+
             // FOR TESTING
             // command = "print true;";
 
             if (file != null) {
                 try {
                     source = Source.newBuilder("lox", file).build();
-                    context.eval(source);
+                    try {
+                        context.eval(source);
+                    } catch (Exception e) {
+                        printException(e);
+                    }
                 } catch (IOException e) {
                     e.printStackTrace();
                 }
             } else if (command != null) {
-                context.eval("lox", command);
-            } else {
-                while (true) {
-                    System.out.print("> ");
-                    String line = System.console().readLine();
-                    if (line == null) {
-                        break;
-                    }
-                    context.eval("lox", line);
+                try {
+                    startEvalLoop(context);
+                } catch (Exception e) {
+                    printException(e);
                 }
+            } else {
+
             }
+        }
+    }
+
+    /**
+     * Starts an evaluation loop that continuously reads input from the console,
+     * evaluates it using the provided context, and prints the result.
+     * The loop runs indefinitely until the input is null.
+     *
+     * @param ctx the context used to evaluate the input code
+     */
+    private void startEvalLoop(Context ctx) {
+        while (true) {
+            System.out.print("> ");
+            String line = System.console().readLine();
+            if (line == null) {
+                break;
+            }
+            try {
+                ctx.eval("lox", line);
+            } catch (Exception e) {
+                printException(e);
+            }
+        }
+    }
+
+    private void printException(Exception e) {
+        if (e instanceof PolyglotException error) {
+            runtimeError(error);
+        } else {
+            System.err.println("Error: " + e.getMessage());
+        }
+    }
+
+    /**
+     * Handles runtime errors by printing appropriate error messages to the standard
+     * error stream.
+     *
+     * @param error the PolyglotException representing the runtime error
+     *              - If the error is a syntax error, prints the error message.
+     *              - If the error is a guest exception, prints the error message
+     *              along with the source location's start line if available.
+     *              - Otherwise, prints the error message.
+     */
+    static void runtimeError(PolyglotException error) {
+        if (error.isSyntaxError()) {
+            System.err.println(error.getMessage());
+        } else if (error.isGuestException()) {
+            var sourceLocation = error.getSourceLocation();
+            if (sourceLocation != null) {
+                System.err.println("Error: " + error.getMessage() + " [line " + sourceLocation.getStartLine() + "]");
+            } else {
+                System.err.println("Error: " + error.getMessage());
+            }
+        } else {
+            System.err.println(error.getMessage());
         }
     }
 

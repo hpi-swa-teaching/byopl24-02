@@ -1,7 +1,14 @@
 package de.hpi.swa.lox.parser;
 
+import org.antlr.v4.runtime.BaseErrorListener;
 import org.antlr.v4.runtime.CharStreams;
 import org.antlr.v4.runtime.CommonTokenStream;
+import org.antlr.v4.runtime.ParserRuleContext;
+import org.antlr.v4.runtime.RecognitionException;
+import org.antlr.v4.runtime.Recognizer;
+import org.antlr.v4.runtime.Token;
+import org.antlr.v4.runtime.tree.ParseTree;
+import org.antlr.v4.runtime.tree.TerminalNode;
 
 import com.oracle.truffle.api.RootCallTarget;
 import com.oracle.truffle.api.bytecode.BytecodeParser;
@@ -36,12 +43,76 @@ public final class LoxBytecodeCompiler extends LoxBaseVisitor<Void> {
             b.beginSource(source);
             LoxLexer lexer = new LoxLexer(CharStreams.fromString(source.getCharacters().toString()));
             LoxParser loxParser = new LoxParser(new CommonTokenStream(lexer));
+
+            lexer.removeErrorListeners();
+            loxParser.removeErrorListeners();
+            BailoutErrorListener listener = new BailoutErrorListener(source);
+            lexer.addErrorListener(listener);
+            loxParser.addErrorListener(listener);
+
             loxParser.program().accept(visitor);
             b.endSource();
         };
-        var config = LoxBytecodeRootNodeGen.newConfigBuilder().build();
+        var config = LoxBytecodeRootNodeGen.newConfigBuilder().addSource().build();
         var nodes = LoxBytecodeRootNodeGen.create(language, config, bytecodeParser).getNodes();
         return nodes.get(nodes.size() - 1).getCallTarget();
+    }
+
+    private static final class BailoutErrorListener extends BaseErrorListener {
+        private final Source source;
+
+        BailoutErrorListener(Source source) {
+            this.source = source;
+        }
+
+        @Override
+        public void syntaxError(Recognizer<?, ?> recognizer, Object offendingSymbol, int line, int charPositionInLine,
+                String msg, RecognitionException e) {
+            throwParseError(source, line, charPositionInLine, (Token) offendingSymbol, msg);
+        }
+
+    }
+
+    private static void throwParseError(Source source, int line, int charPositionInLine, Token token, String message) {
+        int col = charPositionInLine + 1;
+        String location = "-- line " + line + " col " + col + ": ";
+        int length = token == null ? 1 : Math.max(token.getStopIndex() - token.getStartIndex(), 0);
+        throw new LoxParseError(source, line, col, length,
+                String.format("Error(s) parsing script:%n" + location + message));
+    }
+
+    private void beginAttribution(ParseTree tree) {
+        beginAttribution(getStartIndex(tree), getEndIndex(tree));
+    }
+
+    private static int getEndIndex(ParseTree tree) {
+        if (tree instanceof ParserRuleContext ctx) {
+            return ctx.getStop().getStopIndex();
+        } else if (tree instanceof TerminalNode node) {
+            return node.getSymbol().getStopIndex();
+        } else {
+            throw new AssertionError("unknown tree type: " + tree);
+        }
+    }
+
+    private static int getStartIndex(ParseTree tree) {
+        if (tree instanceof ParserRuleContext ctx) {
+            return ctx.getStart().getStartIndex();
+        } else if (tree instanceof TerminalNode node) {
+            return node.getSymbol().getStartIndex();
+        } else {
+            throw new AssertionError("unknown tree type: " + tree);
+        }
+    }
+
+    private void beginAttribution(int start, int end) {
+        int length = end - start + 1;
+        assert length >= 0;
+        b.beginSourceSection(start, length);
+    }
+
+    private void endAttribution() {
+        b.endSourceSection();
     }
 
     private LoxBytecodeCompiler(LoxLanguage language, Source source, LoxBytecodeRootNodeGen.Builder builder) {
@@ -63,9 +134,11 @@ public final class LoxBytecodeCompiler extends LoxBaseVisitor<Void> {
 
     @Override
     public Void visitPrintStmt(PrintStmtContext ctx) {
+        beginAttribution(ctx);
         b.beginLoxPrint();
         var result = super.visitPrintStmt(ctx);
         b.endLoxPrint();
+        endAttribution();
         return result;
     }
 
