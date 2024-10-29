@@ -21,11 +21,13 @@ import de.hpi.swa.lox.LoxLanguage;
 import de.hpi.swa.lox.bytecode.LoxBytecodeRootNodeGen;
 import de.hpi.swa.lox.parser.LoxParser.BooleanContext;
 import de.hpi.swa.lox.parser.LoxParser.FalseContext;
+import de.hpi.swa.lox.parser.LoxParser.NilContext;
 import de.hpi.swa.lox.parser.LoxParser.PrintStmtContext;
 import de.hpi.swa.lox.parser.LoxParser.ProgramContext;
 import de.hpi.swa.lox.parser.LoxParser.StringContext;
 import de.hpi.swa.lox.parser.LoxParser.TrueContext;
 import de.hpi.swa.lox.parser.LoxParser.UnaryContext;
+import de.hpi.swa.lox.runtime.data.Nil;
 
 /**
  * Lox AST visitor that parses to Bytecode DSL bytecode.
@@ -169,6 +171,12 @@ public final class LoxBytecodeCompiler extends LoxBaseVisitor<Void> {
     }
 
     @Override
+    public Void visitNil(NilContext ctx) {
+        b.emitLoadConstant(Nil.INSTANCE);
+        return super.visitNil(ctx);
+    } 
+
+    @Override
     public Void visitUnary(UnaryContext ctx) {
         String UNARY_INVERT_OPERATOR = "!";
         String UNARY_NEGATE_OPERATOR = "-";
@@ -176,24 +184,25 @@ public final class LoxBytecodeCompiler extends LoxBaseVisitor<Void> {
         beginAttribution(ctx);
         String text = ctx.getText();
 
+        Void unaryResult;
         if (text.startsWith(UNARY_INVERT_OPERATOR)) {
             // Invert
             b.beginLoxInvert();
-            visitUnary(ctx.unary());
+            unaryResult = visitUnary(ctx.unary());
             b.endLoxInvert();
         } else if (text.startsWith(UNARY_NEGATE_OPERATOR)) {
             // Negate
             b.beginLoxNegate();
-            visitUnary(ctx.unary());
+            unaryResult = visitUnary(ctx.unary());
             b.endLoxNegate();
         } else {
             // Primary
             endAttribution();
-            return super.visitUnary(ctx);
+            unaryResult = super.visitUnary(ctx);
         }
 
         endAttribution();
-        return null;
+        return unaryResult;
 
     }
 
