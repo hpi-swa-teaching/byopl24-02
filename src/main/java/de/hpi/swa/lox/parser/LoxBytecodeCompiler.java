@@ -170,22 +170,29 @@ public final class LoxBytecodeCompiler extends LoxBaseVisitor<Void> {
 
     @Override
     public Void visitUnary(UnaryContext ctx) {
-        // TODO add boundaries for runtime exception handling
+        String UNARY_INVERT_OPERATOR = "!";
+        String UNARY_NEGATE_OPERATOR = "-";
+
+        beginAttribution(ctx);
         String text = ctx.getText();
-        if (text.startsWith("!")) {
+
+        if (text.startsWith(UNARY_INVERT_OPERATOR)) {
             // Invert
             b.beginLoxInvert();
             visitUnary(ctx.unary());
             b.endLoxInvert();
-        } else if (text.startsWith("-")) {
+        } else if (text.startsWith(UNARY_NEGATE_OPERATOR)) {
             // Negate
             b.beginLoxNegate();
             visitUnary(ctx.unary());
             b.endLoxNegate();
         } else {
-            // primary
+            // Primary
+            endAttribution();
             return super.visitUnary(ctx);
         }
+
+        endAttribution();
         return null;
 
     }
