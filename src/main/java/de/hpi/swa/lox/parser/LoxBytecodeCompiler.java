@@ -197,7 +197,6 @@ public final class LoxBytecodeCompiler extends LoxBaseVisitor<Void> {
             b.endLoxNegate();
         } else {
             // Primary
-            endAttribution();
             unaryResult = super.visitUnary(ctx);
         }
 
