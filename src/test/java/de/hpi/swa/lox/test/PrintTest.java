@@ -62,10 +62,9 @@ public class PrintTest extends AbstractLoxTest {
     }
 
     @Test
-    public void printUnary() {
+    public void printBoolean_inverted() {
         runAndExpect("printTestOutput", "print !false;", "true\n");
         runAndExpect("printTestOutput", "print !true;", "false\n");
-        // TODO add negation test
     }
 
     @Test
@@ -76,6 +75,11 @@ public class PrintTest extends AbstractLoxTest {
     @Test
     public void printFloatingNumber() {
         runAndExpect("printTestOutput", "print 12.34;", "12.34\n");
+    }
+
+    @Test
+    public void printFloatingNumber_negated() {
+        runAndExpect("printTestOutput", "print -12.34;", "-12.34\n");
     }
 
     @Test
@@ -93,5 +97,10 @@ public class PrintTest extends AbstractLoxTest {
     @Test
     public void printIntegerNumber() {
         runAndExpect("printTestOutput", "print 12;", "12\n");
+    }
+
+    @Test
+    public void printIntegerNumber_negated() {
+        runAndExpect("printTestOutput", "print -12;", "-12\n");
     }
 }

@@ -13,6 +13,7 @@ import com.oracle.truffle.api.frame.FrameDescriptor;
 import de.hpi.swa.lox.LoxLanguage;
 import de.hpi.swa.lox.nodes.LoxRootNode;
 import de.hpi.swa.lox.runtime.LoxContext;
+import de.hpi.swa.lox.runtime.data.LoxNumber;
 
 @GenerateBytecode(//
         languageClass = LoxLanguage.class, //
@@ -51,8 +52,10 @@ public abstract class LoxBytecodeRootNode extends LoxRootNode implements Bytecod
     @Operation
     public static final class LoxNegate {
         @Specialization
-        static long negate(long value) {
-            return -1 * value;
+        static LoxNumber negate(LoxNumber loxNumber) {
+            // Unwrap LoxNumber value, calculate result, rewrap. 
+            Double result = -1 * loxNumber.getValue();
+            return new LoxNumber(result);
         }
     }
 }
