@@ -134,4 +134,36 @@ public class PrintTest extends AbstractLoxTest {
         runAndExpect("printTestOutput", "print (12 + 34) - (56 + 4 - 7);", "-7\n");
     }
 
+    @Test
+    public void printIntegerNumber_multiplied() {
+        runAndExpect("printTestOutput", "print 12 * 34;", "408\n");
+    }
+
+    @Test
+    public void printIntegerNumber_multiplied_added() {
+        runAndExpect("printTestOutput", "print 12 * 34 + 56 * 4 * 7;", "1976\n");
+    }
+
+    @Test
+    public void printIntegerNumber_divided() {
+        runAndExpect("printTestOutput", "print 12 / 34;", "0.35294117647058826\n");
+    }
+
+    @Test
+    public void printIntegerNumber_divided_null() {
+        boolean exceptionThrown = false;
+        try {
+            run("print 12 / 0;");
+        } catch (Exception e) {
+            assertTrue(e.getMessage().contains("Division by zero"));
+            exceptionThrown = true;
+        }
+        assertTrue(exceptionThrown);
+    }
+
+    @Test
+    public void printIntegerNumber_complex() {
+        runAndExpect("printTestOutput", "print 12 * (34 + 56) / 4 - 7;", "263\n");
+    }
+
 }

@@ -78,4 +78,28 @@ public abstract class LoxBytecodeRootNode extends LoxRootNode implements Bytecod
             return new LoxNumber(result);
         }
     }
+
+    @Operation
+    public static final class LoxMultiply {
+        @Specialization
+        static LoxNumber multiply(LoxNumber left, LoxNumber right) {
+            // Unwrap LoxNumber values, calculate result, rewrap.
+            Double result = left.getValue() * right.getValue();
+            return new LoxNumber(result);
+        }
+    }
+
+    @Operation
+    public static final class LoxDivide {
+        @Specialization
+        static LoxNumber divide(LoxNumber left, LoxNumber right) {
+            if (right.getValue() == 0) {
+                throw new ArithmeticException("Division by zero");
+            }
+            // Unwrap LoxNumber values, calculate result, rewrap.
+            Double result = left.getValue() / right.getValue();
+
+            return new LoxNumber(result);
+        }
+    }
 }

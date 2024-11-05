@@ -15,14 +15,13 @@ import org.antlr.v4.runtime.tree.TerminalNode;
 
 import com.oracle.truffle.api.RootCallTarget;
 import com.oracle.truffle.api.bytecode.BytecodeParser;
-import com.oracle.truffle.api.bytecode.Operation;
-import com.oracle.truffle.api.dsl.Specialization;
 import com.oracle.truffle.api.source.Source;
 import com.oracle.truffle.api.strings.TruffleString;
 
 import de.hpi.swa.lox.LoxLanguage;
 import de.hpi.swa.lox.bytecode.LoxBytecodeRootNodeGen;
 import de.hpi.swa.lox.parser.LoxParser.BooleanContext;
+import de.hpi.swa.lox.parser.LoxParser.FactorContext;
 import de.hpi.swa.lox.parser.LoxParser.FalseContext;
 import de.hpi.swa.lox.parser.LoxParser.NilContext;
 import de.hpi.swa.lox.parser.LoxParser.NumberContext;
@@ -226,6 +225,44 @@ public final class LoxBytecodeCompiler extends LoxBaseVisitor<Void> {
             return super.visitPrimary(ctx);
         }
     }
+
+    @Override
+    public Void visitFactor(FactorContext ctx) {
+        // Collect operations in reverse order
+        List<String> operations = new ArrayList<>();
+
+        for (int i = ctx.getChildCount() - 2; i >= 0; i -= 2) {
+            var operation = ctx.getChild(i);
+            switch (operation.getText()) {
+                case "*":
+                    b.beginLoxMultiply();
+                    break;
+                case "/":
+                    b.beginLoxDivide();
+                    break;
+                default:
+                    break;
+            }
+            operations.addFirst(operation.getText());
+        }
+        visitUnary(ctx.unary(0));
+        for (int i = 1; i < ctx.getChildCount(); i += 2) {
+            visitUnary(ctx.unary((i + 1) / 2));
+            // Apply operations in reverse order that it matches the order of the operations
+            switch (operations.get(i / 2)) {
+                case "*":
+                    b.endLoxMultiply();
+                    break;
+                case "/":
+                    b.endLoxDivide();
+                    break;
+                default:
+                    break;
+            }
+        }
+        return null;
+    }
+
     @Override
     public Void visitTerm(TermContext ctx) {
         // Collect operations in reverse order
