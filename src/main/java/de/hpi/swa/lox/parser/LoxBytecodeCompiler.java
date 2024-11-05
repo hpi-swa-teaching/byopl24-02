@@ -213,4 +213,12 @@ public final class LoxBytecodeCompiler extends LoxBaseVisitor<Void> {
 
     }
 
+    @Override
+    public Void visitPrimary(PrimaryContext ctx) {
+        if (ctx.getText().startsWith("(") && ctx.getText().endsWith(")")) {
+            return visitExpression(ctx.expression());
+        } else {
+            return super.visitPrimary(ctx);
+        }
+    }
 }
