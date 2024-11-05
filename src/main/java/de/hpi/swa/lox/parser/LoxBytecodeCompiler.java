@@ -1,6 +1,8 @@
 package de.hpi.swa.lox.parser;
 
+import java.util.ArrayDeque;
 import java.util.ArrayList;
+import java.util.Deque;
 import java.util.List;
 
 import org.antlr.v4.runtime.BaseErrorListener;
@@ -229,7 +231,7 @@ public final class LoxBytecodeCompiler extends LoxBaseVisitor<Void> {
     @Override
     public Void visitFactor(FactorContext ctx) {
         // Collect operations in reverse order
-        List<String> operations = new ArrayList<>();
+        Deque<String> operations = new ArrayDeque<>();
 
         for (int i = ctx.getChildCount() - 2; i >= 0; i -= 2) {
             var operation = ctx.getChild(i);
@@ -249,7 +251,7 @@ public final class LoxBytecodeCompiler extends LoxBaseVisitor<Void> {
         for (int i = 1; i < ctx.getChildCount(); i += 2) {
             visitUnary(ctx.unary((i + 1) / 2));
             // Apply operations in reverse order that it matches the order of the operations
-            switch (operations.get(i / 2)) {
+            switch (operations.removeFirst()) {
                 case "*":
                     b.endLoxMultiply();
                     break;
@@ -266,7 +268,7 @@ public final class LoxBytecodeCompiler extends LoxBaseVisitor<Void> {
     @Override
     public Void visitTerm(TermContext ctx) {
         // Collect operations in reverse order
-        List<String> operations = new ArrayList<>();
+        Deque<String> operations = new ArrayDeque<>();
 
         for (int i = ctx.getChildCount() - 2; i >= 0; i -= 2) {
             var operation = ctx.getChild(i);
@@ -286,7 +288,7 @@ public final class LoxBytecodeCompiler extends LoxBaseVisitor<Void> {
         for (int i = 1; i < ctx.getChildCount(); i += 2) {
             visitFactor(ctx.factor((i + 1) / 2));
             // Apply operations in reverse order that it matches the order of the operations
-            switch (operations.get(i / 2)) {
+            switch (operations.removeFirst()) {
                 case "+":
                     b.endLoxAdd();
                     break;
