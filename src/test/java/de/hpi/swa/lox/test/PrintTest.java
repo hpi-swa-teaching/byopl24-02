@@ -103,4 +103,35 @@ public class PrintTest extends AbstractLoxTest {
     public void printIntegerNumber_negated() {
         runAndExpect("printTestOutput", "print -12;", "-12\n");
     }
+
+    @Test
+    public void printIntegerNumber_added() {
+        runAndExpect("printTestOutput", "print 12 + 34;", "46\n");
+    }
+
+    @Test
+    public void printIntegerNumber_added_negated() {
+        runAndExpect("printTestOutput", "print -12 + 34;", "22\n");
+    }
+
+    @Test
+    public void printIntegerNumber_subtracted() {
+        runAndExpect("printTestOutput", "print 12 - 34;", "-22\n");
+    }
+
+    @Test
+    public void printIntegerNumber_subtracted_negated() {
+        runAndExpect("printTestOutput", "print -12 - 34;", "-46\n");
+    }
+
+    @Test
+    public void printIntegerNumber_subtracted_added() {
+        runAndExpect("printTestOutput", "print 12 - 34 + 56 - 4 - 7;", "23\n");
+    }
+
+    @Test
+    public void printIntegerNumber_added_subtracted_negated() {
+        runAndExpect("printTestOutput", "print (12 + 34) - (56 + 4 - 7);", "-7\n");
+    }
+
 }

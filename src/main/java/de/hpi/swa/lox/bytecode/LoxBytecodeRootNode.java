@@ -53,8 +53,28 @@ public abstract class LoxBytecodeRootNode extends LoxRootNode implements Bytecod
     public static final class LoxNegate {
         @Specialization
         static LoxNumber negate(LoxNumber loxNumber) {
-            // Unwrap LoxNumber value, calculate result, rewrap. 
+            // Unwrap LoxNumber value, calculate result, rewrap.
             Double result = -1 * loxNumber.getValue();
+            return new LoxNumber(result);
+        }
+    }
+
+    @Operation
+    public static final class LoxAdd {
+        @Specialization
+        static LoxNumber add(LoxNumber left, LoxNumber right) {
+            // Unwrap LoxNumber values, calculate result, rewrap.
+            Double result = left.getValue() + right.getValue();
+            return new LoxNumber(result);
+        }
+    }
+
+    @Operation
+    public static final class LoxSubtract {
+        @Specialization
+        static LoxNumber subtract(LoxNumber left, LoxNumber right) {
+            // Unwrap LoxNumber values, calculate result, rewrap.
+            Double result = left.getValue() - right.getValue();
             return new LoxNumber(result);
         }
     }

@@ -1,5 +1,8 @@
 package de.hpi.swa.lox.parser;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import org.antlr.v4.runtime.BaseErrorListener;
 import org.antlr.v4.runtime.CharStreams;
 import org.antlr.v4.runtime.CommonTokenStream;
@@ -23,9 +26,11 @@ import de.hpi.swa.lox.parser.LoxParser.BooleanContext;
 import de.hpi.swa.lox.parser.LoxParser.FalseContext;
 import de.hpi.swa.lox.parser.LoxParser.NilContext;
 import de.hpi.swa.lox.parser.LoxParser.NumberContext;
+import de.hpi.swa.lox.parser.LoxParser.PrimaryContext;
 import de.hpi.swa.lox.parser.LoxParser.PrintStmtContext;
 import de.hpi.swa.lox.parser.LoxParser.ProgramContext;
 import de.hpi.swa.lox.parser.LoxParser.StringContext;
+import de.hpi.swa.lox.parser.LoxParser.TermContext;
 import de.hpi.swa.lox.parser.LoxParser.TrueContext;
 import de.hpi.swa.lox.parser.LoxParser.UnaryContext;
 import de.hpi.swa.lox.runtime.data.LoxNumber;
@@ -221,4 +226,41 @@ public final class LoxBytecodeCompiler extends LoxBaseVisitor<Void> {
             return super.visitPrimary(ctx);
         }
     }
+    @Override
+    public Void visitTerm(TermContext ctx) {
+        // Collect operations in reverse order
+        List<String> operations = new ArrayList<>();
+
+        for (int i = ctx.getChildCount() - 2; i >= 0; i -= 2) {
+            var operation = ctx.getChild(i);
+            switch (operation.getText()) {
+                case "+":
+                    b.beginLoxAdd();
+                    break;
+                case "-":
+                    b.beginLoxSubtract();
+                    break;
+                default:
+                    break;
+            }
+            operations.addFirst(operation.getText());
+        }
+        visitFactor(ctx.factor(0));
+        for (int i = 1; i < ctx.getChildCount(); i += 2) {
+            visitFactor(ctx.factor((i + 1) / 2));
+            // Apply operations in reverse order that it matches the order of the operations
+            switch (operations.get(i / 2)) {
+                case "+":
+                    b.endLoxAdd();
+                    break;
+                case "-":
+                    b.endLoxSubtract();
+                    break;
+                default:
+                    break;
+            }
+        }
+        return null;
+    }
+
 }
