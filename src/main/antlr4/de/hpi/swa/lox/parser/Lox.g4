@@ -36,7 +36,7 @@ factor         : unary ( ( '/' | '*' ) unary )* ;
 
 unary          : ( '!' | '-' ) unary | primary ;
 
-primary        : boolean | string | number | nil;
+primary        : boolean | string | number | nil | '(' expression ')';
 
 boolean        : true | false ;
 
