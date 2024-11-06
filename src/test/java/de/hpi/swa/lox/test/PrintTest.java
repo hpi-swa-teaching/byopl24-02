@@ -320,4 +320,130 @@ public class PrintTest extends AbstractLoxTest {
         }
     }
 
+    @Test
+    public void printEqualComparison_two_booleans() {
+        runAndExpect("printTestOutput", "print true == false;", "false\n");
+    }
+
+    @Test
+    public void printEqualComparison_two_numbers() {
+        runAndExpect("printTestOutput", "print 2 == 2;", "true\n");
+    }
+
+    @Test
+    public void printEqualComparison_mutiple_values() {
+        runAndExpect("printTestOutput", "print true == false == true;", "false\n");
+    }
+
+    @Test
+    public void printInEqualComparison_two_booleans() {
+        runAndExpect("printTestOutput", "print true != false;", "true\n");
+    }
+
+    @Test
+    public void printInEqualComparison_two_numbers() {
+        runAndExpect("printTestOutput", "print 2 != 2;", "false\n");
+    }
+
+    @Test
+    public void printInEqualComparison_mutiple_values() {
+        runAndExpect("printTestOutput", "print true != true != true;", "true\n");
+    }
+
+    @Test
+    public void printLessComparison_two_equal_numbers() {
+        runAndExpect("printTestOutput", "print 2 < 2;", "false\n");
+    }
+
+    @Test
+    public void printLessComparison_two_numbers_less_left() {
+        runAndExpect("printTestOutput", "print 2 < 3;", "true\n");
+    }
+
+    @Test
+    public void printLessComparison_two_numbers_less_right() {
+        runAndExpect("printTestOutput", "print 3 < 2;", "false\n");
+    }
+
+    @Test
+    public void printLessComparison_not_matching_types() {
+        try {
+            run("print true < \"test\"");
+        } catch (Exception e) {
+            assertTrue(e.getMessage().contains("cannot apply <"));
+        }
+    }
+    
+    @Test
+    public void printLessOrEqualComparison_two_equal_numbers() {
+        runAndExpect("printTestOutput", "print 2 <= 2;", "true\n");
+    }
+
+    @Test
+    public void printLessOrEqualComparison_two_numbers_less_left() {
+        runAndExpect("printTestOutput", "print 2 <= 3;", "true\n");
+    }
+
+    @Test
+    public void printLessOrEqualComparison_two_numbers_less_right() {
+        runAndExpect("printTestOutput", "print 3 <= 2;", "false\n");
+    }
+
+    @Test
+    public void printLessOrEqualComparison_not_matching_types() {
+        try {
+            run("print true <= \"test\"");
+        } catch (Exception e) {
+            assertTrue(e.getMessage().contains("cannot apply <="));
+        }
+    }
+    
+    @Test
+    public void printGreaterComparison_two_equal_numbers() {
+        runAndExpect("printTestOutput", "print 2 > 2;", "false\n");
+    }
+
+    @Test
+    public void printGreaterComparison_two_numbers_less_left() {
+        runAndExpect("printTestOutput", "print 2 > 3;", "false\n");
+    }
+
+    @Test
+    public void printGreaterComparison_two_numbers_less_right() {
+        runAndExpect("printTestOutput", "print 3 > 2;", "true\n");
+    }
+
+    @Test
+    public void printGreaterComparison_not_matching_types() {
+        try {
+            run("print true > \"test\"");
+        } catch (Exception e) {
+            assertTrue(e.getMessage().contains("cannot apply >"));
+        }
+    }
+
+    @Test
+    public void printGreaterOrEqualComparison_two_equal_numbers() {
+        runAndExpect("printTestOutput", "print 2 >= 2;", "true\n");
+    }
+
+    @Test
+    public void printGreaterOrEqualComparison_two_numbers_less_left() {
+        runAndExpect("printTestOutput", "print 2 >= 3;", "false\n");
+    }
+
+    @Test
+    public void printGreaterOrEqualComparison_two_numbers_less_right() {
+        runAndExpect("printTestOutput", "print 3 >= 2;", "true\n");
+    }
+
+    @Test
+    public void printGreaterOrEqualComparison_not_matching_types() {
+        try {
+            run("print true >= \"test\"");
+        } catch (Exception e) {
+            assertTrue(e.getMessage().contains("cannot apply >="));
+        }
+    }
+
 }

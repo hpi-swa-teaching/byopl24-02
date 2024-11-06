@@ -43,5 +43,19 @@ public class LoxNumber {
             return internalValue.toString();
         }
     }
-    
+
+    @Override
+    public boolean equals(Object other) {
+        if (other == null) {
+            return false;
+        }
+        if (other.getClass() != this.getClass()) {
+            return false;
+        }
+        final LoxNumber otherLoxNumber = (LoxNumber) other;
+        // We need to apply a double comparison, that means we can't really use the == operator!
+        // see https://stackoverflow.com/a/6837237.
+        final float epsilon = 5.96e-08f;
+        return Math.abs(this.getValue() / otherLoxNumber.getValue() - 1) < epsilon;
+    }
 }

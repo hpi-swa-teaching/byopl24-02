@@ -160,7 +160,7 @@ public abstract class LoxBytecodeRootNode extends LoxRootNode implements Bytecod
 
         @Fallback
         static Object doOtherTypes(Object left, Object right, @Bind Node node) {
-            throw new LoxRuntimeError(String.format("Cannot apply logical_or on %s and %s", left.toString(), right.toString()), null);
+            throw new LoxRuntimeError(String.format("Cannot apply logical_or on %s and %s", left.toString(), right.toString()), node);
         }
     }
 
@@ -218,7 +218,101 @@ public abstract class LoxBytecodeRootNode extends LoxRootNode implements Bytecod
 
         @Fallback
         static Object doOtherTypes(Object left, Object right, @Bind Node node) {
-            throw new LoxRuntimeError(String.format("Cannot apply logical_and on %s and %s", left.toString(), right.toString()), null);
+            throw new LoxRuntimeError(String.format("Cannot apply logical_and on %s and %s", left.toString(), right.toString()), node);
+        }
+    }
+
+    @Operation
+    public static final class LoxInequal {
+        @Specialization
+        static boolean doLoxNumbers(LoxNumber left, LoxNumber right) {
+            return !left.equals(right);
+        }
+
+        @Specialization
+        static boolean doDefault(Object left, Object right) {
+            return left != right;
+        }
+    }
+
+    @Operation
+    public static final class LoxEqual {
+        @Specialization
+        static boolean doLoxNumbers(LoxNumber left, LoxNumber right) {
+            return left.equals(right);
+        }
+
+        @Specialization
+        static boolean doDefault(Object left, Object right) {
+            return left == right;
+        }
+    }
+
+    @Operation
+    public static final class LoxLess {
+        @Specialization
+        static boolean doLoxNumbers(LoxNumber left, LoxNumber right) {
+            if (left.equals(right)) {
+                // Remember: we internally deal with doubles, that might be unequal only a little bit.
+                return false;
+            }
+            return left.getValue() < right.getValue();
+        }
+
+        @Fallback
+        static Object doOtherTypes(Object left, Object right, @Bind Node node) {
+            throw new LoxRuntimeError(String.format("Cannot apply < on %s and %s", left.toString(), right.toString()), node);
+        }
+    }
+
+    @Operation
+    public static final class LoxLessOrEqual {
+        @Specialization
+        static boolean doLoxNumbers(LoxNumber left, LoxNumber right) {
+            if (left.equals(right)) {
+                // Remember: we internally deal with doubles, that might be unequal only a little bit.
+                return true;
+            }
+            return left.getValue() <= right.getValue();
+        }
+
+        @Fallback
+        static Object doOtherTypes(Object left, Object right, @Bind Node node) {
+            throw new LoxRuntimeError(String.format("Cannot apply <= on %s and %s", left.toString(), right.toString()), node);
+        }
+    }
+    
+    @Operation
+    public static final class LoxGreater {
+        @Specialization
+        static boolean doLoxNumbers(LoxNumber left, LoxNumber right) {
+            if (left.equals(right)) {
+                // Remember: we internally deal with doubles, that might be unequal only a little bit.
+                return false;
+            }
+            return left.getValue() > right.getValue();
+        }
+
+        @Fallback
+        static Object doOtherTypes(Object left, Object right, @Bind Node node) {
+            throw new LoxRuntimeError(String.format("Cannot apply > on %s and %s", left.toString(), right.toString()), node);
+        }
+    }
+
+    @Operation
+    public static final class LoxGreaterOrEqual {
+        @Specialization
+        static boolean doLoxNumbers(LoxNumber left, LoxNumber right) {
+            if (left.equals(right)) {
+                // Remember: we internally deal with doubles, that might be unequal only a little bit.
+                return true;
+            }
+            return left.getValue() >= right.getValue();
+        }
+
+        @Fallback
+        static Object doOtherTypes(Object left, Object right, @Bind Node node) {
+            throw new LoxRuntimeError(String.format("Cannot apply >= on %s and %s", left.toString(), right.toString()), node);
         }
     }
 }
