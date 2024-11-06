@@ -7,12 +7,15 @@ import com.oracle.truffle.api.bytecode.BytecodeRootNode;
 import com.oracle.truffle.api.bytecode.GenerateBytecode;
 import com.oracle.truffle.api.bytecode.Operation;
 import com.oracle.truffle.api.dsl.Bind;
+import com.oracle.truffle.api.dsl.Fallback;
 import com.oracle.truffle.api.dsl.Specialization;
 import com.oracle.truffle.api.frame.FrameDescriptor;
+import com.oracle.truffle.api.nodes.Node;
 
 import de.hpi.swa.lox.LoxLanguage;
 import de.hpi.swa.lox.nodes.LoxRootNode;
 import de.hpi.swa.lox.runtime.LoxContext;
+import de.hpi.swa.lox.runtime.LoxRuntimeError;
 import de.hpi.swa.lox.runtime.data.LoxNumber;
 
 @GenerateBytecode(//
@@ -100,6 +103,122 @@ public abstract class LoxBytecodeRootNode extends LoxRootNode implements Bytecod
             Double result = left.getValue() / right.getValue();
 
             return new LoxNumber(result);
+        }
+    }
+
+    @Operation
+    public static final class LoxOr {
+        @Specialization
+        static boolean doBoolean(boolean left, boolean right) {
+            return left || right;
+        }
+
+        @Specialization
+        static boolean doBooleanAndLoxNumber(boolean left, LoxNumber right, @Bind Node node) {
+            if (right.getValue() == 0) {
+                // 0 intepreted as false, so only left side matters.
+                return left;
+            } else if (right.getValue() == 1) {
+                // 1 intepreted as true, so or expression is instantly true.
+                return true;
+            }
+            // Other numbers -> RuntimeError
+            throw new LoxRuntimeError(String.format("Cannot apply logical_or on %s and %s", left, right.toString()), node);
+        }
+
+        @Specialization
+        static boolean doLoxNumberAndBoolean(LoxNumber left, boolean right, @Bind Node node) {
+            if (left.getValue() == 0) {
+                // 0 intepreted as false, so only right side matters.
+                return right;
+            } else if (left.getValue() == 1) {
+                // 1 intepreted as true, so or expression is instantly true.
+                return true;
+            }
+            // Other numbers -> RuntimeError
+            throw new LoxRuntimeError(String.format("Cannot apply logical_or on %s and %s", left.toString(), right), node);
+        }
+
+        @Specialization
+        static boolean doLoxNumbers(LoxNumber left, LoxNumber right, @Bind Node node) {
+            if (left.getValue() == 0 && right.getValue() == 0) {
+                // 0 intepreted as false
+                return false; 
+            } else if (left.getValue() == 0 && right.getValue() == 1) {
+                // 1 intepreted as true, so or expression is instantly true.
+                return true;
+            } else if (left.getValue() == 1 && right.getValue() == 0) {
+                // 1 intepreted as true, so or expression is instantly true.
+                return true;
+            } else if (left.getValue() == 1 && right.getValue() == 1) {
+                // 1 intepreted as true, so or expression is instantly true.
+                return true;
+            }
+            // Other numbers -> RuntimeError
+            throw new LoxRuntimeError(String.format("Cannot apply logical_or on %s and %s", left.toString(), right), node);
+        }
+
+        @Fallback
+        static Object doOtherTypes(Object left, Object right, @Bind Node node) {
+            throw new LoxRuntimeError(String.format("Cannot apply logical_or on %s and %s", left.toString(), right.toString()), null);
+        }
+    }
+
+    @Operation
+    public static final class LoxAnd {
+        @Specialization
+        static boolean doBoolean(boolean left, boolean right) {
+            return left && right;
+        }
+
+        @Specialization
+        static boolean doBooleanAndLoxNumber(boolean left, LoxNumber right, @Bind Node node) {
+            if (right.getValue() == 0) {
+                // 0 intepreted as false, so and expression is instantly false.
+                return false;
+            } else if (right.getValue() == 1) {
+                // 1 intepreted as true, so left side matters for and expression.
+                return left;
+            }
+            // Other numbers -> RuntimeError
+            throw new LoxRuntimeError(String.format("Cannot apply logical_and on %s and %s", left, right.toString()), node);
+        }
+
+        @Specialization
+        static boolean doLoxNumberAndBoolean(LoxNumber left, boolean right, @Bind Node node) {
+            if (left.getValue() == 0) {
+                // 0 intepreted as false, so and expression is instantly false.
+                return false;
+            } else if (left.getValue() == 1) {
+                // 1 intepreted as true, so right side matters for and expression. 
+                return right;
+            }
+            // Other numbers -> RuntimeError
+            throw new LoxRuntimeError(String.format("Cannot apply logical_and on %s and %s", left.toString(), right), node);
+        }
+
+        @Specialization
+        static boolean doLoxNumbers(LoxNumber left, LoxNumber right, @Bind Node node) {
+            if (left.getValue() == 0 && right.getValue() == 0) {
+                // 0 intepreted as false, so and expression is instantly false.
+                return false; 
+            } else if (left.getValue() == 0 && right.getValue() == 1) {
+                // 0 intepreted as false, so and expression is instantly false.
+                return false;
+            } else if (left.getValue() == 1 && right.getValue() == 0) {
+                // 0 intepreted as false, so and expression is instantly false.
+                return false;
+            } else if (left.getValue() == 1 && right.getValue() == 1) {
+                // 1 intepreted as true, so and expression is instantly true.
+                return true;
+            }
+            // Other numbers -> RuntimeError
+            throw new LoxRuntimeError(String.format("Cannot apply logical_and on %s and %s", left.toString(), right), node);
+        }
+
+        @Fallback
+        static Object doOtherTypes(Object left, Object right, @Bind Node node) {
+            throw new LoxRuntimeError(String.format("Cannot apply logical_and on %s and %s", left.toString(), right.toString()), null);
         }
     }
 }

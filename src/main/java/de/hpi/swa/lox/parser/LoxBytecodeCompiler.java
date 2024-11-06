@@ -25,6 +25,8 @@ import de.hpi.swa.lox.bytecode.LoxBytecodeRootNodeGen;
 import de.hpi.swa.lox.parser.LoxParser.BooleanContext;
 import de.hpi.swa.lox.parser.LoxParser.FactorContext;
 import de.hpi.swa.lox.parser.LoxParser.FalseContext;
+import de.hpi.swa.lox.parser.LoxParser.Logic_andContext;
+import de.hpi.swa.lox.parser.LoxParser.Logic_orContext;
 import de.hpi.swa.lox.parser.LoxParser.NilContext;
 import de.hpi.swa.lox.parser.LoxParser.NumberContext;
 import de.hpi.swa.lox.parser.LoxParser.PrimaryContext;
@@ -302,4 +304,41 @@ public final class LoxBytecodeCompiler extends LoxBaseVisitor<Void> {
         return null;
     }
 
+    @Override
+    public Void visitLogic_or(Logic_orContext ctx) {
+        beginAttribution(ctx);
+
+        for (int i = ctx.getChildCount() - 2; i >= 0; i -= 2) {
+            // For every 'or' we encounter (its the only operator possible here), beginn new lox or.
+            b.beginLoxOr();
+        }
+        visitLogic_and(ctx.logic_and(0));
+        for (int i = 1; i < ctx.getChildCount(); i += 2) {
+            visitLogic_and(ctx.logic_and((i + 1) / 2));
+            // End or statements
+            b.endLoxOr();
+        }
+
+        endAttribution();
+        return null;
+    }
+
+    @Override
+    public Void visitLogic_and(Logic_andContext ctx) {
+        beginAttribution(ctx);
+
+        for (int i = ctx.getChildCount() - 2; i >= 0; i -= 2) {
+            // For every 'and' we encounter (its the only operator possible here), beginn new lox and.
+            b.beginLoxAnd();
+        }
+        visitEquality(ctx.equality(0));
+        for (int i = 1; i < ctx.getChildCount(); i += 2) {
+            visitEquality(ctx.equality((i + 1) / 2));
+            // End and statements
+            b.endLoxAnd();
+        }
+
+        endAttribution();
+        return null;
+    }
 }
