@@ -68,6 +68,12 @@ public class PrintTest extends AbstractLoxTest {
     }
 
     @Test
+    public void printBoolean_not_matching_type() {
+        run("print !\"test\";");
+        assertTrue(outContent.toString().contains("Cannot invert"));
+    }
+
+    @Test
     public void printNil() {
         runAndExpect("printTestOutput", "print nil;", "nil\n");
     }
@@ -80,6 +86,12 @@ public class PrintTest extends AbstractLoxTest {
     @Test
     public void printFloatingNumber_negated() {
         runAndExpect("printTestOutput", "print -12.34;", "-12.34\n");
+    }
+
+    @Test
+    public void printBooleanNegated() {
+        run("print -false;");
+        assertTrue(outContent.toString().contains("Cannot negate"));
     }
 
     @Test
@@ -115,8 +127,20 @@ public class PrintTest extends AbstractLoxTest {
     }
 
     @Test
+    public void pritnIntegerNumber_added_not_matching_types() {
+        run("print 12 + \"test\";");
+        assertTrue(outContent.toString().contains("Cannot add"));
+    }
+
+    @Test
     public void printIntegerNumber_subtracted() {
         runAndExpect("printTestOutput", "print 12 - 34;", "-22\n");
+    }
+
+    @Test
+    public void printIntegerNumber_subtracted_not_matching_types() {
+        run("print 12 - \"test\";");
+        assertTrue(outContent.toString().contains("Cannot subtract"));
     }
 
     @Test
@@ -140,6 +164,12 @@ public class PrintTest extends AbstractLoxTest {
     }
 
     @Test
+    public void printIntegerNumber_multiplied_not_matching_types() {
+        run("print 12 * \"test\";");
+        assertTrue(outContent.toString().contains("Cannot multiply"));
+    }
+
+    @Test
     public void printIntegerNumber_multiplied_added() {
         runAndExpect("printTestOutput", "print 12 * 34 + 56 * 4 * 7;", "1976\n");
     }
@@ -151,14 +181,13 @@ public class PrintTest extends AbstractLoxTest {
 
     @Test
     public void printIntegerNumber_divided_null() {
-        boolean exceptionThrown = false;
-        try {
-            run("print 12 / 0;");
-        } catch (Exception e) {
-            assertTrue(e.getMessage().contains("Division by zero"));
-            exceptionThrown = true;
-        }
-        assertTrue(exceptionThrown);
+        run("print 12 / 0;");
+        assertTrue(outContent.toString().contains("Division by zero"));
+    }
+
+    public void printIntegerNumber_divided_not_matching_types() {
+        run("print 12 / \"test\";");
+        assertTrue(outContent.toString().contains("Cannot divide"));
     }
 
     @Test
