@@ -51,7 +51,7 @@ public abstract class LoxBytecodeRootNode extends LoxRootNode implements Bytecod
             return !value;
         }
 
-        @Specialization
+        @Fallback
         static Object doOtherTypes(Object value, @Bind Node node) {
             throw new LoxRuntimeError(String.format("Cannot invert %s", value), node);
         }
@@ -66,7 +66,7 @@ public abstract class LoxBytecodeRootNode extends LoxRootNode implements Bytecod
             return new LoxNumber(result);
         }
 
-        @Specialization
+        @Fallback
         static Object doOtherTypes(Object value, @Bind Node node) {
             throw new LoxRuntimeError(String.format("Cannot negate %s", value), node);
         }
@@ -96,7 +96,7 @@ public abstract class LoxBytecodeRootNode extends LoxRootNode implements Bytecod
             return new LoxNumber(result);
         }
 
-        @Specialization
+        @Fallback
         static Object doOtherTypes(Object left, Object right, @Bind Node node) {
             throw new LoxRuntimeError(String.format("Cannot subtract %s and %s", left.toString(), right.toString()),
                     node);
@@ -112,7 +112,7 @@ public abstract class LoxBytecodeRootNode extends LoxRootNode implements Bytecod
             return new LoxNumber(result);
         }
 
-        @Specialization
+        @Fallback
         static Object doOtherTypes(Object left, Object right, @Bind Node node) {
             throw new LoxRuntimeError(String.format("Cannot multiply %s and %s", left.toString(), right.toString()),
                     node);
@@ -122,9 +122,9 @@ public abstract class LoxBytecodeRootNode extends LoxRootNode implements Bytecod
     @Operation
     public static final class LoxDivide {
         @Specialization
-        static LoxNumber doNumbers(LoxNumber left, LoxNumber right) {
+        static LoxNumber doNumbers(LoxNumber left, LoxNumber right, @Bind Node node) {
             if (right.getValue() == 0) {
-                throw new ArithmeticException("Division by zero");
+                throw new LoxRuntimeError("Division by zero", node);
             }
             // Unwrap LoxNumber values, calculate result, rewrap.
             Double result = left.getValue() / right.getValue();
@@ -132,7 +132,7 @@ public abstract class LoxBytecodeRootNode extends LoxRootNode implements Bytecod
             return new LoxNumber(result);
         }
 
-        @Specialization
+        @Fallback
         static Object doOtherTypes(Object left, Object right, @Bind Node node) {
             throw new LoxRuntimeError(String.format("Cannot divide %s and %s", left.toString(), right.toString()),
                     node);
