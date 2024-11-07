@@ -215,32 +215,23 @@ public class PrintTest extends AbstractLoxTest {
     public void printLogicalOrComparison_mutiple_booleans() {
         runAndExpect("printTestOutput", "print true or false or true;", "true\n");
     }
-    
+
     @Test
     public void printLogicalOrComparison_not_matching_number_left() {
-        try {
-            run("print 4 or true");
-        } catch (Exception e) {
-            assertTrue(e.getMessage().contains("cannot apply logical_or"));
-        }
+        run("print 4 or true;");
+        assertTrue(outContent.toString().contains("Cannot apply logical_or"));
     }
 
     @Test
     public void printLogicalOrComparison_not_matching_number_right() {
-        try {
-            run("print true or 4");
-        } catch (Exception e) {
-            assertTrue(e.getMessage().contains("cannot apply logical_or"));
-        }
+        run("print true or 4;");
+        assertTrue(outContent.toString().contains("Cannot apply logical_or"));
     }
 
     @Test
     public void printLogicalOrComparison_not_matching_types() {
-        try {
-            run("print true or \"test\"");
-        } catch (Exception e) {
-            assertTrue(e.getMessage().contains("cannot apply logical_or"));
-        }
+        run("print true or \"test\";");
+        assertTrue(outContent.toString().contains("Cannot apply logical_or"));
     }
 
     @Test
@@ -295,29 +286,20 @@ public class PrintTest extends AbstractLoxTest {
 
     @Test
     public void printLogicalAndComparison_not_matching_number_left() {
-        try {
-            run("print 4 and true");
-        } catch (Exception e) {
-            assertTrue(e.getMessage().contains("cannot apply logical_and"));
-        }
+        run("print 4 and true;");
+        assertTrue(outContent.toString().contains("Cannot apply logical_and"));
     }
 
     @Test
     public void printLogicalAndComparison_not_matching_number_right() {
-        try {
-            run("print true and 4");
-        } catch (Exception e) {
-            assertTrue(e.getMessage().contains("cannot apply logical_and"));
-        }
+        run("print true and 4;");
+        assertTrue(outContent.toString().contains("Cannot apply logical_and"));
     }
 
     @Test
     public void printLogicalAndComparison_not_matching_types() {
-        try {
-            run("print true and \"test\"");
-        } catch (Exception e) {
-            assertTrue(e.getMessage().contains("cannot apply logical_and"));
-        }
+        run("print true and \"test\";");
+        assertTrue(outContent.toString().contains("Cannot apply logical_and"));
     }
 
     @Test
@@ -367,13 +349,10 @@ public class PrintTest extends AbstractLoxTest {
 
     @Test
     public void printLessComparison_not_matching_types() {
-        try {
-            run("print true < \"test\"");
-        } catch (Exception e) {
-            assertTrue(e.getMessage().contains("cannot apply <"));
-        }
+        run("print true < \"test\";");
+        assertTrue(outContent.toString().contains("Cannot apply <"));
     }
-    
+
     @Test
     public void printLessOrEqualComparison_two_equal_numbers() {
         runAndExpect("printTestOutput", "print 2 <= 2;", "true\n");
@@ -391,13 +370,10 @@ public class PrintTest extends AbstractLoxTest {
 
     @Test
     public void printLessOrEqualComparison_not_matching_types() {
-        try {
-            run("print true <= \"test\"");
-        } catch (Exception e) {
-            assertTrue(e.getMessage().contains("cannot apply <="));
-        }
+        run("print true <= \"test\";");
+        assertTrue(outContent.toString().contains("Cannot apply <"));
     }
-    
+
     @Test
     public void printGreaterComparison_two_equal_numbers() {
         runAndExpect("printTestOutput", "print 2 > 2;", "false\n");
@@ -415,11 +391,8 @@ public class PrintTest extends AbstractLoxTest {
 
     @Test
     public void printGreaterComparison_not_matching_types() {
-        try {
-            run("print true > \"test\"");
-        } catch (Exception e) {
-            assertTrue(e.getMessage().contains("cannot apply >"));
-        }
+        run("print true > \"test\";");
+        assertTrue(outContent.toString().contains("Cannot apply >"));
     }
 
     @Test
@@ -439,11 +412,8 @@ public class PrintTest extends AbstractLoxTest {
 
     @Test
     public void printGreaterOrEqualComparison_not_matching_types() {
-        try {
-            run("print true >= \"test\"");
-        } catch (Exception e) {
-            assertTrue(e.getMessage().contains("cannot apply >="));
-        }
+        run("print true >= \"test\";");
+        assertTrue(outContent.toString().contains("Cannot apply >="));
     }
 
 }
