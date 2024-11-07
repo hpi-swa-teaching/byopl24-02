@@ -47,55 +47,82 @@ public abstract class LoxBytecodeRootNode extends LoxRootNode implements Bytecod
     @Operation
     public static final class LoxInvert {
         @Specialization
-        static boolean invert(boolean value) {
+        static boolean doBoolean(boolean value) {
             return !value;
+        }
+
+        @Specialization
+        static Object doOtherTypes(Object value, @Bind Node node) {
+            throw new LoxRuntimeError(String.format("Cannot invert %s", value), node);
         }
     }
 
     @Operation
     public static final class LoxNegate {
         @Specialization
-        static LoxNumber negate(LoxNumber loxNumber) {
+        static LoxNumber doNumber(LoxNumber loxNumber) {
             // Unwrap LoxNumber value, calculate result, rewrap.
             Double result = -1 * loxNumber.getValue();
             return new LoxNumber(result);
+        }
+
+        @Specialization
+        static Object doOtherTypes(Object value, @Bind Node node) {
+            throw new LoxRuntimeError(String.format("Cannot negate %s", value), node);
         }
     }
 
     @Operation
     public static final class LoxAdd {
         @Specialization
-        static LoxNumber add(LoxNumber left, LoxNumber right) {
+        static LoxNumber doNumbers(LoxNumber left, LoxNumber right) {
             // Unwrap LoxNumber values, calculate result, rewrap.
             Double result = left.getValue() + right.getValue();
             return new LoxNumber(result);
+        }
+
+        @Specialization
+        static Object doOtherTypes(Object left, Object right, @Bind Node node) {
+            throw new LoxRuntimeError(String.format("Cannot add %s and %s", left.toString(), right.toString()), node);
         }
     }
 
     @Operation
     public static final class LoxSubtract {
         @Specialization
-        static LoxNumber subtract(LoxNumber left, LoxNumber right) {
+        static LoxNumber doNumber(LoxNumber left, LoxNumber right) {
             // Unwrap LoxNumber values, calculate result, rewrap.
             Double result = left.getValue() - right.getValue();
             return new LoxNumber(result);
+        }
+
+        @Specialization
+        static Object doOtherTypes(Object left, Object right, @Bind Node node) {
+            throw new LoxRuntimeError(String.format("Cannot subtract %s and %s", left.toString(), right.toString()),
+                    node);
         }
     }
 
     @Operation
     public static final class LoxMultiply {
         @Specialization
-        static LoxNumber multiply(LoxNumber left, LoxNumber right) {
+        static LoxNumber doNumbers(LoxNumber left, LoxNumber right) {
             // Unwrap LoxNumber values, calculate result, rewrap.
             Double result = left.getValue() * right.getValue();
             return new LoxNumber(result);
+        }
+
+        @Specialization
+        static Object doOtherTypes(Object left, Object right, @Bind Node node) {
+            throw new LoxRuntimeError(String.format("Cannot multiply %s and %s", left.toString(), right.toString()),
+                    node);
         }
     }
 
     @Operation
     public static final class LoxDivide {
         @Specialization
-        static LoxNumber divide(LoxNumber left, LoxNumber right) {
+        static LoxNumber doNumbers(LoxNumber left, LoxNumber right) {
             if (right.getValue() == 0) {
                 throw new ArithmeticException("Division by zero");
             }
@@ -103,6 +130,12 @@ public abstract class LoxBytecodeRootNode extends LoxRootNode implements Bytecod
             Double result = left.getValue() / right.getValue();
 
             return new LoxNumber(result);
+        }
+
+        @Specialization
+        static Object doOtherTypes(Object left, Object right, @Bind Node node) {
+            throw new LoxRuntimeError(String.format("Cannot divide %s and %s", left.toString(), right.toString()),
+                    node);
         }
     }
 
@@ -123,7 +156,8 @@ public abstract class LoxBytecodeRootNode extends LoxRootNode implements Bytecod
                 return true;
             }
             // Other numbers -> RuntimeError
-            throw new LoxRuntimeError(String.format("Cannot apply logical_or on %s and %s", left, right.toString()), node);
+            throw new LoxRuntimeError(String.format("Cannot apply logical_or on %s and %s", left, right.toString()),
+                    node);
         }
 
         @Specialization
@@ -136,14 +170,15 @@ public abstract class LoxBytecodeRootNode extends LoxRootNode implements Bytecod
                 return true;
             }
             // Other numbers -> RuntimeError
-            throw new LoxRuntimeError(String.format("Cannot apply logical_or on %s and %s", left.toString(), right), node);
+            throw new LoxRuntimeError(String.format("Cannot apply logical_or on %s and %s", left.toString(), right),
+                    node);
         }
 
         @Specialization
         static boolean doLoxNumbers(LoxNumber left, LoxNumber right, @Bind Node node) {
             if (left.getValue() == 0 && right.getValue() == 0) {
                 // 0 intepreted as false
-                return false; 
+                return false;
             } else if (left.getValue() == 0 && right.getValue() == 1) {
                 // 1 intepreted as true, so or expression is instantly true.
                 return true;
@@ -155,12 +190,14 @@ public abstract class LoxBytecodeRootNode extends LoxRootNode implements Bytecod
                 return true;
             }
             // Other numbers -> RuntimeError
-            throw new LoxRuntimeError(String.format("Cannot apply logical_or on %s and %s", left.toString(), right), node);
+            throw new LoxRuntimeError(String.format("Cannot apply logical_or on %s and %s", left.toString(), right),
+                    node);
         }
 
         @Fallback
         static Object doOtherTypes(Object left, Object right, @Bind Node node) {
-            throw new LoxRuntimeError(String.format("Cannot apply logical_or on %s and %s", left.toString(), right.toString()), node);
+            throw new LoxRuntimeError(
+                    String.format("Cannot apply logical_or on %s and %s", left.toString(), right.toString()), node);
         }
     }
 
@@ -181,7 +218,8 @@ public abstract class LoxBytecodeRootNode extends LoxRootNode implements Bytecod
                 return left;
             }
             // Other numbers -> RuntimeError
-            throw new LoxRuntimeError(String.format("Cannot apply logical_and on %s and %s", left, right.toString()), node);
+            throw new LoxRuntimeError(String.format("Cannot apply logical_and on %s and %s", left, right.toString()),
+                    node);
         }
 
         @Specialization
@@ -190,18 +228,19 @@ public abstract class LoxBytecodeRootNode extends LoxRootNode implements Bytecod
                 // 0 intepreted as false, so and expression is instantly false.
                 return false;
             } else if (left.getValue() == 1) {
-                // 1 intepreted as true, so right side matters for and expression. 
+                // 1 intepreted as true, so right side matters for and expression.
                 return right;
             }
             // Other numbers -> RuntimeError
-            throw new LoxRuntimeError(String.format("Cannot apply logical_and on %s and %s", left.toString(), right), node);
+            throw new LoxRuntimeError(String.format("Cannot apply logical_and on %s and %s", left.toString(), right),
+                    node);
         }
 
         @Specialization
         static boolean doLoxNumbers(LoxNumber left, LoxNumber right, @Bind Node node) {
             if (left.getValue() == 0 && right.getValue() == 0) {
                 // 0 intepreted as false, so and expression is instantly false.
-                return false; 
+                return false;
             } else if (left.getValue() == 0 && right.getValue() == 1) {
                 // 0 intepreted as false, so and expression is instantly false.
                 return false;
@@ -213,12 +252,14 @@ public abstract class LoxBytecodeRootNode extends LoxRootNode implements Bytecod
                 return true;
             }
             // Other numbers -> RuntimeError
-            throw new LoxRuntimeError(String.format("Cannot apply logical_and on %s and %s", left.toString(), right), node);
+            throw new LoxRuntimeError(String.format("Cannot apply logical_and on %s and %s", left.toString(), right),
+                    node);
         }
 
         @Fallback
         static Object doOtherTypes(Object left, Object right, @Bind Node node) {
-            throw new LoxRuntimeError(String.format("Cannot apply logical_and on %s and %s", left.toString(), right.toString()), node);
+            throw new LoxRuntimeError(
+                    String.format("Cannot apply logical_and on %s and %s", left.toString(), right.toString()), node);
         }
     }
 
@@ -253,7 +294,8 @@ public abstract class LoxBytecodeRootNode extends LoxRootNode implements Bytecod
         @Specialization
         static boolean doLoxNumbers(LoxNumber left, LoxNumber right) {
             if (left.equals(right)) {
-                // Remember: we internally deal with doubles, that might be unequal only a little bit.
+                // Remember: we internally deal with doubles, that might be unequal only a
+                // little bit.
                 return false;
             }
             return left.getValue() < right.getValue();
@@ -261,7 +303,8 @@ public abstract class LoxBytecodeRootNode extends LoxRootNode implements Bytecod
 
         @Fallback
         static Object doOtherTypes(Object left, Object right, @Bind Node node) {
-            throw new LoxRuntimeError(String.format("Cannot apply < on %s and %s", left.toString(), right.toString()), node);
+            throw new LoxRuntimeError(String.format("Cannot apply < on %s and %s", left.toString(), right.toString()),
+                    node);
         }
     }
 
@@ -270,7 +313,8 @@ public abstract class LoxBytecodeRootNode extends LoxRootNode implements Bytecod
         @Specialization
         static boolean doLoxNumbers(LoxNumber left, LoxNumber right) {
             if (left.equals(right)) {
-                // Remember: we internally deal with doubles, that might be unequal only a little bit.
+                // Remember: we internally deal with doubles, that might be unequal only a
+                // little bit.
                 return true;
             }
             return left.getValue() <= right.getValue();
@@ -278,16 +322,18 @@ public abstract class LoxBytecodeRootNode extends LoxRootNode implements Bytecod
 
         @Fallback
         static Object doOtherTypes(Object left, Object right, @Bind Node node) {
-            throw new LoxRuntimeError(String.format("Cannot apply <= on %s and %s", left.toString(), right.toString()), node);
+            throw new LoxRuntimeError(String.format("Cannot apply <= on %s and %s", left.toString(), right.toString()),
+                    node);
         }
     }
-    
+
     @Operation
     public static final class LoxGreater {
         @Specialization
         static boolean doLoxNumbers(LoxNumber left, LoxNumber right) {
             if (left.equals(right)) {
-                // Remember: we internally deal with doubles, that might be unequal only a little bit.
+                // Remember: we internally deal with doubles, that might be unequal only a
+                // little bit.
                 return false;
             }
             return left.getValue() > right.getValue();
@@ -295,7 +341,8 @@ public abstract class LoxBytecodeRootNode extends LoxRootNode implements Bytecod
 
         @Fallback
         static Object doOtherTypes(Object left, Object right, @Bind Node node) {
-            throw new LoxRuntimeError(String.format("Cannot apply > on %s and %s", left.toString(), right.toString()), node);
+            throw new LoxRuntimeError(String.format("Cannot apply > on %s and %s", left.toString(), right.toString()),
+                    node);
         }
     }
 
@@ -304,7 +351,8 @@ public abstract class LoxBytecodeRootNode extends LoxRootNode implements Bytecod
         @Specialization
         static boolean doLoxNumbers(LoxNumber left, LoxNumber right) {
             if (left.equals(right)) {
-                // Remember: we internally deal with doubles, that might be unequal only a little bit.
+                // Remember: we internally deal with doubles, that might be unequal only a
+                // little bit.
                 return true;
             }
             return left.getValue() >= right.getValue();
@@ -312,7 +360,8 @@ public abstract class LoxBytecodeRootNode extends LoxRootNode implements Bytecod
 
         @Fallback
         static Object doOtherTypes(Object left, Object right, @Bind Node node) {
-            throw new LoxRuntimeError(String.format("Cannot apply >= on %s and %s", left.toString(), right.toString()), node);
+            throw new LoxRuntimeError(String.format("Cannot apply >= on %s and %s", left.toString(), right.toString()),
+                    node);
         }
     }
 }
