@@ -234,6 +234,7 @@ public final class LoxBytecodeCompiler extends LoxBaseVisitor<Void> {
 
     @Override
     public Void visitFactor(FactorContext ctx) {
+        beginAttribution(ctx);
         // Collect operations in reverse order
         Deque<String> operations = new ArrayDeque<>();
 
@@ -266,12 +267,14 @@ public final class LoxBytecodeCompiler extends LoxBaseVisitor<Void> {
                     break;
             }
         }
+        endAttribution();
         return null;
     }
 
     @Override
     public Void visitTerm(TermContext ctx) {
         // Collect operations in reverse order
+        beginAttribution(ctx);
         Deque<String> operations = new ArrayDeque<>();
 
         for (int i = ctx.getChildCount() - 2; i >= 0; i -= 2) {
@@ -303,6 +306,7 @@ public final class LoxBytecodeCompiler extends LoxBaseVisitor<Void> {
                     break;
             }
         }
+        endAttribution();
         return null;
     }
 
@@ -311,7 +315,8 @@ public final class LoxBytecodeCompiler extends LoxBaseVisitor<Void> {
         beginAttribution(ctx);
 
         for (int i = ctx.getChildCount() - 2; i >= 0; i -= 2) {
-            // For every 'or' we encounter (its the only operator possible here), beginn new lox or.
+            // For every 'or' we encounter (its the only operator possible here), beginn new
+            // lox or.
             b.beginLoxOr();
         }
         visitLogic_and(ctx.logic_and(0));
@@ -330,7 +335,8 @@ public final class LoxBytecodeCompiler extends LoxBaseVisitor<Void> {
         beginAttribution(ctx);
 
         for (int i = ctx.getChildCount() - 2; i >= 0; i -= 2) {
-            // For every 'and' we encounter (its the only operator possible here), beginn new lox and.
+            // For every 'and' we encounter (its the only operator possible here), beginn
+            // new lox and.
             b.beginLoxAnd();
         }
         visitEquality(ctx.equality(0));
@@ -368,7 +374,8 @@ public final class LoxBytecodeCompiler extends LoxBaseVisitor<Void> {
         visitComparison(ctx.comparison(0));
         for (int i = 1; i < ctx.getChildCount(); i += 2) {
             visitComparison(ctx.comparison((i + 1) / 2));
-            // Apply equality operators in reverse order that it matches the order of the operators
+            // Apply equality operators in reverse order that it matches the order of the
+            // operators
             switch (operators.removeFirst()) {
                 case "!=":
                     b.endLoxInequal();
@@ -415,7 +422,8 @@ public final class LoxBytecodeCompiler extends LoxBaseVisitor<Void> {
         visitTerm(ctx.term(0));
         for (int i = 1; i < ctx.getChildCount(); i += 2) {
             visitTerm(ctx.term((i + 1) / 2));
-            // Apply comparison operators in reverse order that it matches the order of the operators
+            // Apply comparison operators in reverse order that it matches the order of the
+            // operators
             switch (operators.removeFirst()) {
                 case ">=":
                     b.endLoxGreaterOrEqual();
