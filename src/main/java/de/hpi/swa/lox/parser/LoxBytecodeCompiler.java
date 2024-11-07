@@ -23,8 +23,12 @@ import com.oracle.truffle.api.strings.TruffleString;
 import de.hpi.swa.lox.LoxLanguage;
 import de.hpi.swa.lox.bytecode.LoxBytecodeRootNodeGen;
 import de.hpi.swa.lox.parser.LoxParser.BooleanContext;
+import de.hpi.swa.lox.parser.LoxParser.ComparisonContext;
+import de.hpi.swa.lox.parser.LoxParser.EqualityContext;
 import de.hpi.swa.lox.parser.LoxParser.FactorContext;
 import de.hpi.swa.lox.parser.LoxParser.FalseContext;
+import de.hpi.swa.lox.parser.LoxParser.Logic_andContext;
+import de.hpi.swa.lox.parser.LoxParser.Logic_orContext;
 import de.hpi.swa.lox.parser.LoxParser.NilContext;
 import de.hpi.swa.lox.parser.LoxParser.NumberContext;
 import de.hpi.swa.lox.parser.LoxParser.PrimaryContext;
@@ -302,4 +306,135 @@ public final class LoxBytecodeCompiler extends LoxBaseVisitor<Void> {
         return null;
     }
 
+    @Override
+    public Void visitLogic_or(Logic_orContext ctx) {
+        beginAttribution(ctx);
+
+        for (int i = ctx.getChildCount() - 2; i >= 0; i -= 2) {
+            // For every 'or' we encounter (its the only operator possible here), beginn new lox or.
+            b.beginLoxOr();
+        }
+        visitLogic_and(ctx.logic_and(0));
+        for (int i = 1; i < ctx.getChildCount(); i += 2) {
+            visitLogic_and(ctx.logic_and((i + 1) / 2));
+            // End or statements
+            b.endLoxOr();
+        }
+
+        endAttribution();
+        return null;
+    }
+
+    @Override
+    public Void visitLogic_and(Logic_andContext ctx) {
+        beginAttribution(ctx);
+
+        for (int i = ctx.getChildCount() - 2; i >= 0; i -= 2) {
+            // For every 'and' we encounter (its the only operator possible here), beginn new lox and.
+            b.beginLoxAnd();
+        }
+        visitEquality(ctx.equality(0));
+        for (int i = 1; i < ctx.getChildCount(); i += 2) {
+            visitEquality(ctx.equality((i + 1) / 2));
+            // End and statements
+            b.endLoxAnd();
+        }
+
+        endAttribution();
+        return null;
+    }
+
+    @Override
+    public Void visitEquality(EqualityContext ctx) {
+        // Collect equality operators in reverse order
+        Deque<String> operators = new ArrayDeque<>();
+
+        beginAttribution(ctx);
+
+        for (int i = ctx.getChildCount() - 2; i >= 0; i -= 2) {
+            var operation = ctx.getChild(i);
+            switch (operation.getText()) {
+                case "!=":
+                    b.beginLoxInequal();
+                    break;
+                case "==":
+                    b.beginLoxEqual();
+                    break;
+                default:
+                    break;
+            }
+            operators.addFirst(operation.getText());
+        }
+        visitComparison(ctx.comparison(0));
+        for (int i = 1; i < ctx.getChildCount(); i += 2) {
+            visitComparison(ctx.comparison((i + 1) / 2));
+            // Apply equality operators in reverse order that it matches the order of the operators
+            switch (operators.removeFirst()) {
+                case "!=":
+                    b.endLoxInequal();
+                    break;
+                case "==":
+                    b.endLoxEqual();
+                    break;
+                default:
+                    break;
+            }
+        }
+
+        endAttribution();
+        return null;
+    }
+
+    @Override
+    public Void visitComparison(ComparisonContext ctx) {
+        // Collect comparison operators in reverse order
+        Deque<String> operators = new ArrayDeque<>();
+
+        beginAttribution(ctx);
+
+        for (int i = ctx.getChildCount() - 2; i >= 0; i -= 2) {
+            var operation = ctx.getChild(i);
+            switch (operation.getText()) {
+                case ">=":
+                    b.beginLoxGreaterOrEqual();
+                    break;
+                case ">":
+                    b.beginLoxGreater();
+                    break;
+                case "<=":
+                    b.beginLoxLessOrEqual();
+                    break;
+                case "<":
+                    b.beginLoxLess();
+                    break;
+                default:
+                    break;
+            }
+            operators.addFirst(operation.getText());
+        }
+        visitTerm(ctx.term(0));
+        for (int i = 1; i < ctx.getChildCount(); i += 2) {
+            visitTerm(ctx.term((i + 1) / 2));
+            // Apply comparison operators in reverse order that it matches the order of the operators
+            switch (operators.removeFirst()) {
+                case ">=":
+                    b.endLoxGreaterOrEqual();
+                    break;
+                case ">":
+                    b.endLoxGreater();
+                    break;
+                case "<=":
+                    b.endLoxLessOrEqual();
+                    break;
+                case "<":
+                    b.endLoxLess();
+                    break;
+                default:
+                    break;
+            }
+        }
+
+        endAttribution();
+        return null;
+    }
 }
