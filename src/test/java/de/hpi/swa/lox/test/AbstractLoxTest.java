@@ -42,6 +42,8 @@
 package de.hpi.swa.lox.test;
 
 import static org.junit.Assert.assertEquals;
+import static org.hamcrest.CoreMatchers.containsString;
+import static org.hamcrest.MatcherAssert.assertThat;
 
 import java.io.ByteArrayOutputStream;
 import java.io.PrintStream;
@@ -54,6 +56,9 @@ public abstract class AbstractLoxTest {
 
     protected ByteArrayOutputStream outContent;
     protected PrintStream originalOut;
+
+    protected ByteArrayOutputStream errContent;
+    protected PrintStream originalErr;
 
     protected Context context;
 
@@ -69,6 +74,10 @@ public abstract class AbstractLoxTest {
 
     @Before
     public void caputureOut() {
+        errContent = new ByteArrayOutputStream();
+        originalErr = System.err;
+        System.setErr(new PrintStream(errContent));
+
         outContent = new ByteArrayOutputStream();
         originalOut = System.out;
         System.setOut(new PrintStream(outContent));
@@ -77,6 +86,7 @@ public abstract class AbstractLoxTest {
     @After
     public void restoreOut() {
         System.setOut(originalOut);
+        System.setErr(originalErr);
     }
 
     protected String normalize(String s) {
@@ -88,7 +98,7 @@ public abstract class AbstractLoxTest {
             context.eval("lox", command);
         } catch (PolyglotException ex) {
             if (!ex.isInternalError()) {
-                System.out.println(ex.getMessage());
+                System.err.println(ex.getMessage());
             } else {
                 throw ex;
             }
@@ -97,9 +107,20 @@ public abstract class AbstractLoxTest {
 
     protected void runAndExpect(String testCaseName, String command, String expectedOutput) {
         outContent.reset();
+        errContent.reset();
         run(command);
         String actualOutput = normalize(outContent.toString());
         assertEquals(testCaseName, expectedOutput, actualOutput);
     }
 
+    protected void runAndExpectError(String testCaseName,
+            String command, String expectedErrorOutput) {
+        outContent.reset();
+        errContent.reset();
+        run(command);
+        String error = normalize(errContent.toString());
+        String out = normalize(outContent.toString());
+        assertThat(normalize(errContent.toString()),
+                containsString(expectedErrorOutput));
+    }
 }
