@@ -2,6 +2,8 @@ package de.hpi.swa.lox.runtime.data;
 
 import java.util.Objects;
 
+import com.oracle.truffle.api.CompilerDirectives.TruffleBoundary;
+
 /** 
  * Number representation (mainly based on Double).
  */
@@ -33,6 +35,7 @@ public class LoxNumber {
      * We do some special stuff when printing our number representation.
      */
     @Override
+    @TruffleBoundary
     public String toString() {
         if (internalValue.longValue() == internalValue.doubleValue()) {
             // If we deal with non-floating numbers (integers/longs),

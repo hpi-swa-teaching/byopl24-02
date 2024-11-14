@@ -3,6 +3,7 @@ package de.hpi.swa.lox.bytecode;
 import java.io.IOException;
 import java.util.Objects;
 
+import com.oracle.truffle.api.CompilerDirectives.TruffleBoundary;
 import com.oracle.truffle.api.bytecode.BytecodeRootNode;
 import com.oracle.truffle.api.bytecode.GenerateBytecode;
 import com.oracle.truffle.api.bytecode.Operation;
@@ -32,6 +33,7 @@ public abstract class LoxBytecodeRootNode extends LoxRootNode implements Bytecod
     @Operation
     public static final class LoxPrint {
         @Specialization
+        @TruffleBoundary
         static void doDefault(Object value, @Bind LoxContext context) {
             var out = context.getOutput();
             try {
@@ -52,6 +54,7 @@ public abstract class LoxBytecodeRootNode extends LoxRootNode implements Bytecod
         }
 
         @Fallback
+        @TruffleBoundary
         static boolean doOtherTypes(Object value, @Bind Node node) {
             throw new LoxRuntimeError(String.format("Cannot invert %s", value), node);
         }
@@ -67,6 +70,7 @@ public abstract class LoxBytecodeRootNode extends LoxRootNode implements Bytecod
         }
 
         @Fallback
+        @TruffleBoundary
         static LoxNumber doOtherTypes(Object value, @Bind Node node) {
             throw new LoxRuntimeError(String.format("Cannot negate %s", value), node);
         }
@@ -82,6 +86,7 @@ public abstract class LoxBytecodeRootNode extends LoxRootNode implements Bytecod
         }
 
         @Specialization
+        @TruffleBoundary
         static LoxNumber doOtherTypes(Object left, Object right, @Bind Node node) {
             throw new LoxRuntimeError(String.format("Cannot add %s and %s", left.toString(), right.toString()), node);
         }
@@ -97,6 +102,7 @@ public abstract class LoxBytecodeRootNode extends LoxRootNode implements Bytecod
         }
 
         @Fallback
+        @TruffleBoundary
         static LoxNumber doOtherTypes(Object left, Object right, @Bind Node node) {
             throw new LoxRuntimeError(String.format("Cannot subtract %s and %s", left.toString(), right.toString()),
                     node);
@@ -113,6 +119,7 @@ public abstract class LoxBytecodeRootNode extends LoxRootNode implements Bytecod
         }
 
         @Fallback
+        @TruffleBoundary
         static LoxNumber doOtherTypes(Object left, Object right, @Bind Node node) {
             throw new LoxRuntimeError(String.format("Cannot multiply %s and %s", left.toString(), right.toString()),
                     node);
@@ -133,6 +140,7 @@ public abstract class LoxBytecodeRootNode extends LoxRootNode implements Bytecod
         }
 
         @Fallback
+        @TruffleBoundary
         static LoxNumber doOtherTypes(Object left, Object right, @Bind Node node) {
             throw new LoxRuntimeError(String.format("Cannot divide %s and %s", left.toString(), right.toString()),
                     node);
@@ -156,8 +164,7 @@ public abstract class LoxBytecodeRootNode extends LoxRootNode implements Bytecod
                 return true;
             }
             // Other numbers -> RuntimeError
-            throw new LoxRuntimeError(String.format("Cannot apply logical_or on %s and %s", left, right.toString()),
-                    node);
+            throw createRuntimeError(left, right, node);
         }
 
         @Specialization
@@ -170,8 +177,7 @@ public abstract class LoxBytecodeRootNode extends LoxRootNode implements Bytecod
                 return true;
             }
             // Other numbers -> RuntimeError
-            throw new LoxRuntimeError(String.format("Cannot apply logical_or on %s and %s", left.toString(), right),
-                    node);
+            throw createRuntimeError(left, right, node);
         }
 
         @Specialization
@@ -190,13 +196,17 @@ public abstract class LoxBytecodeRootNode extends LoxRootNode implements Bytecod
                 return true;
             }
             // Other numbers -> RuntimeError
-            throw new LoxRuntimeError(String.format("Cannot apply logical_or on %s and %s", left.toString(), right),
-                    node);
+            throw createRuntimeError(left, right, node);
         }
 
         @Fallback
         static boolean doOtherTypes(Object left, Object right, @Bind Node node) {
-            throw new LoxRuntimeError(
+            throw createRuntimeError(left, right, node);
+        }
+
+        @TruffleBoundary
+        static LoxRuntimeError createRuntimeError(Object left, Object right, Node node) {
+            return new LoxRuntimeError(
                     String.format("Cannot apply logical_or on %s and %s", left.toString(), right.toString()), node);
         }
     }
@@ -218,8 +228,7 @@ public abstract class LoxBytecodeRootNode extends LoxRootNode implements Bytecod
                 return left;
             }
             // Other numbers -> RuntimeError
-            throw new LoxRuntimeError(String.format("Cannot apply logical_and on %s and %s", left, right.toString()),
-                    node);
+            throw createRuntimeError(left, right, node);
         }
 
         @Specialization
@@ -232,8 +241,7 @@ public abstract class LoxBytecodeRootNode extends LoxRootNode implements Bytecod
                 return right;
             }
             // Other numbers -> RuntimeError
-            throw new LoxRuntimeError(String.format("Cannot apply logical_and on %s and %s", left.toString(), right),
-                    node);
+            throw createRuntimeError(left, right, node);
         }
 
         @Specialization
@@ -252,13 +260,17 @@ public abstract class LoxBytecodeRootNode extends LoxRootNode implements Bytecod
                 return true;
             }
             // Other numbers -> RuntimeError
-            throw new LoxRuntimeError(String.format("Cannot apply logical_and on %s and %s", left.toString(), right),
-                    node);
+            throw createRuntimeError(left, right, node);
         }
 
         @Fallback
         static boolean doOtherTypes(Object left, Object right, @Bind Node node) {
-            throw new LoxRuntimeError(
+            throw createRuntimeError(left, right, node);
+        }
+
+        @TruffleBoundary
+        static LoxRuntimeError createRuntimeError(Object left, Object right, Node node) {
+            return new LoxRuntimeError(
                     String.format("Cannot apply logical_and on %s and %s", left.toString(), right.toString()), node);
         }
     }
@@ -302,6 +314,7 @@ public abstract class LoxBytecodeRootNode extends LoxRootNode implements Bytecod
         }
 
         @Fallback
+        @TruffleBoundary
         static boolean doOtherTypes(Object left, Object right, @Bind Node node) {
             throw new LoxRuntimeError(String.format("Cannot apply < on %s and %s", left.toString(), right.toString()),
                     node);
@@ -321,6 +334,7 @@ public abstract class LoxBytecodeRootNode extends LoxRootNode implements Bytecod
         }
 
         @Fallback
+        @TruffleBoundary
         static Object doOtherTypes(Object left, Object right, @Bind Node node) {
             throw new LoxRuntimeError(String.format("Cannot apply <= on %s and %s", left.toString(), right.toString()),
                     node);
@@ -340,6 +354,7 @@ public abstract class LoxBytecodeRootNode extends LoxRootNode implements Bytecod
         }
 
         @Fallback
+        @TruffleBoundary
         static boolean doOtherTypes(Object left, Object right, @Bind Node node) {
             throw new LoxRuntimeError(String.format("Cannot apply > on %s and %s", left.toString(), right.toString()),
                     node);
@@ -359,6 +374,7 @@ public abstract class LoxBytecodeRootNode extends LoxRootNode implements Bytecod
         }
 
         @Fallback
+        @TruffleBoundary
         static boolean doOtherTypes(Object left, Object right, @Bind Node node) {
             throw new LoxRuntimeError(String.format("Cannot apply >= on %s and %s", left.toString(), right.toString()),
                     node);
