@@ -2,6 +2,10 @@ package de.hpi.swa.lox.parser;
 
 import java.util.ArrayDeque;
 import java.util.Deque;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.Stack;
+
 import org.antlr.v4.runtime.BaseErrorListener;
 import org.antlr.v4.runtime.CharStreams;
 import org.antlr.v4.runtime.CommonTokenStream;
@@ -12,8 +16,8 @@ import org.antlr.v4.runtime.Token;
 import org.antlr.v4.runtime.tree.ParseTree;
 import org.antlr.v4.runtime.tree.TerminalNode;
 
-import com.oracle.graal.compiler.enterprise.n;
 import com.oracle.truffle.api.RootCallTarget;
+import com.oracle.truffle.api.bytecode.BytecodeLocal;
 import com.oracle.truffle.api.bytecode.BytecodeParser;
 import com.oracle.truffle.api.source.Source;
 import com.oracle.truffle.api.strings.TruffleString;
@@ -21,6 +25,7 @@ import com.oracle.truffle.api.strings.TruffleString;
 import de.hpi.swa.lox.LoxLanguage;
 import de.hpi.swa.lox.bytecode.LoxBytecodeRootNodeGen;
 import de.hpi.swa.lox.parser.LoxParser.AssignmentContext;
+import de.hpi.swa.lox.parser.LoxParser.BlockContext;
 import de.hpi.swa.lox.parser.LoxParser.BooleanContext;
 import de.hpi.swa.lox.parser.LoxParser.ComparisonContext;
 import de.hpi.swa.lox.parser.LoxParser.EqualityContext;
@@ -51,6 +56,106 @@ public final class LoxBytecodeCompiler extends LoxBaseVisitor<Void> {
     protected final Source source;
 
     private final LoxBytecodeRootNodeGen.Builder b;
+
+    private LoxLexicalScope lexicalScope = new LoxLexicalScope();
+
+    /**
+     * Inner class for variable scoping.
+     */
+    private class LoxLexicalScope {
+
+        /**
+         * Used for stacking variable scopes.
+         */
+        private final LoxLexicalScope parentScope;
+
+        private final Map<String, BytecodeLocal> localVariableStores;
+
+        private final Stack<BytecodeLocal> scopeTrackerForVariable;
+
+        LoxLexicalScope(LoxLexicalScope parentScope) {
+            this.parentScope = parentScope;
+            this.localVariableStores = new HashMap<>();
+            this.scopeTrackerForVariable = new Stack<>();
+        }
+
+        LoxLexicalScope() {
+            this(null);
+        }
+
+        // TODO? @TruffleBoundary
+        public void declare(String localVariableName, ParseTree ctx) {
+            // Global scoping
+            if (parentScope == null) {
+                b.emitLoxDeclareGlobalVariable(localVariableName);
+                return;
+            }
+            // Local scoping
+            if (localVariableStores.get(localVariableName) != null) {
+                // TODO: improve error information
+                throwParseError(source, 0, 0, null, "Local Variable " + localVariableName + " already declared.");
+            }
+            localVariableStores.put(localVariableName, b.createLocal(localVariableName, null));
+        }
+
+        private BytecodeLocal lookupVariableName(String variableName) {
+            // Temp save of current scope
+            var scope = this;
+            BytecodeLocal foundVariableStore;
+            do {
+                foundVariableStore = scope.localVariableStores.get(variableName);
+                // Step into parent scope for next iteration.
+                scope = scope.parentScope;
+            } while (foundVariableStore == null && scope != null);
+            return foundVariableStore;
+        }
+
+        /**
+         * Begin store operation of variable, either in local or global scope.
+         */
+        public void beginStore(String variableName) {
+            var variableStore = lookupVariableName(variableName);
+            this.scopeTrackerForVariable.add(variableStore);
+            if (variableStore != null) {
+                // We found a local variable store.
+                b.beginStoreLocal(variableStore);
+            } else {
+                // Store in global scope if nothing else applicable.
+                b.beginLoxWriteGlobalVariable(variableName);
+            }
+        }
+
+        /**
+         * End store operation of variable, either in local or global scope.
+         */
+        public void endStore() {
+            var variableStore = this.scopeTrackerForVariable.pop();
+            if (variableStore != null) {
+                // We found a local variable store.
+                b.endStoreLocal();
+            } else {
+                // End of storing in global scope if nothing else applicable.
+                b.endLoxWriteGlobalVariable();
+            }
+        }
+
+        /**
+         * Load variable value into scope, value either from a local or global scope.
+         */
+        public void loadIntoScope(String variableName) {
+            var variableStore = lookupVariableName(variableName);
+            if (variableStore != null) {
+                // We found a local store for the variable.
+                b.beginBlock();
+                b.emitLoxCheckLocalDefined(variableStore);
+                b.emitLoadLocal(variableStore);
+                b.endBlock();
+            } else {
+                // Load from global scope.
+                b.emitLoxReadGlobalVariable(variableName);
+            }
+        }
+    }
 
     public static RootCallTarget parseLox(LoxLanguage language, Source source) {
         BytecodeParser<LoxBytecodeRootNodeGen.Builder> bytecodeParser = (b) -> {
@@ -449,30 +554,54 @@ public final class LoxBytecodeCompiler extends LoxBaseVisitor<Void> {
 
     @Override
     public Void visitVarDecl(VarDeclContext ctx) {
-        // Directly pass variable identifier to begin of operation (ConstantOperand)
-        b.beginLoxWriteGlobalVariable(ctx.IDENTIFIER().getText());
-        visit(ctx.expression());
-        b.endLoxWriteGlobalVariable();
+        var variableName = ctx.IDENTIFIER().getText();
+        // Declare in scope
+        lexicalScope.declare(variableName, ctx);
+        if (ctx.expression() != null) {
+            // If an expression is following, define with assigned value (store).
+            lexicalScope.beginStore(variableName);
+            visit(ctx.expression());
+            lexicalScope.endStore();
+        }
         return null;
     }
 
     @Override
     public Void visitVariableExpr(VariableExprContext ctx) {
-        // Directly pass variable identifier to emit of operation (ConstantOperand)
-        b.emitLoxReadGlobalVariable(ctx.IDENTIFIER().getText());
+        lexicalScope.loadIntoScope(ctx.IDENTIFIER().getText());
         return null;
     }
 
     @Override
     public Void visitAssignment(AssignmentContext ctx) {
-        if (ctx.IDENTIFIER() == null) {
-            // If no identifier given, it must be the logical_or part.
-            return visit(ctx.logic_or());
+        final boolean isAssignment = ctx.IDENTIFIER() != null;
+        String variableName = null;
+        if (isAssignment) {
+            // For grouping the the storing an the loading together
+            b.beginBlock();
+            variableName = ctx.IDENTIFIER().getText();
+            // Directly begin storing (defining)
+            lexicalScope.beginStore(variableName);
         }
-        // Otherwise begin assignement
-        b.beginLoxWriteGlobalVariable(ctx.IDENTIFIER().getText());
-        visit(ctx.assignment());
-        b.endLoxWriteGlobalVariable();
+        // Emit value to  assign in super operation
+        super.visitAssignment(ctx);
+        if (isAssignment) {
+            // End storing (defining)
+            lexicalScope.endStore();
+             // for the value of the assignment
+            lexicalScope.loadIntoScope(variableName);
+            b.endBlock();
+        }
+        return null;
+    }
+
+    @Override
+    public Void visitBlock(BlockContext ctx) {
+        b.beginBlock();
+        lexicalScope = new LoxLexicalScope(lexicalScope);
+        super.visitBlock(ctx);
+        lexicalScope = lexicalScope.parentScope;
+        b.endBlock();
         return null;
     }
 }
