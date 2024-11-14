@@ -15,6 +15,7 @@ import com.oracle.truffle.api.dsl.Fallback;
 import com.oracle.truffle.api.dsl.Specialization;
 import com.oracle.truffle.api.frame.FrameDescriptor;
 import com.oracle.truffle.api.frame.MaterializedFrame;
+import com.oracle.truffle.api.frame.VirtualFrame;
 import com.oracle.truffle.api.nodes.Node;
 
 import de.hpi.swa.lox.LoxLanguage;
@@ -464,8 +465,7 @@ public abstract class LoxBytecodeRootNode extends LoxRootNode implements Bytecod
     @ConstantOperand(type = LocalAccessor.class)
     public static final class LoxCheckLocalDefined {
         @Specialization
-        @TruffleBoundary
-        static void doDefault(MaterializedFrame frame, LocalAccessor accessor,
+        static void doDefault(VirtualFrame frame, LocalAccessor accessor,
                 @Bind BytecodeNode bytecodeNode,
                 @Bind LoxContext loxContext,
                 @Bind Node node) {
