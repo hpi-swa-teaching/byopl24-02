@@ -14,7 +14,6 @@ import com.oracle.truffle.api.dsl.Bind;
 import com.oracle.truffle.api.dsl.Fallback;
 import com.oracle.truffle.api.dsl.Specialization;
 import com.oracle.truffle.api.frame.FrameDescriptor;
-import com.oracle.truffle.api.frame.MaterializedFrame;
 import com.oracle.truffle.api.frame.VirtualFrame;
 import com.oracle.truffle.api.nodes.Node;
 
@@ -470,8 +469,13 @@ public abstract class LoxBytecodeRootNode extends LoxRootNode implements Bytecod
                 @Bind LoxContext loxContext,
                 @Bind Node node) {
             if (accessor.isCleared(bytecodeNode, frame)) {
-                throw new LoxRuntimeError("Local variable " + accessor.toString() + " was not defined.", node);
+                throw createNotDefinedError(accessor.toString(), node);
             };
+        }
+
+        @TruffleBoundary
+        static LoxRuntimeError createNotDefinedError(String variableName, Node node) {
+            return new LoxRuntimeError("Local variable " + variableName + " was not defined.", node);
         }
     }
 }
