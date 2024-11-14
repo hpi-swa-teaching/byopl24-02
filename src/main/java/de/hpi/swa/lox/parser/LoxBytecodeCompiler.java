@@ -1,10 +1,7 @@
 package de.hpi.swa.lox.parser;
 
 import java.util.ArrayDeque;
-import java.util.ArrayList;
 import java.util.Deque;
-import java.util.List;
-
 import org.antlr.v4.runtime.BaseErrorListener;
 import org.antlr.v4.runtime.CharStreams;
 import org.antlr.v4.runtime.CommonTokenStream;
@@ -15,6 +12,7 @@ import org.antlr.v4.runtime.Token;
 import org.antlr.v4.runtime.tree.ParseTree;
 import org.antlr.v4.runtime.tree.TerminalNode;
 
+import com.oracle.graal.compiler.enterprise.n;
 import com.oracle.truffle.api.RootCallTarget;
 import com.oracle.truffle.api.bytecode.BytecodeParser;
 import com.oracle.truffle.api.source.Source;
@@ -22,6 +20,7 @@ import com.oracle.truffle.api.strings.TruffleString;
 
 import de.hpi.swa.lox.LoxLanguage;
 import de.hpi.swa.lox.bytecode.LoxBytecodeRootNodeGen;
+import de.hpi.swa.lox.parser.LoxParser.AssignmentContext;
 import de.hpi.swa.lox.parser.LoxParser.BooleanContext;
 import de.hpi.swa.lox.parser.LoxParser.ComparisonContext;
 import de.hpi.swa.lox.parser.LoxParser.EqualityContext;
@@ -38,6 +37,8 @@ import de.hpi.swa.lox.parser.LoxParser.StringContext;
 import de.hpi.swa.lox.parser.LoxParser.TermContext;
 import de.hpi.swa.lox.parser.LoxParser.TrueContext;
 import de.hpi.swa.lox.parser.LoxParser.UnaryContext;
+import de.hpi.swa.lox.parser.LoxParser.VarDeclContext;
+import de.hpi.swa.lox.parser.LoxParser.VariableExprContext;
 import de.hpi.swa.lox.runtime.data.LoxNumber;
 import de.hpi.swa.lox.runtime.data.Nil;
 
@@ -443,6 +444,35 @@ public final class LoxBytecodeCompiler extends LoxBaseVisitor<Void> {
         }
 
         endAttribution();
+        return null;
+    }
+
+    @Override
+    public Void visitVarDecl(VarDeclContext ctx) {
+        // Directly pass variable identifier to begin of operation (ConstantOperand)
+        b.beginLoxWriteGlobalVariable(ctx.IDENTIFIER().getText());
+        visit(ctx.expression());
+        b.endLoxWriteGlobalVariable();
+        return null;
+    }
+
+    @Override
+    public Void visitVariableExpr(VariableExprContext ctx) {
+        // Directly pass variable identifier to emit of operation (ConstantOperand)
+        b.emitLoxReadGlobalVariable(ctx.IDENTIFIER().getText());
+        return null;
+    }
+
+    @Override
+    public Void visitAssignment(AssignmentContext ctx) {
+        if (ctx.IDENTIFIER() == null) {
+            // If no identifier given, it must be the logical_or part.
+            return visit(ctx.logic_or());
+        }
+        // Otherwise begin assignement
+        b.beginLoxWriteGlobalVariable(ctx.IDENTIFIER().getText());
+        visit(ctx.assignment());
+        b.endLoxWriteGlobalVariable();
         return null;
     }
 }

@@ -5,6 +5,7 @@ import java.util.Objects;
 
 import com.oracle.truffle.api.CompilerDirectives.TruffleBoundary;
 import com.oracle.truffle.api.bytecode.BytecodeRootNode;
+import com.oracle.truffle.api.bytecode.ConstantOperand;
 import com.oracle.truffle.api.bytecode.GenerateBytecode;
 import com.oracle.truffle.api.bytecode.Operation;
 import com.oracle.truffle.api.dsl.Bind;
@@ -17,6 +18,7 @@ import de.hpi.swa.lox.LoxLanguage;
 import de.hpi.swa.lox.nodes.LoxRootNode;
 import de.hpi.swa.lox.runtime.LoxContext;
 import de.hpi.swa.lox.runtime.LoxRuntimeError;
+import de.hpi.swa.lox.runtime.data.GlobalObject;
 import de.hpi.swa.lox.runtime.data.LoxNumber;
 
 @GenerateBytecode(//
@@ -378,6 +380,80 @@ public abstract class LoxBytecodeRootNode extends LoxRootNode implements Bytecod
         static boolean doOtherTypes(Object left, Object right, @Bind Node node) {
             throw new LoxRuntimeError(String.format("Cannot apply >= on %s and %s", left.toString(), right.toString()),
                     node);
+        }
+    }
+
+    @TruffleBoundary
+    static Object checkDeclared(String variableName, GlobalObject globalObject, @Bind Node node) {
+        if (!globalObject.hasKey(variableName)) {
+            throw new LoxRuntimeError("Variable " + variableName + " was not declared", node);
+        }
+        return globalObject.get(variableName);
+    }
+
+    @Operation
+    @ConstantOperand(type = String.class)
+    public static final class LoxWriteGlobalVariable {
+        @Specialization
+        static void doDefault(String variableName,
+                Object value,
+                @Bind LoxContext loxContext,
+                @Bind Node node) {
+            GlobalObject globalObject = loxContext.getGlobalObject();
+            // TODO: checkDeclared(variableName, globalObject, node);
+            globalObject.set(variableName, value);
+        }
+    }
+
+    @Operation
+    @ConstantOperand(type = String.class)
+    public static final class LoxReadGlobalVariable {
+        @Specialization
+        static Object doDefault(
+            String variableName, 
+            @Bind LoxContext loxContext,
+            @Bind Node node) {
+            GlobalObject globalObject = loxContext.getGlobalObject();
+            // if not declared --> RuntimeError thrown
+            var declaredResult = checkDeclared(variableName, globalObject, node);
+            if (declaredResult == null) {
+                // if not defined --> also RuntimeError
+                throw createNotDefinedError(variableName, node);
+            }
+            return declaredResult;
+        }
+
+        @TruffleBoundary
+        static LoxRuntimeError createNotDefinedError(String variableName, Node node) {
+            return new LoxRuntimeError("Variable " + variableName + " was not defined", node);
+        }
+    }
+
+    @Operation
+    @ConstantOperand(type = String.class)
+    public static final class LoxDeclareGlobalVariable {
+        @Specialization
+        static void doDefault(String variableName,
+                @Bind LoxContext loxContext,
+                @Bind Node node) {
+            GlobalObject globalObject = loxContext.getGlobalObject();
+            if (globalObject.get(variableName) != null) {
+                printWarning(variableName, loxContext);
+            }
+            globalObject.set(variableName, null);
+        }
+
+        @TruffleBoundary
+        private static void printWarning(String variableName, LoxContext loxContext) {
+            var out = loxContext.getOutput();
+            try {
+                out.write(("Warning: Variable " + variableName +
+                        " was already declared and defined, resetting its value to null").getBytes());
+                out.write(System.lineSeparator().getBytes());
+                out.flush();
+            } catch (IOException e) {
+                // pass
+            }
         }
     }
 }
