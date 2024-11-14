@@ -14,13 +14,21 @@ grammar Lox;
 
 program        : declaration* EOF ;
 
-declaration    :  statement ;
+declaration    : varDecl | statement ;
 
-statement      : printStmt;
+statement      : exprStmt | printStmt | block;
+
+varDecl        : 'var' IDENTIFIER ('=' expression )? ';' ;
+
+exprStmt       : expression ';' ;
 
 printStmt      : 'print' expression ';' ;
 
-expression     : logic_or ;
+block          : '{' declaration* '}' ;
+
+expression     : assignment ;
+
+assignment     : IDENTIFIER '=' assignment | logic_or ;
 
 logic_or       : logic_and ( 'or' logic_and )* ;
 
@@ -36,7 +44,9 @@ factor         : unary ( ( '/' | '*' ) unary )* ;
 
 unary          : ( '!' | '-' ) unary | primary ;
 
-primary        : boolean | string | number | nil | '(' expression ')';
+primary        : boolean | string | number | nil | '(' expression ')' | variableExpr;
+
+variableExpr   : IDENTIFIER;
 
 boolean        : true | false ;
 
@@ -56,6 +66,10 @@ fragment DIGIT : [0-9] ;
 NUMBER         : DIGIT+ ('.' DIGIT+)? ;
 
 number         : NUMBER ;
+
+fragment ALPHA : [a-zA-Z_] ;
+
+IDENTIFIER     : ALPHA ( ALPHA | DIGIT )* ;
 
 // more... 
 WS             : [ \t\r\n]+ -> skip ;
