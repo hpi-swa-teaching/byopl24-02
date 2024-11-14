@@ -4,14 +4,17 @@ import java.io.IOException;
 import java.util.Objects;
 
 import com.oracle.truffle.api.CompilerDirectives.TruffleBoundary;
+import com.oracle.truffle.api.bytecode.BytecodeNode;
 import com.oracle.truffle.api.bytecode.BytecodeRootNode;
 import com.oracle.truffle.api.bytecode.ConstantOperand;
 import com.oracle.truffle.api.bytecode.GenerateBytecode;
+import com.oracle.truffle.api.bytecode.LocalAccessor;
 import com.oracle.truffle.api.bytecode.Operation;
 import com.oracle.truffle.api.dsl.Bind;
 import com.oracle.truffle.api.dsl.Fallback;
 import com.oracle.truffle.api.dsl.Specialization;
 import com.oracle.truffle.api.frame.FrameDescriptor;
+import com.oracle.truffle.api.frame.MaterializedFrame;
 import com.oracle.truffle.api.nodes.Node;
 
 import de.hpi.swa.lox.LoxLanguage;
@@ -400,7 +403,7 @@ public abstract class LoxBytecodeRootNode extends LoxRootNode implements Bytecod
                 @Bind LoxContext loxContext,
                 @Bind Node node) {
             GlobalObject globalObject = loxContext.getGlobalObject();
-            // TODO: checkDeclared(variableName, globalObject, node);
+            checkDeclared(variableName, globalObject, node);
             globalObject.set(variableName, value);
         }
     }
@@ -410,9 +413,9 @@ public abstract class LoxBytecodeRootNode extends LoxRootNode implements Bytecod
     public static final class LoxReadGlobalVariable {
         @Specialization
         static Object doDefault(
-            String variableName, 
-            @Bind LoxContext loxContext,
-            @Bind Node node) {
+                String variableName,
+                @Bind LoxContext loxContext,
+                @Bind Node node) {
             GlobalObject globalObject = loxContext.getGlobalObject();
             // if not declared --> RuntimeError thrown
             var declaredResult = checkDeclared(variableName, globalObject, node);
@@ -454,6 +457,21 @@ public abstract class LoxBytecodeRootNode extends LoxRootNode implements Bytecod
             } catch (IOException e) {
                 // pass
             }
+        }
+    }
+
+    @Operation
+    @ConstantOperand(type = LocalAccessor.class)
+    public static final class LoxCheckLocalDefined {
+        @Specialization
+        @TruffleBoundary
+        static void doDefault(MaterializedFrame frame, LocalAccessor accessor,
+                @Bind BytecodeNode bytecodeNode,
+                @Bind LoxContext loxContext,
+                @Bind Node node) {
+            if (accessor.isCleared(bytecodeNode, frame)) {
+                throw new LoxRuntimeError("Local variable " + accessor.toString() + " was not defined.", node);
+            };
         }
     }
 }
