@@ -469,13 +469,13 @@ public abstract class LoxBytecodeRootNode extends LoxRootNode implements Bytecod
                 @Bind LoxContext loxContext,
                 @Bind Node node) {
             if (accessor.isCleared(bytecodeNode, frame)) {
-                throw createNotDefinedError(accessor.toString(), node);
+                throw createNotDefinedError(accessor, node);
             };
         }
 
         @TruffleBoundary
-        static LoxRuntimeError createNotDefinedError(String variableName, Node node) {
-            return new LoxRuntimeError("Local variable " + variableName + " was not defined.", node);
+        static LoxRuntimeError createNotDefinedError(LocalAccessor variableNameAccessor, Node node) {
+            return new LoxRuntimeError("Local variable " + variableNameAccessor.toString() + " was not defined.", node);
         }
     }
 }
