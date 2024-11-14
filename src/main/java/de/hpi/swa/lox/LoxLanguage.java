@@ -15,6 +15,8 @@ public class LoxLanguage extends TruffleLanguage<LoxContext> {
 
     public static final String ID = "lox";
 
+    public LoxLanguage() {}
+
     @Override
     protected LoxContext createContext(Env env) {
         return new LoxContext(this, env);
