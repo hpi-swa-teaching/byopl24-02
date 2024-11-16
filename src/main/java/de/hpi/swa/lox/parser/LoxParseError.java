@@ -1,5 +1,9 @@
 package de.hpi.swa.lox.parser;
 
+import org.antlr.v4.runtime.ParserRuleContext;
+import org.antlr.v4.runtime.Token;
+import org.antlr.v4.runtime.tree.ParseTree;
+
 import com.oracle.truffle.api.CompilerDirectives.TruffleBoundary;
 import com.oracle.truffle.api.exception.AbstractTruffleException;
 import com.oracle.truffle.api.interop.ExceptionType;
@@ -43,6 +47,38 @@ public class LoxParseError extends AbstractTruffleException {
             throw UnsupportedMessageException.create();
         }
         return source.createSection(line, column, length);
+    }
+
+    public static LoxParseError build(
+            Source source, ParseTree tree, String message) {
+        String s = message;
+        var line = 0;
+        var column = 0;
+        var length = 0;
+        if (tree.getPayload() instanceof ParserRuleContext context) {
+            Token startToken = context.getStart();
+            Token stopToken = context.getStop();
+            line = startToken.getLine();
+            column = startToken.getCharPositionInLine();
+            length = stopToken.getStopIndex() - startToken.getStartIndex() + 1;
+            s = formatMessage(formatLocation(line, column), message);
+        }
+        return new LoxParseError(
+                source,
+                line,
+                column,
+                length,
+                s);
+    }
+
+    @TruffleBoundary
+    private static String formatMessage(String location, String message) {
+        return String.format("Error(s) parsing script:%n" + location + message);
+    }
+
+    @TruffleBoundary
+    private static String formatLocation(int line, int column) {
+        return String.format("-- line %d col %d: ", line, column);
     }
 
 }
