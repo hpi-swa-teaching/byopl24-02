@@ -2,7 +2,6 @@ package de.hpi.swa.lox.test;
 
 import static org.junit.Assert.assertEquals;
 
-import org.junit.Ignore;
 import org.junit.Test;
 
 import de.hpi.swa.lox.cli.LoxMain;
@@ -13,7 +12,6 @@ import java.io.IOException;
 
 public class MainTest extends AbstractLoxTest {
 
-    @Ignore("Seems like this test also fails in the template repository ¯\\_(ツ)_/¯")
     @Test
     public void testCommand() {
         // capture system out

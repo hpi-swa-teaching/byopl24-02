@@ -74,14 +74,20 @@ public class LoxMain extends AbstractLanguageLauncher {
                 } catch (IOException e) {
                     e.printStackTrace();
                 }
-            } else if (command != null) {
+            } else if (command != null && !command.isEmpty()) {
+                // Given a command, evaluate it if not empty.
+                try {
+                    context.eval("lox", command);
+                } catch (Exception e) {
+                    printException(e);
+                }
+            } else {
+                // repl eval loop
                 try {
                     startEvalLoop(context);
                 } catch (Exception e) {
                     printException(e);
                 }
-            } else {
-
             }
         }
     }
