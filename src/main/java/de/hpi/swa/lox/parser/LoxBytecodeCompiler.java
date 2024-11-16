@@ -83,7 +83,6 @@ public final class LoxBytecodeCompiler extends LoxBaseVisitor<Void> {
             this(null);
         }
 
-        // TODO? @TruffleBoundary
         public void declare(String localVariableName, ParseTree ctx) {
             // Global scoping
             if (parentScope == null) {
@@ -92,8 +91,7 @@ public final class LoxBytecodeCompiler extends LoxBaseVisitor<Void> {
             }
             // Local scoping
             if (localVariableStores.get(localVariableName) != null) {
-                // TODO: improve error information
-                throwParseError(source, 0, 0, null, "Local Variable " + localVariableName + " already declared.");
+                throw LoxParseError.build(source, ctx, localVariableName);
             }
             localVariableStores.put(localVariableName, b.createLocal(localVariableName, null));
         }
@@ -583,12 +581,12 @@ public final class LoxBytecodeCompiler extends LoxBaseVisitor<Void> {
             // Directly begin storing (defining)
             lexicalScope.beginStore(variableName);
         }
-        // Emit value to  assign in super operation
+        // Emit value to assign in super operation
         super.visitAssignment(ctx);
         if (isAssignment) {
             // End storing (defining)
             lexicalScope.endStore();
-             // for the value of the assignment
+            // for the value of the assignment
             lexicalScope.loadIntoScope(variableName);
             b.endBlock();
         }
