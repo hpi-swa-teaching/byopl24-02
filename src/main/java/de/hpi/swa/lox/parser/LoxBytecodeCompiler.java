@@ -17,6 +17,7 @@ import org.antlr.v4.runtime.tree.ParseTree;
 import org.antlr.v4.runtime.tree.TerminalNode;
 
 import com.oracle.truffle.api.RootCallTarget;
+import com.oracle.truffle.api.TruffleLanguage.Env;
 import com.oracle.truffle.api.bytecode.BytecodeLocal;
 import com.oracle.truffle.api.bytecode.BytecodeParser;
 import com.oracle.truffle.api.source.Source;
@@ -29,6 +30,7 @@ import de.hpi.swa.lox.parser.LoxParser.BlockContext;
 import de.hpi.swa.lox.parser.LoxParser.BooleanContext;
 import de.hpi.swa.lox.parser.LoxParser.ComparisonContext;
 import de.hpi.swa.lox.parser.LoxParser.EqualityContext;
+import de.hpi.swa.lox.parser.LoxParser.ExprStmtContext;
 import de.hpi.swa.lox.parser.LoxParser.FactorContext;
 import de.hpi.swa.lox.parser.LoxParser.FalseContext;
 import de.hpi.swa.lox.parser.LoxParser.Logic_andContext;
@@ -44,6 +46,7 @@ import de.hpi.swa.lox.parser.LoxParser.TrueContext;
 import de.hpi.swa.lox.parser.LoxParser.UnaryContext;
 import de.hpi.swa.lox.parser.LoxParser.VarDeclContext;
 import de.hpi.swa.lox.parser.LoxParser.VariableExprContext;
+import de.hpi.swa.lox.runtime.LoxContext;
 import de.hpi.swa.lox.runtime.data.LoxNumber;
 import de.hpi.swa.lox.runtime.data.Nil;
 
@@ -237,6 +240,18 @@ public final class LoxBytecodeCompiler extends LoxBaseVisitor<Void> {
         this.language = language;
         this.source = source;
         this.b = builder;
+    }
+
+    /**
+     * Returns, whether execution takes place in repl environment.
+     * @return {@link Boolean} isRepl
+     */
+    private boolean getIsRepl() {
+        // Use env from context to retrieve whether execution takes place in repl environment.
+        // Why don't we use Source#isInteractive()? Because when using this, 
+        // somehow also the exit code (0) is printed for every new statement.
+        Env env = LoxContext.get(null).getEnv();
+        return Boolean.valueOf(env.getEnvironment().getOrDefault("isRepl", "false"));
     }
 
     @Override
@@ -575,7 +590,7 @@ public final class LoxBytecodeCompiler extends LoxBaseVisitor<Void> {
         final boolean isAssignment = ctx.IDENTIFIER() != null;
         String variableName = null;
         if (isAssignment) {
-            // For grouping the the storing an the loading together
+            // For grouping the storing and the emition of the value together.
             b.beginBlock();
             variableName = ctx.IDENTIFIER().getText();
             // Directly begin storing (defining)
@@ -586,7 +601,7 @@ public final class LoxBytecodeCompiler extends LoxBaseVisitor<Void> {
         if (isAssignment) {
             // End storing (defining)
             lexicalScope.endStore();
-            // for the value of the assignment
+            // For directly returning the assigned value from the assignment.
             lexicalScope.loadIntoScope(variableName);
             b.endBlock();
         }
@@ -600,6 +615,22 @@ public final class LoxBytecodeCompiler extends LoxBaseVisitor<Void> {
         super.visitBlock(ctx);
         lexicalScope = lexicalScope.parentScope;
         b.endBlock();
+        return null;
+    }
+
+    @Override
+    public Void visitExprStmt(ExprStmtContext ctx) {
+        boolean isRepl = getIsRepl();
+        if (isRepl) {
+            // If in repl environment print the value that is it emitted in the following code.
+            b.beginLoxPrint();
+        }
+        // Regularly visit the expression in the statement.
+        visitExpression(ctx.expression());
+        if (isRepl) {
+            // End lox print if in repl environment.
+            b.endLoxPrint();
+        }
         return null;
     }
 }
