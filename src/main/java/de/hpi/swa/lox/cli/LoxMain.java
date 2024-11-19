@@ -84,7 +84,7 @@ public class LoxMain extends AbstractLanguageLauncher {
             } else {
                 // repl eval loop
                 try {
-                    startEvalLoop(context);
+                    startEvalLoop();
                 } catch (Exception e) {
                     printException(e);
                 }
@@ -94,22 +94,25 @@ public class LoxMain extends AbstractLanguageLauncher {
 
     /**
      * Starts an evaluation loop that continuously reads input from the console,
-     * evaluates it using the provided context, and prints the result.
+     * evaluates it using a new context, and prints the result.
      * The loop runs indefinitely until the input is null.
-     *
-     * @param ctx the context used to evaluate the input code
      */
-    private void startEvalLoop(Context ctx) {
-        while (true) {
-            System.out.print("> ");
-            String line = System.console().readLine();
-            if (line == null) {
-                break;
-            }
-            try {
-                ctx.eval("lox", line);
-            } catch (Exception e) {
-                printException(e);
+    private void startEvalLoop() {
+        // Create new context with repl environment variable.
+        // Why don't we use Source#isInteractive()? Because when using this, 
+        // somehow also the exit code (0) is printed for every new statement.
+        try (Context newReplContext = Context.newBuilder("lox").environment("isRepl", "true").build()) {
+            while (true) {
+                System.out.print("> ");
+                String line = System.console().readLine();
+                if (line == null) {
+                    break;
+                }
+                try {
+                    newReplContext.eval("lox", line);
+                } catch (Exception e) {
+                    printException(e);
+                }
             }
         }
     }
