@@ -33,6 +33,8 @@ import de.hpi.swa.lox.parser.LoxParser.EqualityContext;
 import de.hpi.swa.lox.parser.LoxParser.ExprStmtContext;
 import de.hpi.swa.lox.parser.LoxParser.FactorContext;
 import de.hpi.swa.lox.parser.LoxParser.FalseContext;
+import de.hpi.swa.lox.parser.LoxParser.ForStmtContext;
+import de.hpi.swa.lox.parser.LoxParser.IfStmtContext;
 import de.hpi.swa.lox.parser.LoxParser.Logic_andContext;
 import de.hpi.swa.lox.parser.LoxParser.Logic_orContext;
 import de.hpi.swa.lox.parser.LoxParser.NilContext;
@@ -46,6 +48,7 @@ import de.hpi.swa.lox.parser.LoxParser.TrueContext;
 import de.hpi.swa.lox.parser.LoxParser.UnaryContext;
 import de.hpi.swa.lox.parser.LoxParser.VarDeclContext;
 import de.hpi.swa.lox.parser.LoxParser.VariableExprContext;
+import de.hpi.swa.lox.parser.LoxParser.WhileStmtContext;
 import de.hpi.swa.lox.runtime.LoxContext;
 import de.hpi.swa.lox.runtime.data.LoxNumber;
 import de.hpi.swa.lox.runtime.data.Nil;
@@ -244,11 +247,13 @@ public final class LoxBytecodeCompiler extends LoxBaseVisitor<Void> {
 
     /**
      * Returns, whether execution takes place in repl environment.
+     * 
      * @return {@link Boolean} isRepl
      */
     private boolean getIsRepl() {
-        // Use env from context to retrieve whether execution takes place in repl environment.
-        // Why don't we use Source#isInteractive()? Because when using this, 
+        // Use env from context to retrieve whether execution takes place in repl
+        // environment.
+        // Why don't we use Source#isInteractive()? Because when using this,
         // somehow also the exit code (0) is printed for every new statement.
         Env env = LoxContext.get(null).getEnv();
         return Boolean.valueOf(env.getEnvironment().getOrDefault("isRepl", "false"));
@@ -622,7 +627,8 @@ public final class LoxBytecodeCompiler extends LoxBaseVisitor<Void> {
     public Void visitExprStmt(ExprStmtContext ctx) {
         boolean isRepl = getIsRepl();
         if (isRepl) {
-            // If in repl environment print the value that is it emitted in the following code.
+            // If in repl environment print the value that is it emitted in the following
+            // code.
             b.beginLoxPrint();
         }
         // Regularly visit the expression in the statement.
@@ -631,6 +637,67 @@ public final class LoxBytecodeCompiler extends LoxBaseVisitor<Void> {
             // End lox print if in repl environment.
             b.endLoxPrint();
         }
+        return null;
+    }
+
+    @Override
+    public Void visitIfStmt(IfStmtContext ctx) {
+        if (ctx.alt == null) {
+            b.beginIfThen();
+            beginAttribution(ctx.condition);
+            b.beginLoxIsTruthy();
+            visit(ctx.condition);
+            b.endLoxIsTruthy();
+            endAttribution();
+            visit(ctx.then);
+            b.endIfThen();
+        } else {
+            b.beginIfThenElse();
+            beginAttribution(ctx.condition);
+            b.beginLoxIsTruthy();
+            visit(ctx.condition);
+            b.endLoxIsTruthy();
+            endAttribution();
+            visit(ctx.then);
+            visit(ctx.alt);
+            b.endIfThenElse();
+        }
+        return null;
+    }
+
+    @Override
+    public Void visitWhileStmt(WhileStmtContext ctx) {
+        b.beginWhile();
+        beginAttribution(ctx.condition);
+        b.beginLoxIsTruthy();
+        visit(ctx.condition);
+        b.endLoxIsTruthy();
+        endAttribution();
+        visit(ctx.body);
+        b.endWhile();
+        return null;
+    }
+
+    @Override
+    public Void visitForStmt(ForStmtContext ctx) {
+        ParserRuleContext init = ctx.varDecl();
+        if (init == null) {
+            init = ctx.exprStmt();
+        }
+        if (init != null) {
+            visit(init);
+        }
+        b.beginWhile();
+        beginAttribution(ctx.condition);
+        b.beginLoxIsTruthy();
+        visit(ctx.condition);
+        b.endLoxIsTruthy();
+        endAttribution();
+        b.beginBlock();
+        visit(ctx.body);
+        visit(ctx.increment);
+        b.endBlock();
+        b.endWhile();
         return null;
     }
 }

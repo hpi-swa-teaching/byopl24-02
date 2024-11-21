@@ -16,13 +16,22 @@ program        : declaration* EOF ;
 
 declaration    : varDecl | statement ;
 
-statement      : exprStmt | printStmt | block;
+statement      : exprStmt | printStmt | block | forStmt | ifStmt | whileStmt;
 
 varDecl        : 'var' IDENTIFIER ('=' expression )? ';' ;
 
 exprStmt       : expression ';' ;
 
 printStmt      : 'print' expression ';' ;
+
+forStmt        : 'for' '(' (varDecl | exprStmt | ';' )
+                            condition=expression? ';'
+                            increment=expression? ')' body=statement ;
+
+ifStmt         : 'if' '(' condition=expression ')' then=statement
+                            ( 'else' alt=statement )? ;
+
+whileStmt      : 'while' '(' condition=expression ')' body=statement;
 
 block          : '{' declaration* '}' ;
 
