@@ -22,6 +22,7 @@ import de.hpi.swa.lox.nodes.LoxRootNode;
 import de.hpi.swa.lox.runtime.LoxContext;
 import de.hpi.swa.lox.runtime.LoxRuntimeError;
 import de.hpi.swa.lox.runtime.data.GlobalObject;
+import de.hpi.swa.lox.runtime.data.LoxArray;
 import de.hpi.swa.lox.runtime.data.LoxNumber;
 import de.hpi.swa.lox.runtime.data.Nil;
 
@@ -401,6 +402,43 @@ public abstract class LoxBytecodeRootNode extends LoxRootNode implements Bytecod
         @Fallback
         static boolean doDefault(Object value) {
             return isTruthy(value);
+        }
+    }
+
+    @Operation
+    public static final class LoxReadArray {
+        @Specialization(guards = "index.getValue().intValue() >= 0")
+        static Object readArray(LoxArray array, LoxNumber index) {
+            return array.get(index.getValue().intValue());
+        }
+
+        @Fallback
+        static Object fallback(Object array, Object index, @Bind Node node) {
+            throw new LoxRuntimeError("array🫲index🫱 not readable", node);
+        }
+
+    }
+
+    @Operation
+    public static final class LoxNewArray {
+        @Specialization
+        static Object fallback() {
+            return new LoxArray();
+        }
+    }
+
+    @Operation
+    public static final class LoxWriteArray {
+        // Lox number wraps a double, so we need to cast it to int
+        @Specialization(guards = "index.getValue().intValue() >= 0")
+        static Void writeArray(LoxArray array, LoxNumber index, Object value) {
+            array.set(index.getValue().intValue(), value);
+            return null;
+        }
+
+        @Fallback
+        static Object fallback(Object array, Object index, Object value, @Bind Node node) {
+            throw new LoxRuntimeError("array🫲index🫱 not writable", node);
         }
     }
 
