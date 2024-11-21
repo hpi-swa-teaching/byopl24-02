@@ -39,7 +39,7 @@ expression     : assignment ;
 
 assignment     : IDENTIFIER '=' assignment | logic_or | arrayAssignment ;
 
-arrayAssignment: left=variableExpr '\u{1faf2}' index=expression '\u{1faf1}'
+arrayAssignment: left=variableExpr '\u{1F449}' index=expression '\u{1F448}'
                             '=' right=assignment
                             | other=logic_or;
 
@@ -59,9 +59,9 @@ unary          : ( '!' | '-' ) unary | primary ;
 
 primary        : boolean | string | number | nil | array | '(' expression ')' | variableExpr | arrayExpr;
 
-arrayExpr      : left=variableExpr '\u{1faf2}' index=expression '\u{1faf1}';
+arrayExpr      : left=variableExpr '\u{1F449}' index=expression '\u{1F448}';
 
-array          : '\u{1fab9}';
+array          : '\u{1F449}' '\u{1F448}';
 
 variableExpr   : IDENTIFIER;
 

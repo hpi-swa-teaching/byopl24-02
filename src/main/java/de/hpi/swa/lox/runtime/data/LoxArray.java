@@ -43,10 +43,10 @@ public class LoxArray {
     @TruffleBoundary
     public String toString() {
         if (size == 0) {
-            return "🪹";
+            return "👉👈";
         }
-        String open = "🫲";
-        String close = "🫱";
+        String open = "👉";
+        String close = "👈";
         String array = Arrays.toString(Arrays.stream(innerArray).filter(a -> a != null).toArray());
         return open + array.substring(1, array.length() - 1) + close;
     }

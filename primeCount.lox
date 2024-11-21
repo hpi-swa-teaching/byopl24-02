@@ -2,11 +2,11 @@ var flags = �;
 var size = 5000;
 var primeCount = 0;
 for (var i = 2; i <= size; i = i + 1) {
-    if (flags🫲i - 1🫱 == nil) {
+    if (flags👉i - 1👈 == nil) {
         primeCount = primeCount + 1;
         var k = i + i;
         while (k <= size) {
-        flags🫲k - 1🫱 = false;
+        flags👉k - 1👈 = false;
         k = k + i;
         }
     }

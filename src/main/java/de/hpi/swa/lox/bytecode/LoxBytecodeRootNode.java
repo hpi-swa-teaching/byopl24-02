@@ -414,7 +414,7 @@ public abstract class LoxBytecodeRootNode extends LoxRootNode implements Bytecod
 
         @Fallback
         static Object fallback(Object array, Object index, @Bind Node node) {
-            throw new LoxRuntimeError("array🫲index🫱 not readable", node);
+            throw new LoxRuntimeError("array👉index👈 not readable", node);
         }
 
     }
@@ -438,7 +438,7 @@ public abstract class LoxBytecodeRootNode extends LoxRootNode implements Bytecod
 
         @Fallback
         static Object fallback(Object array, Object index, Object value, @Bind Node node) {
-            throw new LoxRuntimeError("array🫲index🫱 not writable", node);
+            throw new LoxRuntimeError("array👉index👈 not writable", node);
         }
     }
 
