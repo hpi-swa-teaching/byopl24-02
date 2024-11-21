@@ -118,8 +118,6 @@ public abstract class AbstractLoxTest {
         outContent.reset();
         errContent.reset();
         run(command);
-        String error = normalize(errContent.toString());
-        String out = normalize(outContent.toString());
         assertThat(normalize(errContent.toString()),
                 containsString(expectedErrorOutput));
     }

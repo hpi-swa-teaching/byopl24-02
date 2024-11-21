@@ -68,9 +68,9 @@ public class PrintTest extends AbstractLoxTest {
     }
 
     @Test
-    public void printBoolean_not_matching_type() {
-        runAndExpectError("Invert boolean not matching type", "print !\"test\";",
-                "Cannot invert");
+    public void printBoolean_string_type() {
+        runAndExpect("Invert boolean not matching type", "print !\"test\";",
+                "false\n");
     }
 
     @Test
