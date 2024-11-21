@@ -25,6 +25,9 @@ import com.oracle.truffle.api.strings.TruffleString;
 
 import de.hpi.swa.lox.LoxLanguage;
 import de.hpi.swa.lox.bytecode.LoxBytecodeRootNodeGen;
+import de.hpi.swa.lox.parser.LoxParser.ArrayAssignmentContext;
+import de.hpi.swa.lox.parser.LoxParser.ArrayContext;
+import de.hpi.swa.lox.parser.LoxParser.ArrayExprContext;
 import de.hpi.swa.lox.parser.LoxParser.AssignmentContext;
 import de.hpi.swa.lox.parser.LoxParser.BlockContext;
 import de.hpi.swa.lox.parser.LoxParser.BooleanContext;
@@ -700,4 +703,33 @@ public final class LoxBytecodeCompiler extends LoxBaseVisitor<Void> {
         b.endWhile();
         return null;
     }
+
+    @Override
+    public Void visitArray(ArrayContext ctx) {
+        b.emitLoxNewArray();
+        return super.visitArray(ctx);
+    }
+
+    @Override
+    public Void visitArrayExpr(ArrayExprContext ctx) {
+        b.beginLoxReadArray();
+        visit(ctx.left);
+        visit(ctx.index);
+        b.endLoxReadArray();
+        return null;
+    }
+
+    @Override
+    public Void visitArrayAssignment(ArrayAssignmentContext ctx) {
+        if (ctx.other != null) {
+            return visit(ctx.other);
+        }
+        b.beginLoxWriteArray();
+        visit(ctx.left);
+        visit(ctx.index);
+        visit(ctx.right);
+        b.endLoxWriteArray();
+        return null;
+    }
+
 }

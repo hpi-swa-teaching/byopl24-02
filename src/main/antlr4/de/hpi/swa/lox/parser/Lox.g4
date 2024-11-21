@@ -37,7 +37,11 @@ block          : '{' declaration* '}' ;
 
 expression     : assignment ;
 
-assignment     : IDENTIFIER '=' assignment | logic_or ;
+assignment     : IDENTIFIER '=' assignment | logic_or | arrayAssignment ;
+
+arrayAssignment: left=variableExpr '\u{1faf2}' index=expression '\u{1faf1}'
+                            '=' right=assignment
+                            | other=logic_or;
 
 logic_or       : logic_and ( 'or' logic_and )* ;
 
@@ -53,7 +57,11 @@ factor         : unary ( ( '/' | '*' ) unary )* ;
 
 unary          : ( '!' | '-' ) unary | primary ;
 
-primary        : boolean | string | number | nil | '(' expression ')' | variableExpr;
+primary        : boolean | string | number | nil | array | '(' expression ')' | variableExpr | arrayExpr;
+
+arrayExpr      : left=variableExpr '\u{1faf2}' index=expression '\u{1faf1}';
+
+array          : '\u{1fab9}';
 
 variableExpr   : IDENTIFIER;
 
