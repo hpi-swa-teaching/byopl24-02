@@ -48,8 +48,8 @@ You can find two lox examples programs in `/sieve.lox` and `/primeCount.lox`.
 We decided to use a very special syntax for arrays, to brighten the mood of developers. Here is an example:
 
 ```lox
-var a = 🪹; // Initialize empty array
-a🫲0🫱 = 1;
-print a🫲0🫱; // Will print 1
-print a; // Will print 🫲1🫱
+var a = 👉👈; // Initialize empty array
+a👉0👈 = 1;
+print a👉0👈; // Will print 1
+print a; // Will print 👉1👈
 ```
