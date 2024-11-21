@@ -49,26 +49,26 @@ public class LogicalExpressionTest extends AbstractLoxTest {
     }
 
     @Test
-    public void printLogicalOrComparison_mutiple_booleans() {
+    public void printLogicalOrComparison_multiple_booleans() {
         runAndExpect("printTestOutput", "print true or false or true;", "true\n");
     }
 
     @Test
-    public void printLogicalOrComparison_not_matching_number_left() {
-        runAndExpectError("Logical or comparison not matching number left", "print 4 or true;",
-                "Cannot apply logical_or");
+    public void printLogicalOrComparison_non_binary_number_left() {
+        runAndExpect("Logical or comparison not matching number left", "print 4 or true;",
+                "true\n");
     }
 
     @Test
-    public void printLogicalOrComparison_not_matching_number_right() {
-        runAndExpectError("Logical or comparison not matching number right", "print true or 4;",
-                "Cannot apply logical_or");
+    public void printLogicalOrComparison_non_binary_number_right() {
+        runAndExpect("Logical or comparison non binary number right", "print true or 4;",
+                "true\n");
     }
 
     @Test
-    public void printLogicalOrComparison_not_matching_types() {
-        runAndExpectError("Logical or comparison not matching type", "print true or \"test\";",
-                "Cannot apply logical_or");
+    public void printLogicalOrComparison_string_types() {
+        runAndExpect("Logical or comparison string type", "print true or \"test\";",
+                "true\n");
     }
 
     @Test
@@ -122,21 +122,21 @@ public class LogicalExpressionTest extends AbstractLoxTest {
     }
 
     @Test
-    public void printLogicalAndComparison_not_matching_number_left() {
-        runAndExpectError("Logical And comparison not matching number left", "print 4 and true;",
-                "Cannot apply logical_and");
+    public void printLogicalAndComparison_no_binary_number_left() {
+        runAndExpect("Logical And comparison non binary number left", "print 4 and true;",
+                "true\n");
     }
 
     @Test
-    public void printLogicalAndComparison_not_matching_number_right() {
-        runAndExpectError("Logical And comparison not matching number right", "print true and 4;",
-                "Cannot apply logical_and");
+    public void printLogicalAndComparison_non_binary_number_right() {
+        runAndExpect("Logical And comparison non binary number right", "print true and 4;",
+                "true\n");
     }
 
     @Test
-    public void printLogicalAndComparison_not_matching_types() {
-        runAndExpectError("Logical and comparison not matching types", "print true and \"test\";",
-                "Cannot apply logical_and");
+    public void printLogicalAndComparison_string_types() {
+        runAndExpect("Logical and comparison string types", "print true and \"test\";",
+                "true\n");
     }
 
     @Test

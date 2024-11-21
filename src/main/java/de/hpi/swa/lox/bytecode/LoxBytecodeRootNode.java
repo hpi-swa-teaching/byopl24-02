@@ -23,6 +23,7 @@ import de.hpi.swa.lox.runtime.LoxContext;
 import de.hpi.swa.lox.runtime.LoxRuntimeError;
 import de.hpi.swa.lox.runtime.data.GlobalObject;
 import de.hpi.swa.lox.runtime.data.LoxNumber;
+import de.hpi.swa.lox.runtime.data.Nil;
 
 @GenerateBytecode(//
         languageClass = LoxLanguage.class, //
@@ -59,9 +60,8 @@ public abstract class LoxBytecodeRootNode extends LoxRootNode implements Bytecod
         }
 
         @Fallback
-        @TruffleBoundary
         static boolean doOtherTypes(Object value, @Bind Node node) {
-            throw new LoxRuntimeError(String.format("Cannot invert %s", value), node);
+            return !isTruthy(value);
         }
     }
 
@@ -159,61 +159,11 @@ public abstract class LoxBytecodeRootNode extends LoxRootNode implements Bytecod
             return left || right;
         }
 
-        @Specialization
-        static boolean doBooleanAndLoxNumber(boolean left, LoxNumber right, @Bind Node node) {
-            if (right.getValue() == 0) {
-                // 0 intepreted as false, so only left side matters.
-                return left;
-            } else if (right.getValue() == 1) {
-                // 1 intepreted as true, so or expression is instantly true.
-                return true;
-            }
-            // Other numbers -> RuntimeError
-            throw createRuntimeError(left, right, node);
-        }
-
-        @Specialization
-        static boolean doLoxNumberAndBoolean(LoxNumber left, boolean right, @Bind Node node) {
-            if (left.getValue() == 0) {
-                // 0 intepreted as false, so only right side matters.
-                return right;
-            } else if (left.getValue() == 1) {
-                // 1 intepreted as true, so or expression is instantly true.
-                return true;
-            }
-            // Other numbers -> RuntimeError
-            throw createRuntimeError(left, right, node);
-        }
-
-        @Specialization
-        static boolean doLoxNumbers(LoxNumber left, LoxNumber right, @Bind Node node) {
-            if (left.getValue() == 0 && right.getValue() == 0) {
-                // 0 intepreted as false
-                return false;
-            } else if (left.getValue() == 0 && right.getValue() == 1) {
-                // 1 intepreted as true, so or expression is instantly true.
-                return true;
-            } else if (left.getValue() == 1 && right.getValue() == 0) {
-                // 1 intepreted as true, so or expression is instantly true.
-                return true;
-            } else if (left.getValue() == 1 && right.getValue() == 1) {
-                // 1 intepreted as true, so or expression is instantly true.
-                return true;
-            }
-            // Other numbers -> RuntimeError
-            throw createRuntimeError(left, right, node);
-        }
-
         @Fallback
         static boolean doOtherTypes(Object left, Object right, @Bind Node node) {
-            throw createRuntimeError(left, right, node);
+            return isTruthy(left) || isTruthy(right);
         }
 
-        @TruffleBoundary
-        static LoxRuntimeError createRuntimeError(Object left, Object right, Node node) {
-            return new LoxRuntimeError(
-                    String.format("Cannot apply logical_or on %s and %s", left.toString(), right.toString()), node);
-        }
     }
 
     @Operation
@@ -223,60 +173,9 @@ public abstract class LoxBytecodeRootNode extends LoxRootNode implements Bytecod
             return left && right;
         }
 
-        @Specialization
-        static boolean doBooleanAndLoxNumber(boolean left, LoxNumber right, @Bind Node node) {
-            if (right.getValue() == 0) {
-                // 0 intepreted as false, so and expression is instantly false.
-                return false;
-            } else if (right.getValue() == 1) {
-                // 1 intepreted as true, so left side matters for and expression.
-                return left;
-            }
-            // Other numbers -> RuntimeError
-            throw createRuntimeError(left, right, node);
-        }
-
-        @Specialization
-        static boolean doLoxNumberAndBoolean(LoxNumber left, boolean right, @Bind Node node) {
-            if (left.getValue() == 0) {
-                // 0 intepreted as false, so and expression is instantly false.
-                return false;
-            } else if (left.getValue() == 1) {
-                // 1 intepreted as true, so right side matters for and expression.
-                return right;
-            }
-            // Other numbers -> RuntimeError
-            throw createRuntimeError(left, right, node);
-        }
-
-        @Specialization
-        static boolean doLoxNumbers(LoxNumber left, LoxNumber right, @Bind Node node) {
-            if (left.getValue() == 0 && right.getValue() == 0) {
-                // 0 intepreted as false, so and expression is instantly false.
-                return false;
-            } else if (left.getValue() == 0 && right.getValue() == 1) {
-                // 0 intepreted as false, so and expression is instantly false.
-                return false;
-            } else if (left.getValue() == 1 && right.getValue() == 0) {
-                // 0 intepreted as false, so and expression is instantly false.
-                return false;
-            } else if (left.getValue() == 1 && right.getValue() == 1) {
-                // 1 intepreted as true, so and expression is instantly true.
-                return true;
-            }
-            // Other numbers -> RuntimeError
-            throw createRuntimeError(left, right, node);
-        }
-
         @Fallback
-        static boolean doOtherTypes(Object left, Object right, @Bind Node node) {
-            throw createRuntimeError(left, right, node);
-        }
-
-        @TruffleBoundary
-        static LoxRuntimeError createRuntimeError(Object left, Object right, Node node) {
-            return new LoxRuntimeError(
-                    String.format("Cannot apply logical_and on %s and %s", left.toString(), right.toString()), node);
+        static boolean doOtherTypes(Object left, Object right) {
+            return isTruthy(left) && isTruthy(right);
         }
     }
 
@@ -470,12 +369,24 @@ public abstract class LoxBytecodeRootNode extends LoxRootNode implements Bytecod
                 @Bind Node node) {
             if (accessor.isCleared(bytecodeNode, frame)) {
                 throw createNotDefinedError(accessor, node);
-            };
+            }
+            ;
         }
 
         @TruffleBoundary
         static LoxRuntimeError createNotDefinedError(LocalAccessor variableNameAccessor, Node node) {
             return new LoxRuntimeError("Local variable " + variableNameAccessor.toString() + " was not defined.", node);
         }
+    }
+
+    static private boolean isTruthy(Object object) {
+        // different to the slides, we decided to treat 0 as false
+        if (object == Nil.INSTANCE)
+            return false;
+        if (object instanceof Boolean)
+            return (boolean) object;
+        if (object instanceof LoxNumber)
+            return ((LoxNumber) object).getValue() != 0;
+        return true;
     }
 }
