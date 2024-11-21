@@ -389,4 +389,19 @@ public abstract class LoxBytecodeRootNode extends LoxRootNode implements Bytecod
             return ((LoxNumber) object).getValue() != 0;
         return true;
     }
+
+    @Operation
+    public static final class LoxIsTruthy {
+
+        @Specialization
+        static boolean doBoolean(boolean value) {
+            return value;
+        }
+
+        @Fallback
+        static boolean doDefault(Object value) {
+            return isTruthy(value);
+        }
+    }
+
 }
