@@ -61,7 +61,7 @@ primary        : boolean | string | number | nil | array | '(' expression ')' | 
 
 arrayExpr      : left=variableExpr '\u{1F449}' index=expression '\u{1F448}';
 
-array          : '\u{1F449}' '\u{1F448}';
+array          : '\u{1F449}' ( expression ( ', ' expression )* )? '\u{1F448}';
 
 variableExpr   : IDENTIFIER;
 

@@ -12,6 +12,10 @@ public class LoxArray {
         innerArray = new Object[8];
     }
 
+    public int getSize() {
+        return size;
+    }
+
     public Object get(int index) {
         if (innerArray.length <= index || index < 0) {
             // TODO warning

@@ -5,8 +5,18 @@ import org.junit.Test;
 public class ArrayTest extends AbstractLoxTest {
 
     @Test
-    public void testNewArray() {
+    public void testNewArray_empty() {
         runAndExpect("new array", "var a = 👉👈; print a;", "👉👈\n");
+    }
+
+    @Test
+    public void testNewArray_with_one_element() {
+        runAndExpect("new array with one element", "var a = 👉true👈; print a;", "👉true👈\n");
+    }
+
+    @Test
+    public void testNewArray_with_more_elements() {
+        runAndExpect("new array with more elements", "var a = 👉1, true, \"hello\"👈; print a;", "👉1, true, hello👈\n");
     }
 
     @Test

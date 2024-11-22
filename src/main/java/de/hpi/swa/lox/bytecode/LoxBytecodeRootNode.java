@@ -422,8 +422,19 @@ public abstract class LoxBytecodeRootNode extends LoxRootNode implements Bytecod
     @Operation
     public static final class LoxNewArray {
         @Specialization
-        static Object fallback() {
+        static LoxArray createEmpty() {
             return new LoxArray();
+        }
+    }
+
+    @Operation
+    public static final class LoxAppendArray {
+        @Specialization
+        static LoxArray append(LoxArray array, Object value) {
+            // Set value on next index of the dynamic array (which is internally equal to the size).
+            array.set(array.getSize(), value);
+            // Return the array again for stacking of operation.
+            return array;
         }
     }
 
