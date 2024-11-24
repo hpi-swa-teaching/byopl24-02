@@ -20,6 +20,7 @@ public class LoxArray {
         return size;
     }
 
+    @TruffleBoundary
     private ListIterator<Object> buildListIterator() {
         return Arrays.asList(innerArray)
                      .stream()
