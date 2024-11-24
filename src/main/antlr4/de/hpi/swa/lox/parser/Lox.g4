@@ -14,19 +14,25 @@ grammar Lox;
 
 program        : declaration* EOF ;
 
-declaration    : varDecl | statement ;
+declaration    : varDeclStmt | statement ;
 
-statement      : exprStmt | printStmt | block | forStmt | ifStmt | whileStmt;
+statement      : exprStmt | printStmt | block | forStmt | forOfStmt | forInStmt | ifStmt | whileStmt;
 
-varDecl        : 'var' IDENTIFIER ('=' expression )? ';' ;
+varDecl        : 'var' IDENTIFIER ('=' expression )? ;
+
+varDeclStmt    :  varDecl ';' ;
 
 exprStmt       : expression ';' ;
 
 printStmt      : 'print' expression ';' ;
 
-forStmt        : 'for' '(' (varDecl | exprStmt | ';' )
+forStmt        : 'for' '(' (loopVar=varDeclStmt | exprStmt | ';' )
                             condition=expression? ';'
                             increment=expression? ')' body=statement ;
+
+forOfStmt      : 'for' '(' elementVar=varDecl  'of' toIterate=variableExpr ')' body=statement ;
+
+forInStmt      : 'for' '(' indexVar=varDecl 'in' toIterate=variableExpr ')' body=statement ;
 
 ifStmt         : 'if' '(' condition=expression ')' then=statement
                             ( 'else' alt=statement )? ;

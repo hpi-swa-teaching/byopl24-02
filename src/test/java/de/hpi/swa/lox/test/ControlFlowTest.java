@@ -15,6 +15,26 @@ public class ControlFlowTest extends AbstractLoxTest {
     }
 
     @Test
+    public void testForOfLoop_through_array() {
+        runAndExpect("print every element of array with for of", "var a = 👉1, 2, 3👈; for(var element of a) {print element;}", "1\n2\n3\n");
+    }
+
+    @Test
+    public void testForOfLoop_through_number() {
+        runAndExpectError("for of with number as toIterate", "var a = 4; for(var element of a) {print element;}", "is not an LoxArray");
+    }
+
+    @Test
+    public void testForInLoop_through_array() {
+        runAndExpect("print every index of array with for in", "var a = 👉1, 2, 3👈; for(var index in a) {print index;}", "0\n1\n2\n");
+    }
+
+    @Test
+    public void testForInLoop_through_number() {
+        runAndExpectError("for in with number as toIterate", "var a = 4; for(var index in a) {print index;}", "is not an LoxArray");
+    }
+
+    @Test
     public void testWhileLoop() {
         runAndExpect("print 1 2 3",
                 "var i=0; while(i < 3) { i = i + 1; print i;}", "1\n2\n3\n");

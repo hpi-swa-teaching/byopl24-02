@@ -36,6 +36,8 @@ import de.hpi.swa.lox.parser.LoxParser.EqualityContext;
 import de.hpi.swa.lox.parser.LoxParser.ExprStmtContext;
 import de.hpi.swa.lox.parser.LoxParser.FactorContext;
 import de.hpi.swa.lox.parser.LoxParser.FalseContext;
+import de.hpi.swa.lox.parser.LoxParser.ForInStmtContext;
+import de.hpi.swa.lox.parser.LoxParser.ForOfStmtContext;
 import de.hpi.swa.lox.parser.LoxParser.ForStmtContext;
 import de.hpi.swa.lox.parser.LoxParser.IfStmtContext;
 import de.hpi.swa.lox.parser.LoxParser.Logic_andContext;
@@ -683,7 +685,7 @@ public final class LoxBytecodeCompiler extends LoxBaseVisitor<Void> {
 
     @Override
     public Void visitForStmt(ForStmtContext ctx) {
-        ParserRuleContext init = ctx.varDecl();
+        ParserRuleContext init = ctx.loopVar;
         if (init == null) {
             init = ctx.exprStmt();
         }
@@ -699,6 +701,76 @@ public final class LoxBytecodeCompiler extends LoxBaseVisitor<Void> {
         b.beginBlock();
         visit(ctx.body);
         visit(ctx.increment);
+        b.endBlock();
+        b.endWhile();
+        return null;
+    }
+
+    @Override
+    public Void visitForOfStmt(ForOfStmtContext ctx) {
+        // Visit declaration of element var.
+        visitVarDecl(ctx.elementVar);
+        beginAttribution(ctx);
+        // Check if variable to iterate through is actually an array.
+        b.beginLoxIsArray();
+        visitVariableExpr(ctx.toIterate);
+        b.endLoxIsArray();
+        endAttribution();
+        // Begin loop operation that retrieves every element of array.
+        b.beginWhile();
+        beginAttribution(ctx);
+        // Check if iterator through has next element.
+        b.beginLoxArrayHasNext();
+        visitVariableExpr(ctx.toIterate);
+        b.endLoxArrayHasNext();
+        endAttribution();
+        b.beginBlock();
+        // Assign elementVar to next value.
+        lexicalScope.beginStore(ctx.elementVar.IDENTIFIER().getText());
+        // Retrieve next element from iterator to store in elementVar.
+        b.beginLoxArrayGetNext();
+        visitVariableExpr(ctx.toIterate);
+        b.endLoxArrayGetNext();
+        lexicalScope.endStore();
+        // Visit the actual body of for-of loop.
+        visit(ctx.body);
+        b.endBlock();
+        b.endWhile();
+        return null;
+    }
+
+    @Override
+    public Void visitForInStmt(ForInStmtContext ctx) {
+        // Visit declaration of index var.
+        visitVarDecl(ctx.indexVar);
+        beginAttribution(ctx);
+        // Check if variable to iterate through is actually an array.
+        b.beginLoxIsArray();
+        visitVariableExpr(ctx.toIterate);
+        b.endLoxIsArray();
+        endAttribution();
+        // Begin loop operation that retrieves every element of array.
+        b.beginWhile();
+        beginAttribution(ctx);
+        // Check if iterator through has next element.
+        b.beginLoxArrayHasNext();
+        visitVariableExpr(ctx.toIterate);
+        b.endLoxArrayHasNext();
+        endAttribution();
+        b.beginBlock();
+        // Assign indexVar to next index.
+        lexicalScope.beginStore(ctx.indexVar.IDENTIFIER().getText());
+        // Retrieve next index from iterator to store in indexVar.
+        b.beginLoxArrayGetNextIndex();
+        visitVariableExpr(ctx.toIterate);
+        b.endLoxArrayGetNextIndex();
+        lexicalScope.endStore();
+        // Actually move iterator to the next element, but ignore its result here.
+        b.beginLoxArrayGetNext();
+        visitVariableExpr(ctx.toIterate);
+        b.endLoxArrayGetNext();
+        // Visit the actual body of for-in loop.
+        visit(ctx.body);
         b.endBlock();
         b.endWhile();
         return null;
