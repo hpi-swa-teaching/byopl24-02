@@ -497,7 +497,7 @@ public abstract class LoxBytecodeRootNode extends LoxRootNode implements Bytecod
         }
 
         @Fallback
-        static boolean fallback(Object object, @Bind Node node) {
+        static Object fallback(Object object, @Bind Node node) {
             throw createRuntimeError(object, node);
         }
 
@@ -515,7 +515,7 @@ public abstract class LoxBytecodeRootNode extends LoxRootNode implements Bytecod
         }
 
         @Fallback
-        static boolean fallback(Object object, @Bind Node node) {
+        static LoxNumber fallback(Object object, @Bind Node node) {
             throw createRuntimeError(object, node);
         }
 
