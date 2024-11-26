@@ -477,6 +477,16 @@ public abstract class LoxBytecodeRootNode extends LoxRootNode implements Bytecod
         static boolean hasNext(LoxArray loxArray) {
             return loxArray.getIterator().hasNext();
         }
+
+        @Fallback
+        static boolean fallback(Object object, @Bind Node node) {
+            throw createRuntimeError(object, node);
+        }
+
+        @TruffleBoundary
+        private static LoxRuntimeError createRuntimeError(Object object, Node node) {
+            return new LoxRuntimeError(object.toString() + " is not an LoxArray", node);
+        }
     }
 
     @Operation
@@ -485,6 +495,16 @@ public abstract class LoxBytecodeRootNode extends LoxRootNode implements Bytecod
         static Object getNext(LoxArray loxArray) {
             return loxArray.getIterator().next();
         }
+
+        @Fallback
+        static boolean fallback(Object object, @Bind Node node) {
+            throw createRuntimeError(object, node);
+        }
+
+        @TruffleBoundary
+        private static LoxRuntimeError createRuntimeError(Object object, Node node) {
+            return new LoxRuntimeError(object.toString() + " is not an LoxArray", node);
+        }
     }
 
     @Operation
@@ -492,6 +512,16 @@ public abstract class LoxBytecodeRootNode extends LoxRootNode implements Bytecod
         @Specialization
         static LoxNumber getNextIndex(LoxArray loxArray) {
             return new LoxNumber(loxArray.getIterator().nextIndex());
+        }
+
+        @Fallback
+        static boolean fallback(Object object, @Bind Node node) {
+            throw createRuntimeError(object, node);
+        }
+
+        @TruffleBoundary
+        private static LoxRuntimeError createRuntimeError(Object object, Node node) {
+            return new LoxRuntimeError(object.toString() + " is not an LoxArray", node);
         }
     }
 }
