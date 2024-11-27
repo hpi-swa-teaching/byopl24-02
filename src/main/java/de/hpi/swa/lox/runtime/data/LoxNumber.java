@@ -27,6 +27,10 @@ public class LoxNumber {
         this.internalValue = value;
     }
 
+    public LoxNumber(int value) {
+        this.internalValue = (double) value;
+    }
+
     public Double getValue() {
         return internalValue;
     }

@@ -1,6 +1,7 @@
 package de.hpi.swa.lox.runtime.data;
 
 import java.util.Arrays;
+import java.util.ListIterator;
 
 import com.oracle.truffle.api.CompilerDirectives.TruffleBoundary;
 
@@ -8,12 +9,28 @@ public class LoxArray {
     private Object[] innerArray;
     int size = 0;
 
+    private ListIterator<Object> iterator;
+
     public LoxArray() {
         innerArray = new Object[8];
+        iterator = buildListIterator();
     }
 
     public int getSize() {
         return size;
+    }
+
+    @TruffleBoundary
+    private ListIterator<Object> buildListIterator() {
+        return Arrays.asList(innerArray)
+                     .stream()
+                     // We should not iterate through our unassigned indices!
+                     .filter(element -> element != null)
+                     .toList().listIterator();
+    }
+
+    public ListIterator<Object> getIterator() {
+        return iterator;
     }
 
     public Object get(int index) {
@@ -37,6 +54,8 @@ public class LoxArray {
             this.ensureCapacity();
         }
         innerArray[index] = value;
+        // Update list iterator
+        iterator = buildListIterator();
     }
 
     @TruffleBoundary
