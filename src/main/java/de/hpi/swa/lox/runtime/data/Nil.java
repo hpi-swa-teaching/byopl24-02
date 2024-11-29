@@ -1,6 +1,8 @@
 package de.hpi.swa.lox.runtime.data;
 
-public final class Nil {
+import com.oracle.truffle.api.interop.TruffleObject;
+
+public final class Nil implements TruffleObject {
     
     /**
      * Singleton instance of our "no value" representation.
