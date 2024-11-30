@@ -195,7 +195,8 @@ public final class LoxBytecodeCompiler extends LoxBaseVisitor<Void> {
         };
         var config = LoxBytecodeRootNodeGen.newConfigBuilder().addSource().build();
         var nodes = LoxBytecodeRootNodeGen.create(language, config, bytecodeParser).getNodes();
-        return nodes.get(nodes.size() - 1).getCallTarget();
+        // Bugfix: Root node for execution is the first node.
+        return nodes.get(0).getCallTarget();
     }
 
     private static final class BailoutErrorListener extends BaseErrorListener {
@@ -842,7 +843,8 @@ public final class LoxBytecodeCompiler extends LoxBaseVisitor<Void> {
     }
 
     /**
-     * Enters a function by creating a new variable scope and return the parameter variables.
+     * Returns the names of a functions parameter variables.
+     * If the function has no parameters, the result list is empty.
      */
     private final List<String> retrieveParameterNames(FunctionContext ctx) {
         List<String> parameterNames = new ArrayList<>();

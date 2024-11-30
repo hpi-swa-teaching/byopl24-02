@@ -546,7 +546,9 @@ public abstract class LoxBytecodeRootNode extends LoxRootNode implements Bytecod
     @ConstantOperand(type = int.class)
     public static final class LoxLoadFunctionArgument {
 
-        @Specialization(guards = "index < frame.getArguments().length") // < instead of <=
+        // The guard is different from the slides.
+        // index <= frame.getArguments().length does not work because of the off-by-one stuff.
+        @Specialization(guards = "index < frame.getArguments().length")
         static Object doDefault(VirtualFrame frame, int index) {
             return LoxFunction.getArgument(frame, index);
         }
