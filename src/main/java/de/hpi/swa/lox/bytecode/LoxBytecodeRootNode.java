@@ -17,6 +17,7 @@ import com.oracle.truffle.api.dsl.Cached;
 import com.oracle.truffle.api.dsl.Fallback;
 import com.oracle.truffle.api.dsl.Specialization;
 import com.oracle.truffle.api.frame.FrameDescriptor;
+import com.oracle.truffle.api.frame.MaterializedFrame;
 import com.oracle.truffle.api.frame.VirtualFrame;
 import com.oracle.truffle.api.nodes.DirectCallNode;
 import com.oracle.truffle.api.nodes.IndirectCallNode;
@@ -377,7 +378,6 @@ public abstract class LoxBytecodeRootNode extends LoxRootNode implements Bytecod
             if (accessor.isCleared(bytecodeNode, frame)) {
                 throw createNotDefinedError(accessor, node);
             }
-            ;
         }
 
         @TruffleBoundary
@@ -534,11 +534,13 @@ public abstract class LoxBytecodeRootNode extends LoxRootNode implements Bytecod
     @Operation
     @ConstantOperand(type = String.class)
     @ConstantOperand(type = RootCallTarget.class)
+    @ConstantOperand(type = int.class)
     public static final class LoxCreateFunction {
     
         @Specialization
-        static LoxFunction doDefault(String funName, RootCallTarget callTarget) {
-            return new LoxFunction(funName, callTarget);
+        static LoxFunction doDefault(VirtualFrame frame, String funName, RootCallTarget callTarget, int maxFunctionDepth) {
+            MaterializedFrame materializedFunctionFrame = maxFunctionDepth > 0 ? frame.materialize() : null;
+            return new LoxFunction(funName, callTarget, materializedFunctionFrame);
         }
     }
 
@@ -583,6 +585,16 @@ public abstract class LoxBytecodeRootNode extends LoxRootNode implements Bytecod
         @Specialization
         static Object doDefault(Object obj, @Variadic Object[] arguments, @Bind Node node) {
             throw new LoxRuntimeError("Cannot call " + obj, node);
+        }
+    }
+
+    @Operation
+    @ConstantOperand(type = int.class)
+    public static final class LoxLoadMaterializedFrameN {
+
+        @Specialization
+        public static MaterializedFrame doDefault(VirtualFrame frame, int depth) {
+            return LoxFunction.getFrameAtDepthN(frame, depth);
         }
     }
 }
