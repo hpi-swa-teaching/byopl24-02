@@ -2,6 +2,8 @@ package de.hpi.swa.lox.runtime.data;
 
 import com.oracle.truffle.api.CompilerDirectives.TruffleBoundary;
 import com.oracle.truffle.api.RootCallTarget;
+import com.oracle.truffle.api.frame.Frame;
+import com.oracle.truffle.api.frame.MaterializedFrame;
 import com.oracle.truffle.api.frame.VirtualFrame;
 
 /**
@@ -14,13 +16,30 @@ public class LoxFunction {
 
     private final RootCallTarget callTarget;
 
-    public LoxFunction(String name, RootCallTarget callTarget) {
+    private final MaterializedFrame outerFunctionFrame;
+
+    public LoxFunction(String name, RootCallTarget callTarget, MaterializedFrame outerFunctionFrame) {
         this.name = name;
         this.callTarget = callTarget;
+        this.outerFunctionFrame = outerFunctionFrame;
     }
 
     public RootCallTarget getCallTarget() {
         return callTarget;
+    }
+
+    static LoxFunction getCurrentFunctionFromFrame(Frame frame) { 
+        // Make use of our off-by-one handling that we use the function object as first argument.   
+        return (LoxFunction) frame.getArguments()[0];
+    }
+
+    static public MaterializedFrame getFrameAtDepthN(VirtualFrame frame, int depth) {
+        assert depth > 0;
+        LoxFunction func = getCurrentFunctionFromFrame(frame);
+        for (int i = depth - 1; i > 0; i--) {
+            func = getCurrentFunctionFromFrame(func.outerFunctionFrame);
+        }
+        return func.outerFunctionFrame;
     }
 
     /**

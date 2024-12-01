@@ -79,12 +79,18 @@ public final class LoxBytecodeCompiler extends LoxBaseVisitor<Void> {
 
     private final LoxBytecodeRootNodeGen.Builder b;
 
+    private record LocalVariable(BytecodeLocal variableStore, int functionDepth) {}
+
     private LoxLexicalScope lexicalScope = new LoxLexicalScope();
 
     /**
      * Inner class for variable scoping.
      */
     private class LoxLexicalScope {
+
+        public int maxFunctionDepth;
+
+        boolean isFunction;
 
         /**
          * Used for stacking variable scopes.
@@ -93,9 +99,15 @@ public final class LoxBytecodeCompiler extends LoxBaseVisitor<Void> {
 
         private final Map<String, BytecodeLocal> localVariableStores;
 
-        private final Stack<BytecodeLocal> scopeTrackerForVariable;
+        private final Stack<LocalVariable> scopeTrackerForVariable;
 
         LoxLexicalScope(LoxLexicalScope parentScope) {
+            this(parentScope, false);
+        }
+
+        LoxLexicalScope(LoxLexicalScope parentScope, boolean isFunction) {
+            this.maxFunctionDepth = 0;
+            this.isFunction = isFunction;
             this.parentScope = parentScope;
             this.localVariableStores = new HashMap<>();
             this.scopeTrackerForVariable = new Stack<>();
@@ -118,27 +130,45 @@ public final class LoxBytecodeCompiler extends LoxBaseVisitor<Void> {
             localVariableStores.put(localVariableName, b.createLocal(localVariableName, null));
         }
 
-        private BytecodeLocal lookupVariableName(String variableName) {
+        private LocalVariable lookupVariableName(String variableName) {
             // Temp save of current scope
             var scope = this;
             BytecodeLocal foundVariableStore;
+            boolean isClosureVariable = false;
+            var functionDepth = 0;
             do {
                 foundVariableStore = scope.localVariableStores.get(variableName);
+                if (foundVariableStore != null && isClosureVariable) {
+                    return new LocalVariable(foundVariableStore, functionDepth);
+                }
+                if (scope.isFunction) {
+                    functionDepth++;
+                    isClosureVariable = true;
+                }
                 // Step into parent scope for next iteration.
                 scope = scope.parentScope;
             } while (foundVariableStore == null && scope != null);
-            return foundVariableStore;
+            return foundVariableStore != null ? new LocalVariable(foundVariableStore, -1) : null;
         }
 
         /**
          * Begin store operation of variable, either in local or global scope.
          */
         public void beginStore(String variableName) {
-            var variableStore = lookupVariableName(variableName);
-            this.scopeTrackerForVariable.add(variableStore);
-            if (variableStore != null) {
+            var variable = lookupVariableName(variableName);
+            this.scopeTrackerForVariable.push(variable);
+            if (variable != null) {
                 // We found a local variable store.
-                b.beginStoreLocal(variableStore);
+                if (variable.functionDepth() < 1) {
+                    // Regular local variable
+                    b.beginStoreLocal(variable.variableStore());
+                } else {
+                    // Closure variable
+                    updateMaxFunctionDepth(variable.functionDepth());
+                    b.beginStoreLocalMaterialized(variable.variableStore());
+                    // Load frame where to store the closure variable
+                    b.emitLoxLoadMaterializedFrameN(variable.functionDepth());
+                }
             } else {
                 // Store in global scope if nothing else applicable.
                 b.beginLoxWriteGlobalVariable(variableName);
@@ -149,10 +179,16 @@ public final class LoxBytecodeCompiler extends LoxBaseVisitor<Void> {
          * End store operation of variable, either in local or global scope.
          */
         public void endStore() {
-            var variableStore = this.scopeTrackerForVariable.pop();
-            if (variableStore != null) {
+            var variable = this.scopeTrackerForVariable.pop();
+            if (variable != null) {
                 // We found a local variable store.
-                b.endStoreLocal();
+                if (variable.functionDepth() < 1) {
+                    // Regular local variable
+                    b.endStoreLocal();
+                } else {
+                    // Closure variable
+                    b.endStoreLocalMaterialized();
+                }
             } else {
                 // End of storing in global scope if nothing else applicable.
                 b.endLoxWriteGlobalVariable();
@@ -163,16 +199,43 @@ public final class LoxBytecodeCompiler extends LoxBaseVisitor<Void> {
          * Load variable value into scope, value either from a local or global scope.
          */
         public void loadIntoScope(String variableName) {
-            var variableStore = lookupVariableName(variableName);
-            if (variableStore != null) {
+            var variable = lookupVariableName(variableName);
+            if (variable != null) {
                 // We found a local store for the variable.
-                b.beginBlock();
-                b.emitLoxCheckLocalDefined(variableStore);
-                b.emitLoadLocal(variableStore);
-                b.endBlock();
+                if (variable.functionDepth() < 1) {
+                    // Regular local variable
+                    b.beginBlock();
+                    b.emitLoxCheckLocalDefined(variable.variableStore());
+                    b.emitLoadLocal(variable.variableStore());
+                    b.endBlock();
+                } else {
+                    // Closure variable (variables catched between functions)
+                    updateMaxFunctionDepth(variable.functionDepth());
+                    b.beginBlock();
+                    // Framework-operation: load variable x from frame that is emitted inside the call.
+                    b.beginLoadLocalMaterialized(variable.variableStore());
+                    b.emitLoxLoadMaterializedFrameN(variable.functionDepth());
+                    b.endLoadLocalMaterialized();
+                    b.endBlock();
+                }
             } else {
                 // Load from global scope.
                 b.emitLoxReadGlobalVariable(variableName);
+            }
+        }
+
+        void updateMaxFunctionDepth(int depth) {
+            this.maxFunctionDepth = Math.max(lexicalScope.maxFunctionDepth, depth);
+            if (this.parentScope == null) {
+                // Nothing to do if its the global scope.
+                return;
+            }
+            if (this.isFunction) {
+                // make sure the parent also keeps track of deep enough levels of scope
+                this.parentScope.updateMaxFunctionDepth(depth - 1);
+            } else {
+                // non parent functions have the same level, as we count frames and not block scopes
+                this.parentScope.updateMaxFunctionDepth(depth);
             }
         }
     }
@@ -869,7 +932,7 @@ public final class LoxBytecodeCompiler extends LoxBaseVisitor<Void> {
         // Group all function operations together.
         b.beginBlock();
         // Create new variable scope for function.
-        lexicalScope = new LoxLexicalScope(lexicalScope);
+        lexicalScope = new LoxLexicalScope(lexicalScope, true);
         // Retrieve parameter names.
         List<String> parameterNames = retrieveParameterNames(function);
         for (int i = 0; i < parameterNames.size(); i++) {
@@ -899,7 +962,7 @@ public final class LoxBytecodeCompiler extends LoxBaseVisitor<Void> {
         LoxRootNode node = b.endRoot();
         // Assign the actual function object to the just declared variable.
         lexicalScope.beginStore(funName);
-        b.emitLoxCreateFunction(funName, node.getCallTarget());
+        b.emitLoxCreateFunction(funName, node.getCallTarget(), lexicalScope.maxFunctionDepth);
         lexicalScope.endStore();
         return null;
     }
