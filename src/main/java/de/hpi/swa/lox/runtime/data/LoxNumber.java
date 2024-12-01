@@ -3,11 +3,12 @@ package de.hpi.swa.lox.runtime.data;
 import java.util.Objects;
 
 import com.oracle.truffle.api.CompilerDirectives.TruffleBoundary;
+import com.oracle.truffle.api.interop.TruffleObject;
 
 /** 
  * Number representation (mainly based on Double).
  */
-public class LoxNumber {
+public class LoxNumber implements TruffleObject {
 
     private Double internalValue;
 

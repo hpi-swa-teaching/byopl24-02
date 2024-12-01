@@ -4,17 +4,22 @@ import java.io.IOException;
 import java.util.Objects;
 
 import com.oracle.truffle.api.CompilerDirectives.TruffleBoundary;
+import com.oracle.truffle.api.RootCallTarget;
 import com.oracle.truffle.api.bytecode.BytecodeNode;
 import com.oracle.truffle.api.bytecode.BytecodeRootNode;
 import com.oracle.truffle.api.bytecode.ConstantOperand;
 import com.oracle.truffle.api.bytecode.GenerateBytecode;
 import com.oracle.truffle.api.bytecode.LocalAccessor;
 import com.oracle.truffle.api.bytecode.Operation;
+import com.oracle.truffle.api.bytecode.Variadic;
 import com.oracle.truffle.api.dsl.Bind;
+import com.oracle.truffle.api.dsl.Cached;
 import com.oracle.truffle.api.dsl.Fallback;
 import com.oracle.truffle.api.dsl.Specialization;
 import com.oracle.truffle.api.frame.FrameDescriptor;
 import com.oracle.truffle.api.frame.VirtualFrame;
+import com.oracle.truffle.api.nodes.DirectCallNode;
+import com.oracle.truffle.api.nodes.IndirectCallNode;
 import com.oracle.truffle.api.nodes.Node;
 
 import de.hpi.swa.lox.LoxLanguage;
@@ -23,6 +28,7 @@ import de.hpi.swa.lox.runtime.LoxContext;
 import de.hpi.swa.lox.runtime.LoxRuntimeError;
 import de.hpi.swa.lox.runtime.data.GlobalObject;
 import de.hpi.swa.lox.runtime.data.LoxArray;
+import de.hpi.swa.lox.runtime.data.LoxFunction;
 import de.hpi.swa.lox.runtime.data.LoxNumber;
 import de.hpi.swa.lox.runtime.data.Nil;
 
@@ -522,6 +528,61 @@ public abstract class LoxBytecodeRootNode extends LoxRootNode implements Bytecod
         @TruffleBoundary
         private static LoxRuntimeError createRuntimeError(Object object, Node node) {
             return new LoxRuntimeError(object.toString() + " is not an LoxArray", node);
+        }
+    }
+    
+    @Operation
+    @ConstantOperand(type = String.class)
+    @ConstantOperand(type = RootCallTarget.class)
+    public static final class LoxCreateFunction {
+    
+        @Specialization
+        static LoxFunction doDefault(String funName, RootCallTarget callTarget) {
+            return new LoxFunction(funName, callTarget);
+        }
+    }
+
+    @Operation
+    @ConstantOperand(type = int.class)
+    public static final class LoxLoadFunctionArgument {
+
+        // The guard is different from the slides.
+        // index <= frame.getArguments().length does not work because of the off-by-one stuff.
+        @Specialization(guards = "index < frame.getArguments().length")
+        static Object doDefault(VirtualFrame frame, int index) {
+            return LoxFunction.getArgument(frame, index);
+        }
+
+        @Fallback
+        static Object doLoadOutOfBounds(int index) {
+            // Use our nil if argument could not be retrieved.
+            return Nil.INSTANCE;
+        }
+    }
+
+    @Operation
+    public static final class LoxCallFunction {
+
+        @Specialization(limit = "5", // Cache up to 5 function call targets (not 3 is in the slides)
+                guards = "function.getCallTarget() == cachedTarget")
+        static Object doDirect(LoxFunction function, @Variadic Object[] userArguments,
+                @Cached("function.getCallTarget()") RootCallTarget cachedTarget,
+                @Cached("create(cachedTarget)") DirectCallNode directCallNode) {
+            // Different from slides, don't use the function as argument again
+            // (createArguments already does this).
+            return directCallNode.call(function.createArguments(userArguments));
+        }
+
+        @Specialization(replaces = "doDirect")
+        static Object doIndirect(LoxFunction function, @Variadic Object[] userArguments,
+                @Cached IndirectCallNode callNode) {
+            return callNode.call(function.getCallTarget(), function.createArguments(userArguments));
+        }
+
+        @TruffleBoundary
+        @Specialization
+        static Object doDefault(Object obj, @Variadic Object[] arguments, @Bind Node node) {
+            throw new LoxRuntimeError("Cannot call " + obj, node);
         }
     }
 }

@@ -14,9 +14,10 @@ grammar Lox;
 
 program        : declaration* EOF ;
 
-declaration    : varDeclStmt | statement ;
+declaration    : varDeclStmt | funDeclStmt | statement ;
 
-statement      : exprStmt | printStmt | block | forStmt | forOfStmt | forInStmt | ifStmt | whileStmt;
+statement      : exprStmt | printStmt | block | returnStmt
+                | forStmt | forOfStmt | forInStmt | ifStmt | whileStmt;
 
 varDecl        : 'var' IDENTIFIER ('=' expression )? ;
 
@@ -38,6 +39,20 @@ ifStmt         : 'if' '(' condition=expression ')' then=statement
                             ( 'else' alt=statement )? ;
 
 whileStmt      : 'while' '(' condition=expression ')' body=statement;
+
+returnStmt     : 'return' expression? ';' ;
+
+funDeclStmt    : 'fun' function ';'? ;
+
+call           : primary callArguments* ;
+
+callArguments  : '(' arguments? ')';
+
+arguments      : expression ( ',' expression )* ;
+
+function       : IDENTIFIER '(' parameters? ')' block ;
+
+parameters     : IDENTIFIER ( ',' IDENTIFIER )* ;
 
 block          : '{' declaration* '}' ;
 
@@ -61,7 +76,7 @@ term           : factor ( ( '-' | '+' ) factor )* ;
 
 factor         : unary ( ( '/' | '*' ) unary )* ;
 
-unary          : ( '!' | '-' ) unary | primary ;
+unary          : ( '!' | '-' ) unary | call;
 
 primary        : boolean | string | number | nil | array | '(' expression ')' | variableExpr | arrayExpr;
 
