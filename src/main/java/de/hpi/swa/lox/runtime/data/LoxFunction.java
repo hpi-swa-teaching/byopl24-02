@@ -11,25 +11,35 @@ import com.oracle.truffle.api.frame.VirtualFrame;
  * root program.
  */
 public class LoxFunction {
-
-    private final String name;
+    public final String name;
 
     private final RootCallTarget callTarget;
 
     private final MaterializedFrame outerFunctionFrame;
+    public final LoxObject self;
 
-    public LoxFunction(String name, RootCallTarget callTarget, MaterializedFrame outerFunctionFrame) {
+    public LoxFunction(String name, RootCallTarget callTarget, MaterializedFrame outerFunctionFrame, LoxObject self) {
         this.name = name;
         this.callTarget = callTarget;
         this.outerFunctionFrame = outerFunctionFrame;
+        this.self = self;
+    }
+
+    public LoxFunction(String name, RootCallTarget callTarget, MaterializedFrame outerFunctionFrame) {
+        this(name, callTarget, outerFunctionFrame, null);
+    }
+
+    public LoxFunction(LoxObject object, LoxFunction m) {
+        this(m.name, m.callTarget, m.outerFunctionFrame, object);
     }
 
     public RootCallTarget getCallTarget() {
         return callTarget;
     }
 
-    static LoxFunction getCurrentFunctionFromFrame(Frame frame) { 
-        // Make use of our off-by-one handling that we use the function object as first argument.   
+    static LoxFunction getCurrentFunctionFromFrame(Frame frame) {
+        // Make use of our off-by-one handling that we use the function object as first
+        // argument.
         return (LoxFunction) frame.getArguments()[0];
     }
 
@@ -44,7 +54,8 @@ public class LoxFunction {
 
     /**
      * Create the function arguments used internally.
-     * We implicitly define the function object itself as the first argument (so the index is off-by-one),
+     * We implicitly define the function object itself as the first argument (so the
+     * index is off-by-one),
      * and therefore all user arguments are shifted by one index.
      */
     @TruffleBoundary
@@ -57,8 +68,10 @@ public class LoxFunction {
 
     /**
      * Retrieves the user argument at the given index in the associated frame.<br/>
-     * Note that the index is not the actual index, as we implicitly define the function object
+     * Note that the index is not the actual index, as we implicitly define the
+     * function object
      * itself as the first argument (so the index is off-by-one).
+     * 
      * @see #createArguments(Object[])
      */
     public static Object getArgument(VirtualFrame frame, int index) {
@@ -67,6 +80,10 @@ public class LoxFunction {
 
     @TruffleBoundary
     public String toString() {
-        return "Function " + this.name;
+        return this.self == null ? "Function " + this.name : this.self.klazz.name + "#" + this.name;
+    }
+
+    public static LoxObject getSelf(VirtualFrame frame) {
+        return getCurrentFunctionFromFrame(frame).self;
     }
 }

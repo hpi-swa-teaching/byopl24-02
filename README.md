@@ -53,3 +53,16 @@ a👉0👈 = 1;
 print a👉0👈; // Will print 1
 print a; // Will print 👉1👈
 ```
+
+### Self vs this
+
+We don't like java, that's why we decided to use `self` instead of `this`. Here is an example:
+
+```lox
+class A {
+  var a = 1;
+  fun printA() {
+    print self.a;
+  }
+}
+```

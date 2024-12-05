@@ -14,7 +14,7 @@ grammar Lox;
 
 program        : declaration* EOF ;
 
-declaration    : varDeclStmt | funDeclStmt | statement ;
+declaration    : classDecl | varDeclStmt | funDeclStmt | statement ;
 
 statement      : exprStmt | printStmt | block | returnStmt
                 | forStmt | forOfStmt | forInStmt | ifStmt | whileStmt;
@@ -22,6 +22,8 @@ statement      : exprStmt | printStmt | block | returnStmt
 varDecl        : 'var' IDENTIFIER ('=' expression )? ;
 
 varDeclStmt    :  varDecl ';' ;
+
+classDecl      : 'class' IDENTIFIER '{' function* '}' ;
 
 exprStmt       : expression ';' ;
 
@@ -46,7 +48,7 @@ funDeclStmt    : 'fun' function ';'? ;
 
 call           : primary callArguments* ;
 
-callArguments  : '(' arguments? ')';
+callArguments  : '(' arguments? ')' | '.' IDENTIFIER ;
 
 arguments      : expression ( ',' expression )* ;
 
@@ -58,7 +60,7 @@ block          : '{' declaration* '}' ;
 
 expression     : assignment ;
 
-assignment     : IDENTIFIER '=' assignment | logic_or | arrayAssignment ;
+assignment     : ( call '.' )? IDENTIFIER '=' assignment | logic_or | arrayAssignment ;
 
 arrayAssignment: left=variableExpr '\u{1F449}' index=expression '\u{1F448}'
                             '=' right=assignment
