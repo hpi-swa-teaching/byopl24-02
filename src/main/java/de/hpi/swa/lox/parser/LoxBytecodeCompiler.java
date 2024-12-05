@@ -37,6 +37,7 @@ import de.hpi.swa.lox.parser.LoxParser.BlockContext;
 import de.hpi.swa.lox.parser.LoxParser.BooleanContext;
 import de.hpi.swa.lox.parser.LoxParser.CallArgumentsContext;
 import de.hpi.swa.lox.parser.LoxParser.CallContext;
+import de.hpi.swa.lox.parser.LoxParser.ClassDeclContext;
 import de.hpi.swa.lox.parser.LoxParser.ComparisonContext;
 import de.hpi.swa.lox.parser.LoxParser.EqualityContext;
 import de.hpi.swa.lox.parser.LoxParser.ExprStmtContext;
@@ -79,7 +80,8 @@ public final class LoxBytecodeCompiler extends LoxBaseVisitor<Void> {
 
     private final LoxBytecodeRootNodeGen.Builder b;
 
-    private record LocalVariable(BytecodeLocal variableStore, int functionDepth) {}
+    private record LocalVariable(BytecodeLocal variableStore, int functionDepth) {
+    }
 
     private LoxLexicalScope lexicalScope = new LoxLexicalScope();
 
@@ -212,7 +214,8 @@ public final class LoxBytecodeCompiler extends LoxBaseVisitor<Void> {
                     // Closure variable (variables catched between functions)
                     updateMaxFunctionDepth(variable.functionDepth());
                     b.beginBlock();
-                    // Framework-operation: load variable x from frame that is emitted inside the call.
+                    // Framework-operation: load variable x from frame that is emitted inside the
+                    // call.
                     b.beginLoadLocalMaterialized(variable.variableStore());
                     b.emitLoxLoadMaterializedFrameN(variable.functionDepth());
                     b.endLoadLocalMaterialized();
@@ -234,7 +237,8 @@ public final class LoxBytecodeCompiler extends LoxBaseVisitor<Void> {
                 // make sure the parent also keeps track of deep enough levels of scope
                 this.parentScope.updateMaxFunctionDepth(depth - 1);
             } else {
-                // non parent functions have the same level, as we count frames and not block scopes
+                // non parent functions have the same level, as we count frames and not block
+                // scopes
                 this.parentScope.updateMaxFunctionDepth(depth);
             }
         }
@@ -672,8 +676,19 @@ public final class LoxBytecodeCompiler extends LoxBaseVisitor<Void> {
 
     @Override
     public Void visitAssignment(AssignmentContext ctx) {
+        final boolean isCall = ctx.call() != null;
         final boolean isAssignment = ctx.IDENTIFIER() != null;
         String variableName = null;
+        // Property assignment
+        if (isCall) {
+            String name = ctx.IDENTIFIER().getText();
+            b.beginLoxWriteProperty(name);
+            visitCall(ctx.call());
+            visitAssignment((ctx.assignment()));
+            b.endLoxWriteProperty();
+            return null;
+        }
+        // Variable assignment
         if (isAssignment) {
             // For grouping the storing and the emition of the value together.
             b.beginBlock();
@@ -862,12 +877,12 @@ public final class LoxBytecodeCompiler extends LoxBaseVisitor<Void> {
         // Naively do sth like this (here illustrated with two values):
         //
         // b.beginLoxAppendArray();
-        //    b.beginLoxAppendArray();
-        //       b.emitLoxNewArray();
-        //       visit(ctx.expression(0));
-        //    b.endLoxAppendArray();
-        //    visit(ctx.expression(1));
-        // b.endLoxAppendArray();        
+        // b.beginLoxAppendArray();
+        // b.emitLoxNewArray();
+        // visit(ctx.expression(0));
+        // b.endLoxAppendArray();
+        // visit(ctx.expression(1));
+        // b.endLoxAppendArray();
         //
         for (int exprIndex = ctx.expression().size() - 1; exprIndex >= 0; exprIndex--) {
             b.beginLoxAppendArray();
@@ -923,18 +938,33 @@ public final class LoxBytecodeCompiler extends LoxBaseVisitor<Void> {
 
     @Override
     public Void visitFunDeclStmt(FunDeclStmtContext ctx) {
-        FunctionContext function = ctx.function();
+        var function = ctx.function();
         String funName = function.IDENTIFIER().getText();
-        // Declare function as its own variable in the outer scope.
         lexicalScope.declare(funName, ctx);
+        lexicalScope.beginStore(funName);
+        visitFunction(function);
+        lexicalScope.endStore();
+        return null;
+    }
+
+    @Override
+    public Void visitFunction(FunctionContext ctx) {
+        String funName = ctx.IDENTIFIER().getText();
         // Begin a new, separate call target.
         b.beginRoot();
         // Group all function operations together.
         b.beginBlock();
         // Create new variable scope for function.
         lexicalScope = new LoxLexicalScope(lexicalScope, true);
+        if (ctx.getParent() instanceof ClassDeclContext) {
+            // First variable equals class instance.
+            lexicalScope.declare("self", ctx);
+            lexicalScope.beginStore("self");
+            b.emitLoxLoadSelf();
+            lexicalScope.endStore();
+        }
         // Retrieve parameter names.
-        List<String> parameterNames = retrieveParameterNames(function);
+        List<String> parameterNames = retrieveParameterNames(ctx);
         for (int i = 0; i < parameterNames.size(); i++) {
             var paramName = parameterNames.get(i);
             // Declare parameter as local variable in the function scope.
@@ -944,10 +974,11 @@ public final class LoxBytecodeCompiler extends LoxBaseVisitor<Void> {
             b.emitLoxLoadFunctionArgument(i);
             lexicalScope.endStore();
         }
+
         // Group function body execution and exiting the function together.
         b.beginBlock();
         // Execute function body.
-        visit(ctx.function().block());
+        visit(ctx.block());
         // Reset the variable scope to the outer scope.
         lexicalScope = lexicalScope.parentScope;
         // End all grouping.
@@ -960,13 +991,10 @@ public final class LoxBytecodeCompiler extends LoxBaseVisitor<Void> {
         b.endReturn();
         // End encapsulation of function in separate call target.
         LoxRootNode node = b.endRoot();
-        // Assign the actual function object to the just declared variable.
-        lexicalScope.beginStore(funName);
         b.emitLoxCreateFunction(funName, node.getCallTarget(), lexicalScope.maxFunctionDepth);
-        lexicalScope.endStore();
         return null;
     }
-    
+
     @Override
     public Void visitReturnStmt(ReturnStmtContext ctx) {
         b.beginReturn();
@@ -984,21 +1012,49 @@ public final class LoxBytecodeCompiler extends LoxBaseVisitor<Void> {
     @Override
     public Void visitCall(CallContext ctx) {
         var calls = ctx.callArguments();
-        for (int i = 0; i < calls.size(); i++) {
-            // In order to support f(x)(y)(z) and such stuff.
-            b.beginLoxCallFunction();
+        // In order to support f(x)(y)(z) and such stuff.
+        for (int i = calls.size() - 1; i >= 0; i--) {
+            CallArgumentsContext callArguments = calls.get(i);
+            if (callArguments.IDENTIFIER() == null) {
+                b.beginLoxCallFunction();
+            } else {
+                // Property call
+                String name = callArguments.IDENTIFIER().getText();
+                b.beginLoxReadProperty(name);
+            }
         }
         super.visit(ctx.primary());
         for (CallArgumentsContext callArguments : calls) {
-            ArgumentsContext args = callArguments.arguments();
-            if (args != null) {
-                List<ExpressionContext> expressions = args.expression();
-                for (int i = 0; i < expressions.size(); i++) {
-                    visit(expressions.get(i));
+            if (callArguments.IDENTIFIER() == null) {
+                ArgumentsContext args = callArguments.arguments();
+                if (args != null) {
+                    List<ExpressionContext> expressions = args.expression();
+                    for (int i = 0; i < expressions.size(); i++) {
+                        visit(expressions.get(i));
+                    }
                 }
+                b.endLoxCallFunction();
+            } else {
+                // Property call
+                b.endLoxReadProperty();
             }
-            b.endLoxCallFunction();
         }
+        return null;
+    }
+
+    @Override
+    public Void visitClassDecl(ClassDeclContext ctx) {
+        String name = ctx.IDENTIFIER().getText();
+
+        lexicalScope.declare(name, ctx);
+        lexicalScope.beginStore(name);
+
+        b.beginLoxDeclareClass(name);
+        for (var fun : ctx.function()) {
+            visitFunction(fun);
+        }
+        b.endLoxDeclareClass();
+        lexicalScope.endStore();
         return null;
     }
 }

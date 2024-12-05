@@ -16,21 +16,27 @@ import com.oracle.truffle.api.dsl.Bind;
 import com.oracle.truffle.api.dsl.Cached;
 import com.oracle.truffle.api.dsl.Fallback;
 import com.oracle.truffle.api.dsl.Specialization;
+import com.oracle.truffle.api.dsl.Cached.Shared;
 import com.oracle.truffle.api.frame.FrameDescriptor;
 import com.oracle.truffle.api.frame.MaterializedFrame;
 import com.oracle.truffle.api.frame.VirtualFrame;
+import com.oracle.truffle.api.library.CachedLibrary;
 import com.oracle.truffle.api.nodes.DirectCallNode;
 import com.oracle.truffle.api.nodes.IndirectCallNode;
 import com.oracle.truffle.api.nodes.Node;
+import com.oracle.truffle.api.object.DynamicObjectLibrary;
 
 import de.hpi.swa.lox.LoxLanguage;
+import de.hpi.swa.lox.nodes.LoxCallFunctionNode;
 import de.hpi.swa.lox.nodes.LoxRootNode;
 import de.hpi.swa.lox.runtime.LoxContext;
 import de.hpi.swa.lox.runtime.LoxRuntimeError;
 import de.hpi.swa.lox.runtime.data.GlobalObject;
 import de.hpi.swa.lox.runtime.data.LoxArray;
+import de.hpi.swa.lox.runtime.data.LoxClass;
 import de.hpi.swa.lox.runtime.data.LoxFunction;
 import de.hpi.swa.lox.runtime.data.LoxNumber;
+import de.hpi.swa.lox.runtime.data.LoxObject;
 import de.hpi.swa.lox.runtime.data.Nil;
 
 @GenerateBytecode(//
@@ -437,7 +443,8 @@ public abstract class LoxBytecodeRootNode extends LoxRootNode implements Bytecod
     public static final class LoxAppendArray {
         @Specialization
         static LoxArray append(LoxArray array, Object value) {
-            // Set value on next index of the dynamic array (which is internally equal to the size).
+            // Set value on next index of the dynamic array (which is internally equal to
+            // the size).
             array.set(array.getSize(), value);
             // Return the array again for stacking of operation.
             return array;
@@ -530,15 +537,16 @@ public abstract class LoxBytecodeRootNode extends LoxRootNode implements Bytecod
             return new LoxRuntimeError(object.toString() + " is not an LoxArray", node);
         }
     }
-    
+
     @Operation
     @ConstantOperand(type = String.class)
     @ConstantOperand(type = RootCallTarget.class)
     @ConstantOperand(type = int.class)
     public static final class LoxCreateFunction {
-    
+
         @Specialization
-        static LoxFunction doDefault(VirtualFrame frame, String funName, RootCallTarget callTarget, int maxFunctionDepth) {
+        static LoxFunction doDefault(VirtualFrame frame, String funName, RootCallTarget callTarget,
+                int maxFunctionDepth) {
             MaterializedFrame materializedFunctionFrame = maxFunctionDepth > 0 ? frame.materialize() : null;
             return new LoxFunction(funName, callTarget, materializedFunctionFrame);
         }
@@ -549,7 +557,8 @@ public abstract class LoxBytecodeRootNode extends LoxRootNode implements Bytecod
     public static final class LoxLoadFunctionArgument {
 
         // The guard is different from the slides.
-        // index <= frame.getArguments().length does not work because of the off-by-one stuff.
+        // index <= frame.getArguments().length does not work because of the off-by-one
+        // stuff.
         @Specialization(guards = "index < frame.getArguments().length")
         static Object doDefault(VirtualFrame frame, int index) {
             return LoxFunction.getArgument(frame, index);
@@ -565,20 +574,24 @@ public abstract class LoxBytecodeRootNode extends LoxRootNode implements Bytecod
     @Operation
     public static final class LoxCallFunction {
 
-        @Specialization(limit = "5", // Cache up to 5 function call targets (not 3 is in the slides)
-                guards = "function.getCallTarget() == cachedTarget")
-        static Object doDirect(LoxFunction function, @Variadic Object[] userArguments,
-                @Cached("function.getCallTarget()") RootCallTarget cachedTarget,
-                @Cached("create(cachedTarget)") DirectCallNode directCallNode) {
-            // Different from slides, don't use the function as argument again
-            // (createArguments already does this).
-            return directCallNode.call(function.createArguments(userArguments));
+        @TruffleBoundary
+        @Specialization
+        static Object callFunction(LoxFunction function, @Variadic Object[] userArguments,
+                @Cached LoxCallFunctionNode callNode) {
+            return callNode.execute(function, userArguments);
         }
 
-        @Specialization(replaces = "doDirect")
-        static Object doIndirect(LoxFunction function, @Variadic Object[] userArguments,
-                @Cached IndirectCallNode callNode) {
-            return callNode.call(function.getCallTarget(), function.createArguments(userArguments));
+        @Specialization(limit = "1")
+        static Object classInstantiation(LoxClass klazz, @Variadic Object[] userArguments,
+                @Cached LoxCallFunctionNode callNode,
+                @CachedLibrary("klazz") DynamicObjectLibrary klazzDylib) {
+            var object = new LoxObject(klazz);
+
+            LoxFunction init = lookupMethod(object, "init", klazzDylib);
+            if (init != null) {
+                callNode.execute(init, userArguments);
+            }
+            return object;
         }
 
         @TruffleBoundary
@@ -597,4 +610,67 @@ public abstract class LoxBytecodeRootNode extends LoxRootNode implements Bytecod
             return LoxFunction.getFrameAtDepthN(frame, depth);
         }
     }
+
+    @Operation
+    @ConstantOperand(type = String.class)
+    public static final class LoxDeclareClass {
+        @Specialization
+        @TruffleBoundary
+        public static LoxClass declare(String name, @Variadic Object[] methods,
+                @CachedLibrary(limit = "1") DynamicObjectLibrary dylib) {
+            var klazz = new LoxClass(name);
+            for (var m : methods) {
+                var method = (LoxFunction) m;
+                dylib.putConstant(klazz, method.name, method, 0);
+            }
+            return klazz;
+        }
+    }
+
+    @Operation
+    @ConstantOperand(type = String.class)
+    public static final class LoxWriteProperty {
+        @Specialization(limit = "1")
+        public static Object write(String name, LoxObject object, Object value,
+                @CachedLibrary("object") DynamicObjectLibrary dylib) {
+            dylib.put(object, name, value);
+            return value;
+        }
+    }
+
+    private static LoxFunction lookupMethod(LoxObject obj, String name, DynamicObjectLibrary klassDylib) {
+        // TODO: actual inheritance
+        var m = klassDylib.getOrDefault(obj.klazz, name, null);
+        if (m != null) {
+            return new LoxFunction(obj, (LoxFunction) m); // bind method to object
+        }
+        return null;
+    }
+
+    @Operation
+    @ConstantOperand(type = String.class)
+    public static final class LoxReadProperty {
+        @Specialization(limit = "1")
+        public static Object read(String name, LoxObject object,
+                @CachedLibrary("object") DynamicObjectLibrary dylib,
+                @CachedLibrary("object.klazz") DynamicObjectLibrary klazzDylib) {
+            var result = dylib.getOrDefault(object, name, Nil.INSTANCE);
+            if (result == Nil.INSTANCE) {
+                var method = lookupMethod(object, name, klazzDylib);
+                if (method != null) {
+                    return method;
+                }
+            }
+            return result;
+        }
+    }
+
+    @Operation
+    public static final class LoxLoadSelf {
+        @Specialization
+        public static LoxObject loadSelf(VirtualFrame frame) {
+            return LoxFunction.getSelf(frame);
+        }
+    }
+
 }
