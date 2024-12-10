@@ -11,7 +11,7 @@
   <repositories>
     <repository>
       <id>lively-kernel</id>
-      <url>https://lively-kernel.org/lively4/byopl24/repository/${repodir}</url>
+      <url>https://lively-kernel.org/lively4/byopl24/repository-staging/${repodir}</url>
       <snapshots>
         <enabled>true</enabled>
       </snapshots>

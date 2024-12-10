@@ -40,7 +40,7 @@ import de.hpi.swa.lox.runtime.data.LoxObject;
 import de.hpi.swa.lox.runtime.data.Nil;
 
 @GenerateBytecode(//
-        languageClass = LoxLanguage.class, //
+        languageClass = LoxLanguage.class, enableMaterializedLocalAccesses = true, //
         boxingEliminationTypes = { long.class, boolean.class }, //
         enableUncachedInterpreter = true, //
         enableSerialization = true)
