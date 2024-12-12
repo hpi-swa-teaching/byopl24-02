@@ -66,4 +66,19 @@ public class ClassTest extends AbstractLoxTest {
         runAndExpect("class init with args", "class O { init(a) {self.a = a;}} var o = O(3); print o.a;", "3\n");
     }
 
+    @Test
+    public void testInheritMethod() {
+        runAndExpect("inherit method", "class A { m() {return 3;}} class B 🤝 A {} var b = B(); print b.m();", "3\n");
+    }
+
+    @Test
+    public void testSuperCall() {
+        runAndExpect("super",
+                "class A { m() {return 3;}}\n" +
+                        "class B 🤝 A { m() {return 4;} test() { return super.m();}}\n" +
+                        "class C 🤝 B { } \n" +
+                        "var c = C(); print c.test();",
+                "3\n");
+    }
+
 }

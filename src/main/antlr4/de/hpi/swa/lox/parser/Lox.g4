@@ -23,7 +23,7 @@ varDecl        : 'var' IDENTIFIER ('=' expression )? ;
 
 varDeclStmt    :  varDecl ';' ;
 
-classDecl      : 'class' IDENTIFIER '{' function* '}' ;
+classDecl      : 'class' name=IDENTIFIER ('\u{1F91D}' extends=IDENTIFIER )? '{' function* '}' ;
 
 exprStmt       : expression ';' ;
 
@@ -80,11 +80,13 @@ factor         : unary ( ( '/' | '*' ) unary )* ;
 
 unary          : ( '!' | '-' ) unary | call;
 
-primary        : boolean | string | number | nil | array | '(' expression ')' | variableExpr | arrayExpr;
+primary        : boolean | string | number | nil | array | '(' expression ')' | variableExpr | arrayExpr | superExpr;
 
 arrayExpr      : left=variableExpr '\u{1F449}' index=expression '\u{1F448}';
 
 array          : '\u{1F449}' ( expression ( ', ' expression )* )? '\u{1F448}';
+
+superExpr      : 'super' '.' IDENTIFIER;
 
 variableExpr   : IDENTIFIER;
 
