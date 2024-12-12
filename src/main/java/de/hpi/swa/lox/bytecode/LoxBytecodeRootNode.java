@@ -653,7 +653,7 @@ public abstract class LoxBytecodeRootNode extends LoxRootNode implements Bytecod
                 @Cached LoxLookupMethodNode lookupMethodNode) {
             var result = dylib.getOrDefault(object, name, Nil.INSTANCE);
             if (result == Nil.INSTANCE) {
-                var method = lookupMethodNode.execute(object, (LoxClass) dylib.getOrDefault(object.klazz, "Class", null),
+                var method = lookupMethodNode.execute(object, (LoxClass) dylib.getOrDefault(object, "Class", null),
                         name);
                 if (method != null) {
                     return method;
