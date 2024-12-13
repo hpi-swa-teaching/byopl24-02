@@ -5,22 +5,26 @@ import java.util.Objects;
 import com.oracle.truffle.api.CompilerDirectives.TruffleBoundary;
 import com.oracle.truffle.api.interop.TruffleObject;
 
-/** 
+/**
  * Number representation (mainly based on Double).
  */
 public class LoxNumber implements TruffleObject {
 
     private Double internalValue;
 
+    public static final LoxNumber NaN = new LoxNumber(Double.NaN);
+
     public LoxNumber(String numberText) {
         try {
             // Try to parse number text to Double value.
             // This gives us floating number handling and can also deal with integers.
-            // Lox-reference: "Lox has only one kind of number: double-precision floating point".
+            // Lox-reference: "Lox has only one kind of number: double-precision floating
+            // point".
             this.internalValue = Double.valueOf(numberText);
         } catch (NumberFormatException e) {
             // If the content is not parseable into a java Double value,
             // our grammar should have resulted in a syntax error before.
+            this.internalValue = LoxNumber.NaN.internalValue;
         }
     }
 
@@ -61,7 +65,8 @@ public class LoxNumber implements TruffleObject {
             return false;
         }
         final LoxNumber otherLoxNumber = (LoxNumber) other;
-        // We need to apply a double comparison, that means we can't really use the == operator!
+        // We need to apply a double comparison, that means we can't really use the ==
+        // operator!
         // see https://stackoverflow.com/a/6837237.
         final float epsilon = 5.96e-08f;
         return Math.abs(this.getValue() / otherLoxNumber.getValue() - 1) < epsilon;
