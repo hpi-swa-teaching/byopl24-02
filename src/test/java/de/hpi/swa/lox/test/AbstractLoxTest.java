@@ -49,6 +49,7 @@ import java.io.ByteArrayOutputStream;
 import java.io.PrintStream;
 import org.graalvm.polyglot.Context;
 import org.graalvm.polyglot.PolyglotException;
+import org.graalvm.polyglot.io.IOAccess;
 import org.junit.After;
 import org.junit.Before;
 
@@ -64,7 +65,7 @@ public abstract class AbstractLoxTest {
 
     @Before
     public void initContext() {
-        context = Context.newBuilder().build();
+        context = Context.newBuilder().allowIO(IOAccess.ALL).build();
     }
 
     @After
