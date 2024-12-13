@@ -60,6 +60,7 @@ import de.hpi.swa.lox.parser.LoxParser.PrintStmtContext;
 import de.hpi.swa.lox.parser.LoxParser.ProgramContext;
 import de.hpi.swa.lox.parser.LoxParser.ReturnStmtContext;
 import de.hpi.swa.lox.parser.LoxParser.StringContext;
+import de.hpi.swa.lox.parser.LoxParser.SuperExprContext;
 import de.hpi.swa.lox.parser.LoxParser.TermContext;
 import de.hpi.swa.lox.parser.LoxParser.TrueContext;
 import de.hpi.swa.lox.parser.LoxParser.UnaryContext;
@@ -1044,17 +1045,41 @@ public final class LoxBytecodeCompiler extends LoxBaseVisitor<Void> {
 
     @Override
     public Void visitClassDecl(ClassDeclContext ctx) {
-        String name = ctx.IDENTIFIER().getText();
-
+        String name = ctx.name.getText();
         lexicalScope.declare(name, ctx);
         lexicalScope.beginStore(name);
-
+        lexicalScope = new LoxLexicalScope(lexicalScope);
+        lexicalScope.declare("super", ctx);
         b.beginLoxDeclareClass(name);
+        b.beginBlock();
+        if (ctx.extends_ != null) {
+            String superclassName = ctx.extends_.getText();
+            lexicalScope.beginStore("super");
+            lexicalScope.loadIntoScope(superclassName);
+            lexicalScope.endStore();
+        } else {
+            lexicalScope.beginStore("super");
+            b.emitLoadConstant(Nil.INSTANCE);
+            lexicalScope.endStore();
+        }
+        lexicalScope.loadIntoScope("super");
+        b.endBlock();
         for (var fun : ctx.function()) {
             visitFunction(fun);
         }
         b.endLoxDeclareClass();
+        lexicalScope = lexicalScope.parentScope;
         lexicalScope.endStore();
+        return null;
+    }
+
+    @Override
+    public Void visitSuperExpr(SuperExprContext ctx) {
+        String name = ctx.IDENTIFIER().getText();
+        b.beginLoxReadSuper(name);
+        b.emitLoxLoadSelf();
+        lexicalScope.loadIntoScope("super");
+        b.endLoxReadSuper();
         return null;
     }
 }

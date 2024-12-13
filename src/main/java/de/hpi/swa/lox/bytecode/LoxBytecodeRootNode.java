@@ -16,18 +16,16 @@ import com.oracle.truffle.api.dsl.Bind;
 import com.oracle.truffle.api.dsl.Cached;
 import com.oracle.truffle.api.dsl.Fallback;
 import com.oracle.truffle.api.dsl.Specialization;
-import com.oracle.truffle.api.dsl.Cached.Shared;
 import com.oracle.truffle.api.frame.FrameDescriptor;
 import com.oracle.truffle.api.frame.MaterializedFrame;
 import com.oracle.truffle.api.frame.VirtualFrame;
 import com.oracle.truffle.api.library.CachedLibrary;
-import com.oracle.truffle.api.nodes.DirectCallNode;
-import com.oracle.truffle.api.nodes.IndirectCallNode;
 import com.oracle.truffle.api.nodes.Node;
 import com.oracle.truffle.api.object.DynamicObjectLibrary;
 
 import de.hpi.swa.lox.LoxLanguage;
 import de.hpi.swa.lox.nodes.LoxCallFunctionNode;
+import de.hpi.swa.lox.nodes.LoxLookupMethodNode;
 import de.hpi.swa.lox.nodes.LoxRootNode;
 import de.hpi.swa.lox.runtime.LoxContext;
 import de.hpi.swa.lox.runtime.LoxRuntimeError;
@@ -584,10 +582,10 @@ public abstract class LoxBytecodeRootNode extends LoxRootNode implements Bytecod
         @Specialization(limit = "1")
         static Object classInstantiation(LoxClass klazz, @Variadic Object[] userArguments,
                 @Cached LoxCallFunctionNode callNode,
-                @CachedLibrary("klazz") DynamicObjectLibrary klazzDylib) {
+                @Cached LoxLookupMethodNode lookupMethodNode) {
             var object = new LoxObject(klazz);
 
-            LoxFunction init = lookupMethod(object, "init", klazzDylib);
+            LoxFunction init = lookupMethodNode.execute(object, klazz, "init");
             if (init != null) {
                 callNode.execute(init, userArguments);
             }
@@ -616,13 +614,21 @@ public abstract class LoxBytecodeRootNode extends LoxRootNode implements Bytecod
     public static final class LoxDeclareClass {
         @Specialization
         @TruffleBoundary
-        public static LoxClass declare(String name, @Variadic Object[] methods,
+        public static LoxClass declareWithoutSuperclass(String name, Nil nil, @Variadic Object[] methods,
                 @CachedLibrary(limit = "1") DynamicObjectLibrary dylib) {
             var klazz = new LoxClass(name);
             for (var m : methods) {
                 var method = (LoxFunction) m;
                 dylib.putConstant(klazz, method.name, method, 0);
             }
+            return klazz;
+        }
+
+        @Specialization
+        public static LoxClass declare(String name, LoxClass superclass, @Variadic Object[] methods,
+                @CachedLibrary(limit = "1") DynamicObjectLibrary dylib) {
+            var klazz = declareWithoutSuperclass(name, Nil.INSTANCE, methods, dylib);
+            dylib.putConstant(klazz, "super", superclass, 0);
             return klazz;
         }
     }
@@ -638,25 +644,17 @@ public abstract class LoxBytecodeRootNode extends LoxRootNode implements Bytecod
         }
     }
 
-    private static LoxFunction lookupMethod(LoxObject obj, String name, DynamicObjectLibrary klassDylib) {
-        // TODO: actual inheritance
-        var m = klassDylib.getOrDefault(obj.klazz, name, null);
-        if (m != null) {
-            return new LoxFunction(obj, (LoxFunction) m); // bind method to object
-        }
-        return null;
-    }
-
     @Operation
     @ConstantOperand(type = String.class)
     public static final class LoxReadProperty {
         @Specialization(limit = "1")
         public static Object read(String name, LoxObject object,
                 @CachedLibrary("object") DynamicObjectLibrary dylib,
-                @CachedLibrary("object.klazz") DynamicObjectLibrary klazzDylib) {
+                @Cached LoxLookupMethodNode lookupMethodNode) {
             var result = dylib.getOrDefault(object, name, Nil.INSTANCE);
             if (result == Nil.INSTANCE) {
-                var method = lookupMethod(object, name, klazzDylib);
+                var method = lookupMethodNode.execute(object, (LoxClass) dylib.getOrDefault(object, "Class", null),
+                        name);
                 if (method != null) {
                     return method;
                 }
@@ -670,6 +668,26 @@ public abstract class LoxBytecodeRootNode extends LoxRootNode implements Bytecod
         @Specialization
         public static LoxObject loadSelf(VirtualFrame frame) {
             return LoxFunction.getSelf(frame);
+        }
+    }
+
+    @Operation
+    @ConstantOperand(type = String.class)
+    public static final class LoxReadSuper {
+        @Specialization
+        public static Object read(String name, LoxObject object, LoxClass superKlazz,
+                @Cached LoxLookupMethodNode lookupMethod) {
+            var method = lookupMethod.execute(object, superKlazz, name);
+            if (method != null) {
+                return method;
+            } else {
+                return methodNotFound(name);
+            }
+        }
+
+        @TruffleBoundary
+        public static Object methodNotFound(String name) {
+            throw new LoxRuntimeError("Method " + name + " not found in super classes", null);
         }
     }
 
