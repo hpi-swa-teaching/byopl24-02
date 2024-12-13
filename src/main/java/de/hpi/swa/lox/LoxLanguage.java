@@ -14,13 +14,17 @@ import java.util.Map;
 import com.oracle.truffle.api.CallTarget;
 import com.oracle.truffle.api.RootCallTarget;
 import com.oracle.truffle.api.TruffleLanguage;
+import com.oracle.truffle.api.dsl.Bind;
+import com.oracle.truffle.api.nodes.Node;
 
 import de.hpi.swa.lox.runtime.LoxContext;
 
+@Bind.DefaultExpression("get($node)")
 @TruffleLanguage.Registration(id = LoxLanguage.ID)
 public class LoxLanguage extends TruffleLanguage<LoxContext> {
 
     public static final String ID = "lox";
+    private static final LanguageReference<LoxLanguage> REFERENCE = LanguageReference.create(LoxLanguage.class);
     private Map<String, BuiltInNode> builtins;
 
     public LoxLanguage() {
@@ -49,5 +53,9 @@ public class LoxLanguage extends TruffleLanguage<LoxContext> {
 
         }
         return builtins;
+    }
+
+    public static LoxLanguage get(Node node) {
+        return REFERENCE.get(node);
     }
 }
