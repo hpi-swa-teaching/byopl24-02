@@ -653,6 +653,16 @@ public abstract class LoxBytecodeRootNode extends LoxRootNode implements Bytecod
     @Operation
     @ConstantOperand(type = String.class)
     public static final class LoxReadProperty {
+
+        @Specialization
+        public static Object read(String name, LoxArray array) {
+            if (name.equals("length")) {
+                return new LoxNumber(array.getSize());
+            } else {
+                return Nil.INSTANCE;
+            }
+        }
+
         @Specialization(limit = "1")
         public static Object read(String name, LoxObject object,
                 @CachedLibrary("object") DynamicObjectLibrary dylib,
