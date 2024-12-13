@@ -1,7 +1,6 @@
 package de.hpi.swa.lox.cli;
 
 import java.io.File;
-import java.io.IOException;
 import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.List;
@@ -21,13 +20,14 @@ public class LoxMain extends AbstractLanguageLauncher {
 
     private String command;
     private File file;
+    private List<String> args = new ArrayList<>();
 
     @Override
     protected List<String> preprocessArguments(List<String> arguments, Map<String, String> polyglotOptions) {
         List<String> unrecognized = new ArrayList<>();
         for (int i = 0; i < arguments.size(); i++) {
             var arg = arguments.get(i);
-            if (arg.startsWith("-")) {
+            if (file == null && arg.startsWith("-")) {
                 switch (arg) {
                     case "-c":
                         if (i != arguments.size() - 2) {
@@ -45,34 +45,38 @@ public class LoxMain extends AbstractLanguageLauncher {
                 System.err.println("filename must be the last argument");
                 System.exit(1);
             } else {
-                file = Path.of(arg).toFile();
-                if (!file.isFile()) {
-                    System.err.println("Cannot access file " + arg);
-                    System.exit(1);
+                if (file == null) {
+                    file = Path.of(arg).toFile();
+                    if (!file.isFile()) {
+                        System.err.println("Cannot access file " + arg);
+                        System.exit(1);
+                    }
+                } else {
+                    args.add(arg);
                 }
             }
         }
         return unrecognized;
+
     }
 
     @Override
     protected void launch(Builder contextBuilder) {
         Source source;
-        try (var context = contextBuilder.build()) {
+        String[] argsArray = args.toArray(new String[args.size()]);
+
+        try (var context = contextBuilder.arguments("lox", argsArray).build()) {
 
             // FOR TESTING
             // command = "print true;";
 
             if (file != null) {
+                String command = "load(\"" + file.getPath().replace('\\', '/') + "\");nil;";
+                source = Source.newBuilder("lox", command, file.getPath()).buildLiteral();
                 try {
-                    source = Source.newBuilder("lox", file).build();
-                    try {
-                        context.eval(source);
-                    } catch (Exception e) {
-                        printException(e);
-                    }
-                } catch (IOException e) {
-                    e.printStackTrace();
+                    context.eval(source);
+                } catch (Exception e) {
+                    printException(e);
                 }
             } else if (command != null && !command.isEmpty()) {
                 // Given a command, evaluate it if not empty.
@@ -99,7 +103,7 @@ public class LoxMain extends AbstractLanguageLauncher {
      */
     private void startEvalLoop() {
         // Create new context with repl environment variable.
-        // Why don't we use Source#isInteractive()? Because when using this, 
+        // Why don't we use Source#isInteractive()? Because when using this,
         // somehow also the exit code (0) is printed for every new statement.
         try (Context newReplContext = Context.newBuilder("lox").environment("isRepl", "true").build()) {
             while (true) {
