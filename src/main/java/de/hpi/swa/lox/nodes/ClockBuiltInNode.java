@@ -14,7 +14,7 @@ public abstract class ClockBuiltInNode extends BuiltInNodeWithArgs {
 
     @Specialization
     @TruffleBoundary
-    static Object getTime(Object string) {
+    static Object getTime() {
         return new LoxNumber((double) System.nanoTime() / 1_000_000_000.0);
 
     }
