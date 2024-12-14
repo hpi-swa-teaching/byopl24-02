@@ -7,7 +7,6 @@ import com.oracle.truffle.api.RootCallTarget;
 import com.oracle.truffle.api.dsl.Bind;
 import com.oracle.truffle.api.dsl.Cached;
 import com.oracle.truffle.api.dsl.Specialization;
-import com.oracle.truffle.api.dsl.Bind.DefaultExpression;
 import com.oracle.truffle.api.nodes.IndirectCallNode;
 import com.oracle.truffle.api.nodes.Node;
 import com.oracle.truffle.api.source.Source;
@@ -15,6 +14,7 @@ import com.oracle.truffle.api.strings.TruffleString;
 
 import de.hpi.swa.lox.LoxLanguage;
 import de.hpi.swa.lox.parser.LoxBytecodeCompiler;
+import de.hpi.swa.lox.parser.LoxParseError;
 import de.hpi.swa.lox.runtime.LoxContext;
 import de.hpi.swa.lox.runtime.LoxRuntimeError;
 
@@ -42,6 +42,8 @@ public abstract class LoadBuiltInNode extends BuiltInNodeWithArgs {
             return callNode.call(rootTarget);
         } catch (IOException e) {
             throw new LoxRuntimeError(e.getMessage(), node);
+        } catch (LoxParseError e) {
+            throw e;
         } finally {
             env.setCurrentWorkingDirectory(cwd);
         }

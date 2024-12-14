@@ -36,7 +36,7 @@ public class BuiltInTest extends AbstractLoxTest {
         tempFile.deleteOnExit();
         // Write to the temporary file
         try (FileWriter writer = new FileWriter(tempFile)) {
-            writer.write("print ARGV[0];");
+            writer.write("print ARGV👉0👈;");
         }
         // Execute the LoxMain with the temporary file
         LoxMain.main(new String[] { tempFile.getAbsolutePath(), "hello" });
