@@ -1,6 +1,7 @@
 package de.hpi.swa.lox.test;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
 
 import java.io.File;
 import java.io.FileWriter;
@@ -24,6 +25,11 @@ public class BuiltInTest extends AbstractLoxTest {
     }
 
     @Test
+    public void testNumberWrongType() {
+        runAndExpectError("parse string as number", "print 3 + Number(\"four\")", "Error(s) parsing script");
+    }
+
+    @Test
     public void testStringConversion() {
         runAndExpect("convert number to string",
                 "print \"Hello\" + String(3);", "Hello3\n");
@@ -42,5 +48,12 @@ public class BuiltInTest extends AbstractLoxTest {
         LoxMain.main(new String[] { tempFile.getAbsolutePath(), "hello" });
         // Verify the output
         assertEquals("Should print hello", "hello\n", normalize(outContent.toString()));
+    }
+
+    @Test
+    public void testClock() {
+        run("print clock();");
+        String output = this.outContent.toString().trim();
+        assertTrue("Expected a number but got: " + output, output.matches("[0-9.E]+"));
     }
 }
