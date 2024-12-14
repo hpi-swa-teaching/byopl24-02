@@ -41,9 +41,6 @@ public class LoxMain extends AbstractLanguageLauncher {
                     default:
                         unrecognized.add(arg);
                 }
-            } else if (i != arguments.size() - 1) {
-                System.err.println("filename must be the last argument");
-                System.exit(1);
             } else {
                 if (file == null) {
                     file = Path.of(arg).toFile();
