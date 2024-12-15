@@ -22,6 +22,7 @@ import com.oracle.truffle.api.frame.VirtualFrame;
 import com.oracle.truffle.api.library.CachedLibrary;
 import com.oracle.truffle.api.nodes.Node;
 import com.oracle.truffle.api.object.DynamicObjectLibrary;
+import com.oracle.truffle.api.strings.TruffleString;
 
 import de.hpi.swa.lox.LoxLanguage;
 import de.hpi.swa.lox.nodes.LoxCallFunctionNode;
@@ -100,6 +101,11 @@ public abstract class LoxBytecodeRootNode extends LoxRootNode implements Bytecod
             // Unwrap LoxNumber values, calculate result, rewrap.
             Double result = left.getValue() + right.getValue();
             return new LoxNumber(result);
+        }
+
+        @Specialization
+        static TruffleString doStrings(TruffleString left, TruffleString right) {
+            return left.concatUncached(right, TruffleString.Encoding.UTF_8, false);
         }
 
         @Specialization
@@ -647,6 +653,16 @@ public abstract class LoxBytecodeRootNode extends LoxRootNode implements Bytecod
     @Operation
     @ConstantOperand(type = String.class)
     public static final class LoxReadProperty {
+
+        @Specialization
+        public static Object read(String name, LoxArray array) {
+            if (name.equals("length")) {
+                return new LoxNumber(array.getSize());
+            } else {
+                return Nil.INSTANCE;
+            }
+        }
+
         @Specialization(limit = "1")
         public static Object read(String name, LoxObject object,
                 @CachedLibrary("object") DynamicObjectLibrary dylib,

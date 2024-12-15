@@ -50,11 +50,11 @@ call           : primary callArguments* ;
 
 callArguments  : '(' arguments? ')' | '.' IDENTIFIER ;
 
-arguments      : expression ( ',' expression )* ;
+arguments      : expression ( (',' | ', ') expression )* ;
 
 function       : IDENTIFIER '(' parameters? ')' block ;
 
-parameters     : IDENTIFIER ( ',' IDENTIFIER )* ;
+parameters     : IDENTIFIER ( (',' | ', ') IDENTIFIER )* ;
 
 block          : '{' declaration* '}' ;
 
@@ -84,7 +84,7 @@ primary        : boolean | string | number | nil | array | '(' expression ')' | 
 
 arrayExpr      : left=variableExpr '\u{1F449}' index=expression '\u{1F448}';
 
-array          : '\u{1F449}' ( expression ( ', ' expression )* )? '\u{1F448}';
+array          : '\u{1F449}' ( expression ( (',' | ', ') expression )* )? '\u{1F448}';
 
 superExpr      : 'super' '.' IDENTIFIER;
 

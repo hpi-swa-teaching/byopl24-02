@@ -1,0 +1,52 @@
+class Run {
+    init(name) {
+        self.name = name;
+        self.benchmarkSuite = self.loadBenchmark();
+        self.numIterations = 1;
+        self.innerIterations = 1;
+        self.total = 0;
+    }
+
+    loadBenchmark() {
+        var file = self.name + ".lox";
+        print "load benchmark: " + file;
+        return load(file);
+    }
+
+    reportBenchmark() {
+        print self.name + ": iterations=" + String(self.numIterations) + " average: "
+            + String(self.total / self.numIterations) + "us total: " + String(self.total) + "us";
+    }
+
+    printResult(runTime) {
+        print self.name + ": innerIterations=" + String(self.innerIterations) + " runtime: " + String(runTime) + "us";
+    }
+
+    measure(bench) {
+        var startTime = clock();
+        if (!bench.innerBenchmarkLoop(self.innerIterations)) {
+            print "ERROR Benchmark failed with incorrect result";
+            return nil;
+        }
+        var runTime = (clock() - startTime) * 1000;
+        self.printResult(runTime);
+        self.total = self.total + runTime;
+    }
+
+    doRuns(bench) {
+        for (var i = 0; i < self.numIterations; i = i + 1) {
+            self.measure(bench);
+        }
+    }
+
+    printTotal() {
+        print "Total Runtime: " + String(self.total) + "us";
+    }
+
+    runBenchmark() {
+        print "Starting " + self.name + " benchmark ...";
+        self.doRuns(self.benchmarkSuite);
+        self.reportBenchmark();
+        print "";
+    }
+}

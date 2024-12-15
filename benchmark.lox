@@ -1,16 +1,14 @@
-var N = 10000000;
-fun benchmark(name,f,doPrint) {
-    var a = clock();
-    f();
-    if (doPrint) print (clock() - a);
-}
-
-fun bench_sum_of_squares() {
-    var r = 0;
-    for(var i=0; i < N; i = i + 1){
-        r = r + i * i;
+class Benchmark {
+    innerBenchmarkLoop(innerIterations) {
+        for (var i = 0; i < innerIterations; i = i + 1) {
+            if (!self.verifyResult(self.benchmark())) {
+                return false;
+            }
+        }
+        return true;
     }
-    print r;
-}
 
-benchmark("bench_sum_of_squares",bench_sum_of_squares,true);
+    benchmark() {}
+
+    verifyResult() {}
+}

@@ -31,8 +31,12 @@ public class ArithmeticExpressionTest extends AbstractLoxTest {
                 "Cannot add");
         runAndExpectError("Integer number add not matching type left", "print \"test\" + 12;",
                 "Cannot add");
-        runAndExpectError("Integer number add not matching type", "print \"test\" + \"test\";",
-                "Cannot add");
+    }
+
+    @Test
+    public void printStringAdded() {
+        runAndExpect("Integer number add not matching type", "print \"test\" + \"test\";",
+                "testtest\n");
     }
 
     @Test
