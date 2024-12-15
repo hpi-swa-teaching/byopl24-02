@@ -1,18 +1,14 @@
 class Benchmark {
     innerBenchmarkLoop(innerIterations) {
         for (var i = 0; i < innerIterations; i = i + 1) {
-            if (!this.verifyResult(this.benchmark())) {
+            if (!self.verifyResult(self.benchmark())) {
                 return false;
             }
         }
         return true;
     }
 
-    benchmark() {
-        // "subclass responsibility";
-    }
+    benchmark() {}
 
-    verifyResult() {
-        // "subclass responsibility";
-    }
+    verifyResult() {}
 }

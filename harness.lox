@@ -22,5 +22,5 @@ if (ARGV.length < 1) {
     return nil;
 }
 var run = processArguments(ARGV);
-run.runBenchmark();o
+run.runBenchmark();
 run.printTotal();
