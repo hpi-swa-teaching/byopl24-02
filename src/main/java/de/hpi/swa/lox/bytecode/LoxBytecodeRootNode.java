@@ -71,11 +71,6 @@ public abstract class LoxBytecodeRootNode extends LoxRootNode implements Bytecod
         static boolean doBoolean(boolean value) {
             return !value;
         }
-
-        @Fallback
-        static boolean doOtherTypes(Object value, @Bind Node node) {
-            return !isTruthy(value);
-        }
     }
 
     @Operation
@@ -411,13 +406,18 @@ public abstract class LoxBytecodeRootNode extends LoxRootNode implements Bytecod
     public static final class LoxIsTruthy {
 
         @Specialization
-        static boolean doBoolean(boolean value) {
-            return value;
+        public static boolean fromLoxNumber(LoxNumber x) {
+            return x.getValue() != 0;
+        }
+
+        @Specialization
+        public static boolean fromBool(boolean x) {
+            return x;
         }
 
         @Fallback
-        static boolean doDefault(Object value) {
-            return isTruthy(value);
+        public static boolean fromObject(Object x) {
+            return x != Nil.INSTANCE;
         }
     }
 
@@ -457,13 +457,15 @@ public abstract class LoxBytecodeRootNode extends LoxRootNode implements Bytecod
 
     @Operation
     public static final class LoxWriteArray {
-        @Specialization(guards = { "index.getValue().intValue() >= 0", "array.getSize() > index.getValue().intValue()" })
+        @Specialization(guards = { "index.getValue().intValue() >= 0",
+                "array.getSize() > index.getValue().intValue()" })
         static Void writeArrayInSize(LoxArray array, LoxNumber index, Object value) {
             array.setInSize(index.getValue().intValue(), value);
             return null;
         }
 
-        @Specialization(guards = { "index.getValue().intValue() >= 0", "array.getCapacity() > index.getValue().intValue()" }, replaces = "writeArrayInSize")
+        @Specialization(guards = { "index.getValue().intValue() >= 0",
+                "array.getCapacity() > index.getValue().intValue()" }, replaces = "writeArrayInSize")
         static Void writeArrayInCapacity(LoxArray array, LoxNumber index, Object value) {
             array.setInCapacity(index.getValue().intValue(), value);
             return null;

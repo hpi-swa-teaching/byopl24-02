@@ -415,7 +415,9 @@ public final class LoxBytecodeCompiler extends LoxBaseVisitor<Void> {
         if (text.startsWith(UNARY_INVERT_OPERATOR)) {
             // Invert
             b.beginLoxInvert();
+            b.beginLoxIsTruthy();
             unaryResult = visitUnary(ctx.unary());
+            b.endLoxIsTruthy();
             b.endLoxInvert();
         } else if (text.startsWith(UNARY_NEGATE_OPERATOR)) {
             // Negate
