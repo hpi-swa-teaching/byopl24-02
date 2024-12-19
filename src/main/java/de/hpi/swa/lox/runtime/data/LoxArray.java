@@ -74,13 +74,17 @@ public class LoxArray {
     // does not need to grow, but size changes
     public void setInCapacity(int index, Object value) {
         if (index >= size) {
-        size = index + 1;
+            size = index + 1;
         }
         innerArray[index] = value;
+        // Set flag for iterator update
+        iteratorNeedsUpdate = true;
     }
 
     public void setInSize(int index, Object value) {
         innerArray[index] = value;
+        // Set flag for iterator update
+        iteratorNeedsUpdate = true;
     }
 
     private void ensureCapacity() {
