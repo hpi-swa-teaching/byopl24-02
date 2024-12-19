@@ -778,6 +778,8 @@ public final class LoxBytecodeCompiler extends LoxBaseVisitor<Void> {
 
     @Override
     public Void visitForStmt(ForStmtContext ctx) {
+        lexicalScope = new LoxLexicalScope(lexicalScope);
+        b.beginBlock();
         ParserRuleContext init = ctx.loopVar;
         if (init == null) {
             init = ctx.exprStmt();
@@ -796,11 +798,15 @@ public final class LoxBytecodeCompiler extends LoxBaseVisitor<Void> {
         visit(ctx.increment);
         b.endBlock();
         b.endWhile();
+        lexicalScope = lexicalScope.parentScope;
+        b.endBlock();
         return null;
     }
 
     @Override
     public Void visitForOfStmt(ForOfStmtContext ctx) {
+        lexicalScope = new LoxLexicalScope(lexicalScope);
+        b.beginBlock();
         // Visit declaration of element var.
         visitVarDecl(ctx.elementVar);
         beginAttribution(ctx);
@@ -829,11 +835,15 @@ public final class LoxBytecodeCompiler extends LoxBaseVisitor<Void> {
         visit(ctx.body);
         b.endBlock();
         b.endWhile();
+        lexicalScope = lexicalScope.parentScope;
+        b.endBlock();
         return null;
     }
 
     @Override
     public Void visitForInStmt(ForInStmtContext ctx) {
+        lexicalScope = new LoxLexicalScope(lexicalScope);
+        b.beginBlock();
         // Visit declaration of index var.
         visitVarDecl(ctx.indexVar);
         beginAttribution(ctx);
@@ -866,6 +876,8 @@ public final class LoxBytecodeCompiler extends LoxBaseVisitor<Void> {
         visit(ctx.body);
         b.endBlock();
         b.endWhile();
+        lexicalScope = lexicalScope.parentScope;
+        b.endBlock();
         return null;
     }
 
