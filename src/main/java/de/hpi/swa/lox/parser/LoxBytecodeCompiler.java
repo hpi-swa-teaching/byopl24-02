@@ -1011,6 +1011,7 @@ public final class LoxBytecodeCompiler extends LoxBaseVisitor<Void> {
         b.endReturn();
         // End encapsulation of function in separate call target.
         LoxRootNode node = b.endRoot();
+        node.name = funName;
         b.emitLoxCreateFunction(funName, node.getCallTarget(), lexicalScope.maxFunctionDepth);
         return null;
     }
