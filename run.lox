@@ -28,7 +28,7 @@ class Run {
             print "ERROR Benchmark failed with incorrect result";
             return nil;
         }
-        var runTime = (clock() - startTime) * 1000;
+        var runTime = round((clock() - startTime) * 1000 * 1000);
         self.printResult(runTime);
         self.total = self.total + runTime;
     }

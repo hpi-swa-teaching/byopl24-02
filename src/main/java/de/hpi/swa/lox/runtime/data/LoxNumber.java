@@ -36,6 +36,10 @@ public class LoxNumber implements TruffleObject {
         this.internalValue = (double) value;
     }
 
+    public LoxNumber(long value) {
+        this.internalValue = (double) value;
+    }
+
     public Double getValue() {
         return internalValue;
     }
