@@ -677,14 +677,14 @@ public final class LoxBytecodeCompiler extends LoxBaseVisitor<Void> {
 
     @Override
     public Void visitAssignment(AssignmentContext ctx) {
-        final boolean isCall = ctx.call() != null;
+        final boolean isCall = ctx.left != null;
         final boolean isAssignment = ctx.IDENTIFIER() != null;
         String variableName = null;
         // Property assignment
         if (isCall) {
             String name = ctx.IDENTIFIER().getText();
             b.beginLoxWriteProperty(name);
-            visitCall(ctx.call());
+            visit(ctx.left);
             visitAssignment((ctx.assignment()));
             b.endLoxWriteProperty();
             return null;
@@ -901,10 +901,15 @@ public final class LoxBytecodeCompiler extends LoxBaseVisitor<Void> {
 
     @Override
     public Void visitArrayExpr(ArrayExprContext ctx) {
-        b.beginLoxReadArray();
+        var expressions = ctx.expression();
+        for (int i = expressions.size() - 1; i >= 0; i -= 1) {
+            b.beginLoxReadArray();
+        }
         visit(ctx.left);
-        visit(ctx.index);
-        b.endLoxReadArray();
+        for (int i = 0; i < expressions.size(); i += 1) {
+            visit(expressions.get(i));
+            b.endLoxReadArray();
+        }
         return null;
     }
 

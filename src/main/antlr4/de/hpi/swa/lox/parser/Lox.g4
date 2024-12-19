@@ -60,9 +60,9 @@ block          : '{' declaration* '}' ;
 
 expression     : assignment ;
 
-assignment     : ( call '.' )? IDENTIFIER '=' assignment | logic_or | arrayAssignment ;
+assignment     : ( left=arrayExpr '.' )? IDENTIFIER '=' assignment | arrayAssignment ;
 
-arrayAssignment: left=variableExpr '\u{1F449}' index=expression '\u{1F448}'
+arrayAssignment: left=arrayExpr '\u{1F449}' index=expression '\u{1F448}'
                             '=' right=assignment
                             | other=logic_or;
 
@@ -78,11 +78,11 @@ term           : factor ( ( '-' | '+' ) factor )* ;
 
 factor         : unary ( ( '/' | '*' ) unary )* ;
 
-unary          : ( '!' | '-' ) unary | call;
+unary          : ( '!' | '-' ) unary | arrayExpr;
 
-primary        : boolean | string | number | nil | array | '(' expression ')' | variableExpr | arrayExpr | superExpr;
+primary        : boolean | string | number | nil | array | '(' expression ')' | variableExpr | superExpr;
 
-arrayExpr      : left=variableExpr '\u{1F449}' index=expression '\u{1F448}';
+arrayExpr      : left=call ('\u{1F449}' index=expression '\u{1F448}')*;
 
 array          : '\u{1F449}' ( expression ( (',' | ', ') expression )* )? '\u{1F448}';
 
