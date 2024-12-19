@@ -457,8 +457,20 @@ public abstract class LoxBytecodeRootNode extends LoxRootNode implements Bytecod
 
     @Operation
     public static final class LoxWriteArray {
+        @Specialization(guards = { "index.getValue().intValue() >= 0", "array.getSize() > index.getValue().intValue()" })
+        static Void writeArrayInSize(LoxArray array, LoxNumber index, Object value) {
+            array.setInSize(index.getValue().intValue(), value);
+            return null;
+        }
+
+        @Specialization(guards = { "index.getValue().intValue() >= 0", "array.getCapacity() > index.getValue().intValue()" }, replaces = "writeArrayInSize")
+        static Void writeArrayInCapacity(LoxArray array, LoxNumber index, Object value) {
+            array.setInCapacity(index.getValue().intValue(), value);
+            return null;
+        }
+
         // Lox number wraps a double, so we need to cast it to int
-        @Specialization(guards = "index.getValue().intValue() >= 0")
+        @Specialization(guards = "index.getValue().intValue() >= 0", replaces = "writeArrayInCapacity")
         static Void writeArray(LoxArray array, LoxNumber index, Object value) {
             array.set(index.getValue().intValue(), value);
             return null;
