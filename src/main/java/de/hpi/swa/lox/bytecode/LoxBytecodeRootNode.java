@@ -42,7 +42,7 @@ import de.hpi.swa.lox.runtime.data.Nil;
 
 @GenerateBytecode(//
         languageClass = LoxLanguage.class, enableMaterializedLocalAccesses = true, //
-        boxingEliminationTypes = { long.class, boolean.class }, //
+        boxingEliminationTypes = { long.class }, // BUG? boolean.class
         enableUncachedInterpreter = true, //
         enableSerialization = true)
 @ShortCircuitOperation(name = "LoxAnd", booleanConverter = LoxBytecodeRootNode.LoxIsTruthy.class, operator = Operator.AND_RETURN_CONVERTED)
