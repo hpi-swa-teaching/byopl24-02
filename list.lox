@@ -1,0 +1,57 @@
+load("benchmark.lox");
+class Element {
+    init(v) {
+        self.val = v;
+        self.next = nil;
+    }
+    length() {
+        if (self.next == nil) {
+            return 1;
+        }
+        return 1 + self.next.length();
+    }
+}
+class List 🤝 Benchmark {
+    benchmark() {
+        var result = self.takl(
+            self.makeList(15),
+            self.makeList(10),
+            self.makeList(6)
+        );
+        return result.length();
+    }
+    makeList(length) {
+        if (length == 0) {
+            return nil;
+        }
+        var e = Element(length);
+        e.next = self.makeList(length - 1);
+        return e;
+    }
+    isShorterThan(x, y) {
+        var xTail = x;
+        var yTail = y;
+        while (yTail != nil) {
+            if (xTail == nil) {
+                return true;
+            }
+            xTail = xTail.next;
+            yTail = yTail.next;
+        }
+        return false;
+    }
+    takl(x, y, z) {
+        if (self.isShorterThan(y, x)) {
+            return self.takl(
+                self.takl(x.next, y, z),
+                self.takl(y.next, z, x),
+                self.takl(z.next, x, y)
+            );
+        }
+        return z;
+    }
+    verifyResult(result) {
+        return 10 == result;
+    }
+}
+return List();

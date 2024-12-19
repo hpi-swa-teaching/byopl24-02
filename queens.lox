@@ -1,0 +1,60 @@
+load("benchmark.lox");
+class Queens 🤝 Benchmark {
+    init() {
+        super.init();
+        self.freeMaxs = nil;
+        self.freeRows = nil;
+        self.freeMins = nil;
+        self.queenRows = nil;
+    }
+    benchmark() {
+        var result = true;
+        for (var i = 0; i < 10; i = i + 1) {
+            result = result and self.queens();
+        }
+        return result;
+    }
+    verifyResult(result) {
+        return result;
+    }
+    queens() {
+        self.freeRows = 👉👈;
+        self.freeMaxs = 👉👈;
+        self.freeMins = 👉👈;
+        self.queenRows = 👉👈;
+        for (var i = 0; i < 8; i = i + 1) {
+            self.freeRows👉i👈 = true;
+            self.queenRows👉i👈 = -1;
+        }
+        for (var i = 0; i < 16; i = i + 1) {
+            self.freeMaxs👉i👈 = true;
+            self.freeMins👉i👈 = true;
+        }
+        return self.placeQueen(0);
+    }
+    placeQueen(c) {
+        for (var r = 0; r < 8; r = r + 1) {
+            if (self.getRowColumn(r, c)) {
+                self.queenRows👉r👈 = c;
+                self.setRowColumn(r, c, false);
+                if (c == 7) {
+                    return true;
+                }
+                if (self.placeQueen(c + 1)) {
+                    return true;
+                }
+                self.setRowColumn(r, c, true);
+            }
+        }
+        return false;
+    }
+    getRowColumn(r, c) {
+        return self.freeRows👉r👈 and self.freeMaxs👉c + r👈 and self.freeMins👉c - r + 7👈;
+    }
+    setRowColumn(r, c, v) {
+        self.freeRows👉r👈 = v;
+        self.freeMaxs👉c + r👈 = v;
+        self.freeMins👉c - r + 7👈 = v;
+    }
+}
+return Queens();
