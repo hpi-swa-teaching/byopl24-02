@@ -11,7 +11,9 @@ import com.oracle.truffle.api.bytecode.ConstantOperand;
 import com.oracle.truffle.api.bytecode.GenerateBytecode;
 import com.oracle.truffle.api.bytecode.LocalAccessor;
 import com.oracle.truffle.api.bytecode.Operation;
+import com.oracle.truffle.api.bytecode.ShortCircuitOperation;
 import com.oracle.truffle.api.bytecode.Variadic;
+import com.oracle.truffle.api.bytecode.ShortCircuitOperation.Operator;
 import com.oracle.truffle.api.dsl.Bind;
 import com.oracle.truffle.api.dsl.Cached;
 import com.oracle.truffle.api.dsl.Fallback;
@@ -43,6 +45,8 @@ import de.hpi.swa.lox.runtime.data.Nil;
         boxingEliminationTypes = { long.class, boolean.class }, //
         enableUncachedInterpreter = true, //
         enableSerialization = true)
+@ShortCircuitOperation(name = "LoxAnd", booleanConverter = LoxBytecodeRootNode.LoxIsTruthy.class, operator = Operator.AND_RETURN_CONVERTED)
+@ShortCircuitOperation(name = "LoxOr", booleanConverter = LoxBytecodeRootNode.LoxIsTruthy.class, operator = Operator.OR_RETURN_CONVERTED)
 public abstract class LoxBytecodeRootNode extends LoxRootNode implements BytecodeRootNode {
 
     protected LoxBytecodeRootNode(LoxLanguage language, FrameDescriptor frameDescriptor) {
@@ -162,33 +166,6 @@ public abstract class LoxBytecodeRootNode extends LoxRootNode implements Bytecod
         static LoxNumber doOtherTypes(Object left, Object right, @Bind Node node) {
             throw new LoxRuntimeError(String.format("Cannot divide %s and %s", left.toString(), right.toString()),
                     node);
-        }
-    }
-
-    @Operation
-    public static final class LoxOr {
-        @Specialization
-        static boolean doBoolean(boolean left, boolean right) {
-            return left || right;
-        }
-
-        @Fallback
-        static boolean doOtherTypes(Object left, Object right, @Bind Node node) {
-            return isTruthy(left) || isTruthy(right);
-        }
-
-    }
-
-    @Operation
-    public static final class LoxAnd {
-        @Specialization
-        static boolean doBoolean(boolean left, boolean right) {
-            return left && right;
-        }
-
-        @Fallback
-        static boolean doOtherTypes(Object left, Object right) {
-            return isTruthy(left) && isTruthy(right);
         }
     }
 

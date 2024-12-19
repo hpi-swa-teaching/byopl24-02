@@ -251,4 +251,13 @@ public class LogicalExpressionTest extends AbstractLoxTest {
         runAndExpectError("Greater or equal comparison not matching types", "print true >= \"test\";",
                 "Cannot apply >=");
     }
+
+    @Test
+    public void testShortCircuitedLogicalOperators() {
+        runAndExpect("init", "fun a() { print \"a\"; return true;} fun b() { print \"b\"; return false;}", "");
+        runAndExpect("a and b", "a() and b(); ", "a\nb\n");
+        runAndExpect("b and a", " b() and a(); ", "b\n");
+        runAndExpect("a or b", "a() or b(); ", "a\n");
+        runAndExpect("b or a", "b() or a(); ", "b\na\n");
+    }
 }
