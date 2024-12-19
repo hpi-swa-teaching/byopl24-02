@@ -9,6 +9,8 @@ public class LoxArray {
     private Object[] innerArray;
     int size = 0;
 
+    private boolean iteratorNeedsUpdate = false;
+
     private ListIterator<Object> iterator;
 
     public LoxArray() {
@@ -18,6 +20,13 @@ public class LoxArray {
 
     public int getSize() {
         return size;
+    }
+
+    /** 
+     * Retrieves the space of the inner array without growing.
+     */
+    public int getCapacity() {
+        return innerArray.length;
     }
 
     @TruffleBoundary
@@ -30,12 +39,16 @@ public class LoxArray {
     }
 
     public ListIterator<Object> getIterator() {
+        if (iteratorNeedsUpdate) {
+            // Lazy when needed
+            iterator = buildListIterator();
+            iteratorNeedsUpdate = false;
+        }
         return iterator;
     }
 
     public Object get(int index) {
         if (innerArray.length <= index || index < 0) {
-            // TODO warning
             return Nil.INSTANCE;
         }
         var result = innerArray[index];
@@ -54,11 +67,26 @@ public class LoxArray {
             this.ensureCapacity();
         }
         innerArray[index] = value;
-        // Update list iterator
-        iterator = buildListIterator();
+        // Set flag for iterator update
+        iteratorNeedsUpdate = true;
     }
 
-    @TruffleBoundary
+    // does not need to grow, but size changes
+    public void setInCapacity(int index, Object value) {
+        if (index >= size) {
+            size = index + 1;
+        }
+        innerArray[index] = value;
+        // Set flag for iterator update
+        iteratorNeedsUpdate = true;
+    }
+
+    public void setInSize(int index, Object value) {
+        innerArray[index] = value;
+        // Set flag for iterator update
+        iteratorNeedsUpdate = true;
+    }
+
     private void ensureCapacity() {
         innerArray = Arrays.copyOf(innerArray, Math.max(innerArray.length, size) * 2);
     }

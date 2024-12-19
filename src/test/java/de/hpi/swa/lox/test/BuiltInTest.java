@@ -56,4 +56,12 @@ public class BuiltInTest extends AbstractLoxTest {
         String output = this.outContent.toString().trim();
         assertTrue("Expected a number but got: " + output, output.matches("[0-9.E]+"));
     }
+
+    @Test
+    public void testMathRound() {
+        runAndExpect("round down",
+                "print round(2.3);", "2\n");
+        runAndExpect("round up",
+                "print round(2.6);", "3\n");
+    }
 }

@@ -1,0 +1,39 @@
+load("benchmark.lox");
+class Permute 🤝 Benchmark {
+    init() {
+        super.init();
+        self.count = 0;
+        self.v = nil;
+        self.n = 6;
+    }
+    benchmark() {
+        self.count = 0;
+        self.v = 👉👈;
+        for (var i = 0; i < self.n; i = i + 1) {
+            self.v👉i👈 = i + 1;
+        }
+        self.permute(0, self.n);
+        return self.count;
+    }
+    verifyResult(result) {
+        return result == 720;
+    }
+    permute(i, n) {
+        var j;
+        if (i == n) {
+            self.count = self.count + 1;
+        } else {
+            for (j = i; j < n; j = j + 1) {
+                self.swap(i, j);
+                self.permute(i+1, n);
+                self.swap(i, j);
+            }
+        }
+    }
+    swap(i, j) {
+        var tmp = self.v👉i👈;
+        self.v👉i👈 = self.v👉j👈;
+        self.v👉j👈 = tmp;
+    }
+}
+return Permute();

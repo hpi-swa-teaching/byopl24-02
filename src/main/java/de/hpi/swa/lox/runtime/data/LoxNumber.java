@@ -36,6 +36,10 @@ public class LoxNumber implements TruffleObject {
         this.internalValue = (double) value;
     }
 
+    public LoxNumber(long value) {
+        this.internalValue = (double) value;
+    }
+
     public Double getValue() {
         return internalValue;
     }
@@ -65,10 +69,6 @@ public class LoxNumber implements TruffleObject {
             return false;
         }
         final LoxNumber otherLoxNumber = (LoxNumber) other;
-        // We need to apply a double comparison, that means we can't really use the ==
-        // operator!
-        // see https://stackoverflow.com/a/6837237.
-        final float epsilon = 5.96e-08f;
-        return Math.abs(this.getValue() / otherLoxNumber.getValue() - 1) < epsilon;
+        return this.getValue().equals(otherLoxNumber.getValue());
     }
 }

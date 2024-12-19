@@ -1,0 +1,64 @@
+load("benchmark.lox");
+class TowersDisk {
+    init(size) {
+        self.size = size;
+        self.next = nil;
+    }
+}
+class Towers 🤝 Benchmark {
+    init() {
+        self.piles = nil;
+        self.movesDone = 0;
+    }
+    benchmark() {
+        self.piles = 👉👈;
+        self.piles👉0👈 = nil;
+        self.piles👉1👈 = nil;
+        self.piles👉2👈 = nil;
+        self.buildTowerAt(0, 13);
+        self.movesDone = 0;
+        self.moveDisks(13, 0, 1);
+        return self.movesDone;
+    }
+    verifyResult(result) {
+        return 8191 == result;
+    }
+    pushDisk(disk, pile) {
+        var top = self.piles👉pile👈;
+        if (top != nil and disk.size >= top.size) {
+            print "ERROR Cannot put a big disk on a smaller one";
+            return;
+        }
+        disk.next = top;
+        self.piles👉pile👈 = disk;
+    }
+    popDiskFrom(pile) {
+        var top = self.piles👉pile👈;
+        if (top == nil) {
+            print "ERROR Attempting to remove a disk from an empty pile";
+        }
+        self.piles👉pile👈 = top.next;
+        top.next = nil;
+        return top;
+    }
+    moveTopDisk(fromPile, toPile) {
+        self.pushDisk(self.popDiskFrom(fromPile), toPile);
+        self.movesDone = self.movesDone + 1;
+    }
+    buildTowerAt(pile, disks) {
+        for (var i = disks; i >= 0; i = i - 1) {
+            self.pushDisk(TowersDisk(i), pile);
+        }
+    }
+    moveDisks(disks, fromPile, toPile) {
+        if (disks == 1) {
+            self.moveTopDisk(fromPile, toPile);
+        } else {
+            var otherPile = 3 - fromPile - toPile;
+            self.moveDisks(disks - 1, fromPile, otherPile);
+            self.moveTopDisk(fromPile, toPile);
+            self.moveDisks(disks - 1, otherPile, toPile);
+        }
+    }
+}
+return Towers();

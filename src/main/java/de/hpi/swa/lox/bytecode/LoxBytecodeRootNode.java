@@ -11,7 +11,9 @@ import com.oracle.truffle.api.bytecode.ConstantOperand;
 import com.oracle.truffle.api.bytecode.GenerateBytecode;
 import com.oracle.truffle.api.bytecode.LocalAccessor;
 import com.oracle.truffle.api.bytecode.Operation;
+import com.oracle.truffle.api.bytecode.ShortCircuitOperation;
 import com.oracle.truffle.api.bytecode.Variadic;
+import com.oracle.truffle.api.bytecode.ShortCircuitOperation.Operator;
 import com.oracle.truffle.api.dsl.Bind;
 import com.oracle.truffle.api.dsl.Cached;
 import com.oracle.truffle.api.dsl.Fallback;
@@ -40,9 +42,11 @@ import de.hpi.swa.lox.runtime.data.Nil;
 
 @GenerateBytecode(//
         languageClass = LoxLanguage.class, enableMaterializedLocalAccesses = true, //
-        boxingEliminationTypes = { long.class, boolean.class }, //
+        boxingEliminationTypes = { long.class }, // BUG? boolean.class
         enableUncachedInterpreter = true, //
         enableSerialization = true)
+@ShortCircuitOperation(name = "LoxAnd", booleanConverter = LoxBytecodeRootNode.LoxIsTruthy.class, operator = Operator.AND_RETURN_CONVERTED)
+@ShortCircuitOperation(name = "LoxOr", booleanConverter = LoxBytecodeRootNode.LoxIsTruthy.class, operator = Operator.OR_RETURN_CONVERTED)
 public abstract class LoxBytecodeRootNode extends LoxRootNode implements BytecodeRootNode {
 
     protected LoxBytecodeRootNode(LoxLanguage language, FrameDescriptor frameDescriptor) {
@@ -70,11 +74,6 @@ public abstract class LoxBytecodeRootNode extends LoxRootNode implements Bytecod
         @Specialization
         static boolean doBoolean(boolean value) {
             return !value;
-        }
-
-        @Fallback
-        static boolean doOtherTypes(Object value, @Bind Node node) {
-            return !isTruthy(value);
         }
     }
 
@@ -167,33 +166,6 @@ public abstract class LoxBytecodeRootNode extends LoxRootNode implements Bytecod
         static LoxNumber doOtherTypes(Object left, Object right, @Bind Node node) {
             throw new LoxRuntimeError(String.format("Cannot divide %s and %s", left.toString(), right.toString()),
                     node);
-        }
-    }
-
-    @Operation
-    public static final class LoxOr {
-        @Specialization
-        static boolean doBoolean(boolean left, boolean right) {
-            return left || right;
-        }
-
-        @Fallback
-        static boolean doOtherTypes(Object left, Object right, @Bind Node node) {
-            return isTruthy(left) || isTruthy(right);
-        }
-
-    }
-
-    @Operation
-    public static final class LoxAnd {
-        @Specialization
-        static boolean doBoolean(boolean left, boolean right) {
-            return left && right;
-        }
-
-        @Fallback
-        static boolean doOtherTypes(Object left, Object right) {
-            return isTruthy(left) && isTruthy(right);
         }
     }
 
@@ -411,13 +383,18 @@ public abstract class LoxBytecodeRootNode extends LoxRootNode implements Bytecod
     public static final class LoxIsTruthy {
 
         @Specialization
-        static boolean doBoolean(boolean value) {
-            return value;
+        public static boolean fromLoxNumber(LoxNumber x) {
+            return x.getValue() != 0;
+        }
+
+        @Specialization
+        public static boolean fromBool(boolean x) {
+            return x;
         }
 
         @Fallback
-        static boolean doDefault(Object value) {
-            return isTruthy(value);
+        public static boolean fromObject(Object x) {
+            return x != Nil.INSTANCE;
         }
     }
 
@@ -457,8 +434,22 @@ public abstract class LoxBytecodeRootNode extends LoxRootNode implements Bytecod
 
     @Operation
     public static final class LoxWriteArray {
+        @Specialization(guards = { "index.getValue().intValue() >= 0",
+                "array.getSize() > index.getValue().intValue()" })
+        static Void writeArrayInSize(LoxArray array, LoxNumber index, Object value) {
+            array.setInSize(index.getValue().intValue(), value);
+            return null;
+        }
+
+        @Specialization(guards = { "index.getValue().intValue() >= 0",
+                "array.getCapacity() > index.getValue().intValue()" }, replaces = "writeArrayInSize")
+        static Void writeArrayInCapacity(LoxArray array, LoxNumber index, Object value) {
+            array.setInCapacity(index.getValue().intValue(), value);
+            return null;
+        }
+
         // Lox number wraps a double, so we need to cast it to int
-        @Specialization(guards = "index.getValue().intValue() >= 0")
+        @Specialization(guards = "index.getValue().intValue() >= 0", replaces = "writeArrayInCapacity")
         static Void writeArray(LoxArray array, LoxNumber index, Object value) {
             array.set(index.getValue().intValue(), value);
             return null;
