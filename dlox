@@ -1,0 +1,2 @@
+#!/bin/sh
+EXTRA_JAVA_ARGS="-Djdk.graal.Dump=Truffle:1" ./lox "$@"
