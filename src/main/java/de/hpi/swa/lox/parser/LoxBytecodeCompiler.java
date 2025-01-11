@@ -883,33 +883,12 @@ public final class LoxBytecodeCompiler extends LoxBaseVisitor<Void> {
 
     @Override
     public Void visitArray(ArrayContext ctx) {
-        if (ctx.expression().isEmpty()) {
-            // No direct values, so just initialize and emit new empty array.
-            b.emitLoxNewArray();
-            return null;
-        }
-        // Otherwise, we have values to initialize with.
-        // Naively do sth like this (here illustrated with two values):
-        //
-        // b.beginLoxAppendArray();
-        // b.beginLoxAppendArray();
-        // b.emitLoxNewArray();
-        // visit(ctx.expression(0));
-        // b.endLoxAppendArray();
-        // visit(ctx.expression(1));
-        // b.endLoxAppendArray();
-        //
-        for (int exprIndex = ctx.expression().size() - 1; exprIndex >= 0; exprIndex--) {
-            b.beginLoxAppendArray();
-            if (exprIndex == 0) {
-                // Initialize and emit new empty array for the most inner append statement.
-                b.emitLoxNewArray();
-            }
-        }
+        b.beginLoxNewArray();
         for (int exprIndex = 0; exprIndex < ctx.expression().size(); exprIndex++) {
+            // Visit expressions for initial values and emit the values one-by-one.
             visitExpression(ctx.expression(exprIndex));
-            b.endLoxAppendArray();
         }
+        b.endLoxNewArray();
         return null;
     }
 

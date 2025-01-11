@@ -18,6 +18,12 @@ public class LoxArray {
         iterator = buildListIterator();
     }
 
+    public LoxArray(Object[] initialValues) {
+        innerArray = initialValues;
+        size = initialValues.length;
+        iterator = buildListIterator();
+    }
+
     public int getSize() {
         return size;
     }
