@@ -569,7 +569,6 @@ public abstract class LoxBytecodeRootNode extends LoxRootNode implements Bytecod
     @Operation
     public static final class LoxCallFunction {
 
-        @TruffleBoundary
         @Specialization
         static Object callFunction(LoxFunction function, @Variadic Object[] userArguments,
                 @Cached LoxCallFunctionNode callNode) {
