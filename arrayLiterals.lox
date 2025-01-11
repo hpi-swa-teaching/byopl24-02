@@ -1,0 +1,22 @@
+load("benchmark.lox");
+
+class ArrayLiterals 🤝 Benchmark {
+    init() {
+        super.init();
+    }
+    constructArrayWithValues() {
+        var array = 👉"test", "test2", "test3"👈;
+        return array.length == 3;
+    }
+    benchmark() {
+        var result = true;
+        for (var i = 0; i < 1000; i = i + 1) {
+            result = result and self.constructArrayWithValues();
+        }
+        return result;
+    }
+    verifyResult(result) {
+        return result;
+    }
+}
+return ArrayLiterals();
