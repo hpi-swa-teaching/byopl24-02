@@ -2,15 +2,22 @@ package de.hpi.swa.lox.runtime.data;
 
 import com.oracle.truffle.api.CompilerDirectives.TruffleBoundary;
 import com.oracle.truffle.api.RootCallTarget;
+import com.oracle.truffle.api.dsl.Cached;
 import com.oracle.truffle.api.frame.Frame;
 import com.oracle.truffle.api.frame.MaterializedFrame;
 import com.oracle.truffle.api.frame.VirtualFrame;
+import com.oracle.truffle.api.interop.InteropLibrary;
+import com.oracle.truffle.api.interop.TruffleObject;
+import com.oracle.truffle.api.library.ExportLibrary;
+import com.oracle.truffle.api.library.ExportMessage;
+import com.oracle.truffle.api.nodes.IndirectCallNode;
 
 /**
  * Representation of Functions that hold their own CallTarget separate from the
  * root program.
  */
-public class LoxFunction {
+@ExportLibrary(InteropLibrary.class)
+public class LoxFunction implements TruffleObject {
     public final String name;
 
     private final RootCallTarget callTarget;
@@ -85,5 +92,26 @@ public class LoxFunction {
 
     public static LoxObject getSelf(VirtualFrame frame) {
         return getCurrentFunctionFromFrame(frame).self;
+    }
+
+    // ---- Polyglot ----
+
+    @ExportMessage
+    public boolean isExecutable() {
+        return true;
+    }
+
+    @ExportMessage
+    public Object execute(Object[] arguments, @Cached IndirectCallNode callNode) {
+        Object[] args = createArguments(arguments);
+        var result = callNode.call(callTarget, args);
+        if (result instanceof LoxNumber) {
+            return convertLoxNumberToDouble(result); // Truffle does not support LoxNumber directly
+        }
+        return result;
+    }
+
+    private double convertLoxNumberToDouble(Object result) {
+        return ((LoxNumber) result).getValue();
     }
 }

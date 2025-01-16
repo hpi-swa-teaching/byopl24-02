@@ -3,7 +3,7 @@ package de.hpi.swa.lox;
 import de.hpi.swa.lox.nodes.BuiltInNode;
 import de.hpi.swa.lox.nodes.ClockBuiltInNodeGen;
 import de.hpi.swa.lox.nodes.LoadBuiltInNodeGen;
-import de.hpi.swa.lox.nodes.MathRoundBuiltinNode;
+import de.hpi.swa.lox.nodes.LookupValueBuiltInNodeGen;
 import de.hpi.swa.lox.nodes.MathRoundBuiltinNodeGen;
 import de.hpi.swa.lox.nodes.NumberBuiltInNodeGen;
 import de.hpi.swa.lox.nodes.StringBuiltInNodeGen;
@@ -44,6 +44,11 @@ public class LoxLanguage extends TruffleLanguage<LoxContext> {
         return rootTarget;
     }
 
+    @Override
+    protected boolean isThreadAccessAllowed(Thread thread, boolean singleThreaded) {
+        return true;
+    }
+
     private Map<String, BuiltInNode> getBuiltins() {
         if (builtins == null) {
             builtins = Map
@@ -52,7 +57,8 @@ public class LoxLanguage extends TruffleLanguage<LoxContext> {
                             "Number", NumberBuiltInNodeGen.create(this),
                             "String", StringBuiltInNodeGen.create(this),
                             "load", LoadBuiltInNodeGen.create(this),
-                            "round", MathRoundBuiltinNodeGen.create(this));
+                            "round", MathRoundBuiltinNodeGen.create(this),
+                            "lookup", LookupValueBuiltInNodeGen.create(this));
         }
         return builtins;
     }

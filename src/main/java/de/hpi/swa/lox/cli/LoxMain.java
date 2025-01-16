@@ -23,6 +23,11 @@ public class LoxMain extends AbstractLanguageLauncher {
     private List<String> args = new ArrayList<>();
 
     @Override
+    protected String[] getDefaultLanguages() {
+        return new String[] { getLanguageId(), "sl" };
+    }
+
+    @Override
     protected List<String> preprocessArguments(List<String> arguments, Map<String, String> polyglotOptions) {
         List<String> unrecognized = new ArrayList<>();
         for (int i = 0; i < arguments.size(); i++) {

@@ -21,6 +21,10 @@ import com.oracle.truffle.api.dsl.Specialization;
 import com.oracle.truffle.api.frame.FrameDescriptor;
 import com.oracle.truffle.api.frame.MaterializedFrame;
 import com.oracle.truffle.api.frame.VirtualFrame;
+import com.oracle.truffle.api.interop.ArityException;
+import com.oracle.truffle.api.interop.InteropLibrary;
+import com.oracle.truffle.api.interop.UnsupportedMessageException;
+import com.oracle.truffle.api.interop.UnsupportedTypeException;
 import com.oracle.truffle.api.library.CachedLibrary;
 import com.oracle.truffle.api.nodes.Node;
 import com.oracle.truffle.api.object.DynamicObjectLibrary;
@@ -28,8 +32,11 @@ import com.oracle.truffle.api.strings.TruffleString;
 
 import de.hpi.swa.lox.LoxLanguage;
 import de.hpi.swa.lox.nodes.LoxCallFunctionNode;
+import de.hpi.swa.lox.nodes.LoxConvertValueNode;
 import de.hpi.swa.lox.nodes.LoxLookupMethodNode;
+import de.hpi.swa.lox.nodes.LoxReadPropertyNode;
 import de.hpi.swa.lox.nodes.LoxRootNode;
+import de.hpi.swa.lox.nodes.LoxWritePropertyNode;
 import de.hpi.swa.lox.runtime.LoxContext;
 import de.hpi.swa.lox.runtime.LoxRuntimeError;
 import de.hpi.swa.lox.runtime.data.GlobalObject;
@@ -471,7 +478,7 @@ public abstract class LoxBytecodeRootNode extends LoxRootNode implements Bytecod
     public static final class LoxArrayHasNext {
         @Specialization
         static boolean hasNext(LoxArray loxArray) {
-            return loxArray.getIterator().hasNext();
+            return loxArray.getLoxIterator().hasNext();
         }
 
         @Fallback
@@ -489,7 +496,7 @@ public abstract class LoxBytecodeRootNode extends LoxRootNode implements Bytecod
     public static final class LoxArrayGetNext {
         @Specialization
         static Object getNext(LoxArray loxArray) {
-            return loxArray.getIterator().next();
+            return loxArray.getLoxIterator().next();
         }
 
         @Fallback
@@ -507,7 +514,7 @@ public abstract class LoxBytecodeRootNode extends LoxRootNode implements Bytecod
     public static final class LoxArrayGetNextIndex {
         @Specialization
         static LoxNumber getNextIndex(LoxArray loxArray) {
-            return new LoxNumber(loxArray.getIterator().nextIndex());
+            return new LoxNumber(loxArray.getLoxIterator().nextIndex());
         }
 
         @Fallback
@@ -576,9 +583,26 @@ public abstract class LoxBytecodeRootNode extends LoxRootNode implements Bytecod
             return object;
         }
 
-        @TruffleBoundary
         @Specialization
-        static Object doDefault(Object obj, @Variadic Object[] arguments, @Bind Node node) {
+        static Object doDefault(Object obj, @Variadic Object[] arguments, @Bind Node node,
+                @CachedLibrary(limit = "1") InteropLibrary interop) {
+            if (interop.isExecutable(obj)) {
+                try {
+                    return interop.execute(obj, arguments);
+                } catch (UnsupportedTypeException | ArityException | UnsupportedMessageException e) {
+                    return error(obj, node);
+                }
+            } else {
+                try {
+                    return interop.instantiate(obj, arguments);
+                } catch (UnsupportedTypeException | ArityException | UnsupportedMessageException e) {
+                    return error(obj, node);
+                }
+            }
+        }
+
+        @TruffleBoundary
+        static Object error(Object obj, Node node) {
             throw new LoxRuntimeError("Cannot call " + obj, node);
         }
     }
@@ -620,11 +644,11 @@ public abstract class LoxBytecodeRootNode extends LoxRootNode implements Bytecod
     @Operation
     @ConstantOperand(type = String.class)
     public static final class LoxWriteProperty {
-        @Specialization(limit = "1")
-        public static Object write(String name, LoxObject object, Object value,
-                @CachedLibrary("object") DynamicObjectLibrary dylib) {
-            dylib.put(object, name, value);
-            return value;
+
+        @Specialization
+        public static Object write(String name, Object object, Object value,
+                @Cached LoxWritePropertyNode writeProperty) {
+            return writeProperty.execute(name, object, value);
         }
     }
 
@@ -633,27 +657,8 @@ public abstract class LoxBytecodeRootNode extends LoxRootNode implements Bytecod
     public static final class LoxReadProperty {
 
         @Specialization
-        public static Object read(String name, LoxArray array) {
-            if (name.equals("length")) {
-                return new LoxNumber(array.getSize());
-            } else {
-                return Nil.INSTANCE;
-            }
-        }
-
-        @Specialization(limit = "1")
-        public static Object read(String name, LoxObject object,
-                @CachedLibrary("object") DynamicObjectLibrary dylib,
-                @Cached LoxLookupMethodNode lookupMethodNode) {
-            var result = dylib.getOrDefault(object, name, Nil.INSTANCE);
-            if (result == Nil.INSTANCE) {
-                var method = lookupMethodNode.execute(object, (LoxClass) dylib.getOrDefault(object, "Class", null),
-                        name);
-                if (method != null) {
-                    return method;
-                }
-            }
-            return result;
+        public static Object read(String name, Object obj, @Cached LoxReadPropertyNode readProperty) {
+            return readProperty.execute(name, obj);
         }
     }
 
@@ -682,6 +687,14 @@ public abstract class LoxBytecodeRootNode extends LoxRootNode implements Bytecod
         @TruffleBoundary
         public static Object methodNotFound(String name) {
             throw new LoxRuntimeError("Method " + name + " not found in super classes", null);
+        }
+    }
+
+    @Operation
+    public static final class LoxValue {
+        @Specialization
+        static Object doDefault(Object value, @Cached LoxConvertValueNode convertValueNode) {
+            return convertValueNode.execute(value);
         }
     }
 

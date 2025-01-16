@@ -3,11 +3,15 @@ package de.hpi.swa.lox.runtime.data;
 import java.util.Objects;
 
 import com.oracle.truffle.api.CompilerDirectives.TruffleBoundary;
+import com.oracle.truffle.api.interop.InteropLibrary;
 import com.oracle.truffle.api.interop.TruffleObject;
+import com.oracle.truffle.api.library.ExportLibrary;
+import com.oracle.truffle.api.library.ExportMessage;
 
 /**
  * Number representation (mainly based on Double).
  */
+@ExportLibrary(InteropLibrary.class)
 public class LoxNumber implements TruffleObject {
 
     private Double internalValue;
@@ -71,4 +75,77 @@ public class LoxNumber implements TruffleObject {
         final LoxNumber otherLoxNumber = (LoxNumber) other;
         return this.getValue().equals(otherLoxNumber.getValue());
     }
+
+    @ExportMessage
+    public boolean isNumber() {
+        return true;
+    }
+
+    @ExportMessage
+    public boolean fitsInInt() {
+        return internalValue.longValue() == internalValue.doubleValue();
+    }
+
+    @ExportMessage
+    public int asInt() {
+        return internalValue.intValue();
+    }
+
+    @ExportMessage
+    public boolean fitsInLong() {
+        return internalValue.longValue() == internalValue.doubleValue();
+    }
+
+    @ExportMessage
+    public long asLong() {
+        return internalValue.longValue();
+    }
+
+    @ExportMessage
+    public boolean fitsInFloat() {
+        return true;
+    }
+
+    @ExportMessage
+    public float asFloat() {
+        return internalValue.floatValue();
+    }
+
+    @ExportMessage
+    public boolean fitsInDouble() {
+        return true;
+    }
+
+    @ExportMessage
+    public double asDouble() {
+        return internalValue;
+    }
+
+    @ExportMessage
+    final boolean fitsInByte() {
+        return internalValue >= Byte.MIN_VALUE && internalValue <= Byte.MAX_VALUE
+                && internalValue == internalValue.byteValue();
+    }
+
+    @ExportMessage
+    final boolean fitsInShort() {
+        return internalValue >= Short.MIN_VALUE && internalValue <= Short.MAX_VALUE
+                && internalValue == internalValue.shortValue();
+    }
+
+    @ExportMessage
+    final byte asByte() {
+        return internalValue.byteValue();
+    }
+
+    @ExportMessage
+    final short asShort() {
+        return internalValue.shortValue();
+    }
+
+    @ExportMessage
+    final boolean fitsInBigInteger() {
+        return false;
+    }
+
 }
