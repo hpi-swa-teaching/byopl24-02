@@ -44,6 +44,11 @@ public class LoxLanguage extends TruffleLanguage<LoxContext> {
         return rootTarget;
     }
 
+    @Override
+    protected boolean isThreadAccessAllowed(Thread thread, boolean singleThreaded) {
+        return true;
+    }
+
     private Map<String, BuiltInNode> getBuiltins() {
         if (builtins == null) {
             builtins = Map

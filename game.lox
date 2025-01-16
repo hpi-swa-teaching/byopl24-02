@@ -1,0 +1,110 @@
+var Math = lookup("java","java.lang.Math");
+var Thread = lookup("java","java.lang.Thread");
+var Color = lookup("java","java.awt.Color");
+var KeyEvent = lookup("java","java.awt.event.KeyEvent");
+var LoxDisplay = lookup("java","de.hpi.swa.lox.runtime.LoxDisplay");
+
+class Ball {
+    init(game) {
+        self.game = game;
+        self.x = self.game.xLimit * 0.5;
+        self.y = self.game.yLimit * 0.5;
+        self.xVel = 0;
+        self.yVel = 0;
+        self.size = 20;
+    }
+
+    step() {
+        var factor = 0.1;
+        self.x = self.x + factor * self.xVel;
+        self.y = self.y + factor * self.yVel;
+        self.checkCollision();
+    }
+
+    checkCollision() {
+        if (self.x > self.game.xLimit) {
+            self.x = self.game.xLimit;
+            self.xVel = 0 - Math.abs(self.xVel);
+        }
+        if (self.x < 0) {
+            self.x = 0;
+            self.xVel = Math.abs(self.xVel);
+        }
+
+        if (self.y > self.game.yLimit) {
+            self.y = self.game.yLimit;
+            self.yVel = 0 - Math.abs(self.yVel);
+        }
+
+        if (self.y < 0) {
+            self.y = 0;
+            self.yVel = Math.abs(self.yVel);
+        }
+    }
+}
+
+class Game {
+    run() {
+        self.xLimit = 1000;
+        self.yLimit = 1000;
+        self.setupDisplay();
+        self.balls = 👉👈;
+        self.ball = Ball(self);
+        self.balls👉0👈 = self.ball;
+        self.balls👉1👈 = Ball(self);
+        self.balls👉1👈.xVel = 1;
+        self.balls👉1👈.yVel = 1;
+        while(true) {
+            self.step();
+            self.display.panel.repaint();
+            Thread.sleep(1);
+        }
+    }
+
+    step() {
+        for (var j = 0; j < self.balls.length; j = j + 1) {
+            var ball = self.balls👉j👈;
+            ball.step();
+        }  
+    }
+    paint(g2d) {
+        g2d.setColor(Color.BLUE);
+        for (var j = 0; j < self.balls.length; j = j + 1) {
+            var ball = self.balls👉j👈;
+            g2d.fillOval(round(ball.x), round(ball.y), ball.size, ball.size);
+        }
+    }
+
+    keypressed(key) {
+        print "key " + String(key);
+        var ball = self.ball;
+        if (key == KeyEvent.VK_UP) {
+            ball.yVel = -1;
+            ball.xVel = 0;
+        }
+        if (key == KeyEvent.VK_DOWN) {
+            ball.yVel = 1;
+            ball.xVel = 0;
+        }
+        if (key == KeyEvent.VK_LEFT) {
+            ball.yVel = 0;
+            ball.xVel = -1;
+        }
+        if (key == KeyEvent.VK_RIGHT) {
+            ball.yVel = 0;
+            ball.xVel = 1;
+        }
+        if (key == KeyEvent.VK_SPACE) {
+            ball.size = ball.size + 1;
+        }
+    }
+
+    setupDisplay() {
+        self.display = LoxDisplay.create();
+        self.display.paint = self.paint;
+        self.display.keypressed = self.keypressed;
+        self.display.frame.setSize(self.xLimit, self.yLimit);
+    }
+}
+
+Game().run();
