@@ -416,13 +416,17 @@ public final class LoxBytecodeCompiler extends LoxBaseVisitor<Void> {
             // Invert
             b.beginLoxInvert();
             b.beginLoxIsTruthy();
+            b.beginLoxValue();
             unaryResult = visitUnary(ctx.unary());
+            b.endLoxValue();
             b.endLoxIsTruthy();
             b.endLoxInvert();
         } else if (text.startsWith(UNARY_NEGATE_OPERATOR)) {
             // Negate
             b.beginLoxNegate();
+            b.beginLoxValue();
             unaryResult = visitUnary(ctx.unary());
+            b.endLoxValue();
             b.endLoxNegate();
         } else {
             // Primary
@@ -463,9 +467,13 @@ public final class LoxBytecodeCompiler extends LoxBaseVisitor<Void> {
             }
             operations.addFirst(operation.getText());
         }
+        b.beginLoxValue();
         visitUnary(ctx.unary(0));
+        b.endLoxValue();
         for (int i = 1; i < ctx.getChildCount(); i += 2) {
+            b.beginLoxValue();
             visitUnary(ctx.unary((i + 1) / 2));
+            b.endLoxValue();
             // Apply operations in reverse order that it matches the order of the operations
             switch (operations.removeFirst()) {
                 case "*":
@@ -502,9 +510,13 @@ public final class LoxBytecodeCompiler extends LoxBaseVisitor<Void> {
             }
             operations.addFirst(operation.getText());
         }
+        b.beginLoxValue();
         visitFactor(ctx.factor(0));
+        b.endLoxValue();
         for (int i = 1; i < ctx.getChildCount(); i += 2) {
+            b.beginLoxValue();
             visitFactor(ctx.factor((i + 1) / 2));
+            b.endLoxValue();
             // Apply operations in reverse order that it matches the order of the operations
             switch (operations.removeFirst()) {
                 case "+":
@@ -582,9 +594,13 @@ public final class LoxBytecodeCompiler extends LoxBaseVisitor<Void> {
             }
             operators.addFirst(operation.getText());
         }
+        b.beginLoxValue();
         visitComparison(ctx.comparison(0));
+        b.endLoxValue();
         for (int i = 1; i < ctx.getChildCount(); i += 2) {
+            b.beginLoxValue();
             visitComparison(ctx.comparison((i + 1) / 2));
+            b.endLoxValue();
             // Apply equality operators in reverse order that it matches the order of the
             // operators
             switch (operators.removeFirst()) {
