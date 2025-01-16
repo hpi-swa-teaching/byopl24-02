@@ -60,9 +60,15 @@ We don't like java, that's why we decided to use `self` instead of `this`. Here 
 
 ```lox
 class A {
-  var a = 1;
   fun printA() {
     print self.a;
   }
 }
 ```
+
+## Tools
+
+You can use the following tools to migrate a boring lox program to our fancy lox program:
+
+- [For all OS, except MacOS](migration_boring_lox_to_amazing_lox.sh)
+- [For MacOS](migration_boring_lox_to_amazing_lox_macos.sh)
