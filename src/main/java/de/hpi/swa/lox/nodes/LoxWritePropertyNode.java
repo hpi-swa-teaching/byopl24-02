@@ -21,12 +21,12 @@ public abstract class LoxWritePropertyNode extends Node {
 
     @Specialization(limit = "1")
     public static Object write(String name, LoxObject object, Object value,
-            @CachedLibrary("object") DynamicObjectLibrary dylib) {
+            @CachedLibrary(value = "object") DynamicObjectLibrary dylib) {
         dylib.put(object, name, value);
         return value;
     }
 
-    @Specialization(limit = "1")
+    @Specialization
     public static Object interopWrite(String name, Object obj, Object value,
             @CachedLibrary(limit = "1") InteropLibrary interop,
             @Bind Node node) {

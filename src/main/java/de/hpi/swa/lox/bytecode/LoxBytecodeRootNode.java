@@ -646,7 +646,7 @@ public abstract class LoxBytecodeRootNode extends LoxRootNode implements Bytecod
     public static final class LoxWriteProperty {
 
         @Specialization
-        public static Object write(String name, LoxObject object, Object value,
+        public static Object write(String name, Object object, Object value,
                 @Cached LoxWritePropertyNode writeProperty) {
             return writeProperty.execute(name, object, value);
         }

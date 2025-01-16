@@ -27,6 +27,11 @@ public abstract class LoxConvertValueNode extends Node {
     }
 
     @Specialization
+    protected Object convert(LoxNumber object) {
+        return object;
+    }
+
+    @Specialization
     protected Object convert(Object object,
             @CachedLibrary(limit = "1") InteropLibrary interop) {
         try {
