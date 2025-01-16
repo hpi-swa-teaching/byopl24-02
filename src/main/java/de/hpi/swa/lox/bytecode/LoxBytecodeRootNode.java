@@ -478,7 +478,7 @@ public abstract class LoxBytecodeRootNode extends LoxRootNode implements Bytecod
     public static final class LoxArrayHasNext {
         @Specialization
         static boolean hasNext(LoxArray loxArray) {
-            return loxArray.getIterator().hasNext();
+            return loxArray.getLoxIterator().hasNext();
         }
 
         @Fallback
@@ -496,7 +496,7 @@ public abstract class LoxBytecodeRootNode extends LoxRootNode implements Bytecod
     public static final class LoxArrayGetNext {
         @Specialization
         static Object getNext(LoxArray loxArray) {
-            return loxArray.getIterator().next();
+            return loxArray.getLoxIterator().next();
         }
 
         @Fallback
@@ -514,7 +514,7 @@ public abstract class LoxBytecodeRootNode extends LoxRootNode implements Bytecod
     public static final class LoxArrayGetNextIndex {
         @Specialization
         static LoxNumber getNextIndex(LoxArray loxArray) {
-            return new LoxNumber(loxArray.getIterator().nextIndex());
+            return new LoxNumber(loxArray.getLoxIterator().nextIndex());
         }
 
         @Fallback

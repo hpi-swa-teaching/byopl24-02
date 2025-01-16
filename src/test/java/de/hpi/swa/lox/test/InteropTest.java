@@ -4,6 +4,8 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
+import java.util.List;
+
 import org.graalvm.polyglot.PolyglotException;
 import org.graalvm.polyglot.Value;
 import org.junit.Before;
@@ -92,4 +94,25 @@ public class InteropTest extends AbstractLoxTest {
                 "var KeyEvent = lookup(\"java\" , \"java.awt.event.KeyEvent\"); print 38 == KeyEvent.VK_UP;", "true\n");
     }
 
+    @Test
+    public void testLoxArray() {
+        var arr = context.eval("lox", "var a = 👉1, 2, 3👈; return a;");
+        assertEquals("size equal", arr.getArraySize(), 3);
+        assertEquals("first element 1", arr.getArrayElement(0).asInt(), 1);
+        arr.setArrayElement(3, 4);
+        assertEquals("insert", arr.getArrayElement(3).asInt(), 4);
+        arr.setArrayElement(3, 5);
+        assertEquals("modify", arr.getArrayElement(3).asInt(), 5);
+    }
+
+    @Test
+    public void testLoxArrayIterator() {
+        var arr = context.eval("lox", "var a = 👉1, 2, 3👈; return a;");
+        var iter = arr.getIterator();
+        var curElement = 1;
+        while (iter.hasIteratorNextElement()) {
+            assertEquals("element", iter.getIteratorNextElement().asInt(), curElement);
+            curElement++;
+        }
+    }
 }

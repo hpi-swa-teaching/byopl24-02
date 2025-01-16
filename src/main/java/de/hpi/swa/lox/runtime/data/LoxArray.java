@@ -4,8 +4,13 @@ import java.util.Arrays;
 import java.util.ListIterator;
 
 import com.oracle.truffle.api.CompilerDirectives.TruffleBoundary;
+import com.oracle.truffle.api.interop.InteropLibrary;
+import com.oracle.truffle.api.interop.TruffleObject;
+import com.oracle.truffle.api.library.ExportLibrary;
+import com.oracle.truffle.api.library.ExportMessage;
 
-public class LoxArray {
+@ExportLibrary(InteropLibrary.class)
+public class LoxArray implements TruffleObject {
     private Object[] innerArray;
     int size = 0;
 
@@ -28,7 +33,7 @@ public class LoxArray {
         return size;
     }
 
-    /** 
+    /**
      * Retrieves the space of the inner array without growing.
      */
     public int getCapacity() {
@@ -38,13 +43,13 @@ public class LoxArray {
     @TruffleBoundary
     private ListIterator<Object> buildListIterator() {
         return Arrays.asList(innerArray)
-                     .stream()
-                     // We should not iterate through our unassigned indices!
-                     .filter(element -> element != null)
-                     .toList().listIterator();
+                .stream()
+                // We should not iterate through our unassigned indices!
+                .filter(element -> element != null)
+                .toList().listIterator();
     }
 
-    public ListIterator<Object> getIterator() {
+    public ListIterator<Object> getLoxIterator() {
         if (iteratorNeedsUpdate) {
             // Lazy when needed
             iterator = buildListIterator();
@@ -108,4 +113,49 @@ public class LoxArray {
         return open + array.substring(1, array.length() - 1) + close;
     }
 
+    // -----
+    @ExportMessage
+    public boolean hasArrayElements() {
+        return true;
+    }
+
+    @ExportMessage
+    public final boolean isArrayElementInsertable(long index) {
+        return true;
+    }
+
+    @ExportMessage
+    public final boolean isArrayElementModifiable(long index) {
+        return true;
+    }
+
+    @ExportMessage
+    public final boolean isArrayElementReadable(long index) {
+        return index >= 0 && index < size;
+    }
+
+    @ExportMessage
+    public final boolean isArrayElementRemovable(long index) {
+        return false;
+    }
+
+    @ExportMessage
+    public final Object readArrayElement(long index) {
+        return get((int) index);
+    }
+
+    @ExportMessage
+    public final void writeArrayElement(long index, Object value) {
+        set((int) index, value);
+    }
+
+    @ExportMessage
+    public final long getArraySize() {
+        return size;
+    }
+
+    @ExportMessage
+    public final void removeArrayElement(long index) {
+        throw new UnsupportedOperationException();
+    }
 }
