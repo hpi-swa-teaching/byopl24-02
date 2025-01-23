@@ -69,6 +69,7 @@ import de.hpi.swa.lox.parser.LoxParser.ReturnStmtContext;
 import de.hpi.swa.lox.parser.LoxParser.StatementContext;
 import de.hpi.swa.lox.parser.LoxParser.StringContext;
 import de.hpi.swa.lox.parser.LoxParser.SuperExprContext;
+import de.hpi.swa.lox.parser.LoxParser.HaltStmtContext;
 import de.hpi.swa.lox.parser.LoxParser.TermContext;
 import de.hpi.swa.lox.parser.LoxParser.TrueContext;
 import de.hpi.swa.lox.parser.LoxParser.UnaryContext;
@@ -1163,6 +1164,12 @@ public final class LoxBytecodeCompiler extends LoxBaseVisitor<Void> {
         b.emitLoxLoadSelf();
         lexicalScope.loadIntoScope("super");
         b.endLoxReadSuper();
+        return null;
+    }
+
+    @Override
+    public Void visitHaltStmt(HaltStmtContext ctx) {
+        b.emitLoxHalt();
         return null;
     }
 }

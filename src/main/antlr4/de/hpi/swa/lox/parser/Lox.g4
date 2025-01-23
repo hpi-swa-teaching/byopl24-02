@@ -17,7 +17,7 @@ program        : declaration* EOF ;
 declaration    : classDecl | varDeclStmt | funDeclStmt | statement ;
 
 statement      : exprStmt | printStmt | block | returnStmt
-                | forStmt | forOfStmt | forInStmt | ifStmt | whileStmt;
+                | forStmt | forOfStmt | forInStmt | ifStmt | whileStmt | haltStmt;
 
 varDecl        : 'var' IDENTIFIER ('=' expression )? ;
 
@@ -41,6 +41,8 @@ ifStmt         : 'if' '(' condition=expression ')' then=statement
                             ( 'else' alt=statement )? ;
 
 whileStmt      : 'while' '(' condition=expression ')' body=statement;
+
+haltStmt       : 'halt' ';' ;
 
 returnStmt     : 'return' expression? ';' ;
 

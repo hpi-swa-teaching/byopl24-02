@@ -698,4 +698,12 @@ public abstract class LoxBytecodeRootNode extends LoxRootNode implements Bytecod
         }
     }
 
+    @Operation(tags = DebuggerTags.AlwaysHalt.class)
+    public static final class LoxHalt {
+        @TruffleBoundary
+        @Specialization
+        static void doDefault(@Bind LoxContext context) {
+            System.err.println("Halt");
+        }
+    }
 }
