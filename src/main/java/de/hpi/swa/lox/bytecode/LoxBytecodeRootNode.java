@@ -13,6 +13,7 @@ import com.oracle.truffle.api.bytecode.LocalAccessor;
 import com.oracle.truffle.api.bytecode.Operation;
 import com.oracle.truffle.api.bytecode.ShortCircuitOperation;
 import com.oracle.truffle.api.bytecode.Variadic;
+import com.oracle.truffle.api.debug.DebuggerTags;
 import com.oracle.truffle.api.bytecode.ShortCircuitOperation.Operator;
 import com.oracle.truffle.api.dsl.Bind;
 import com.oracle.truffle.api.dsl.Cached;
@@ -47,11 +48,10 @@ import de.hpi.swa.lox.runtime.data.LoxNumber;
 import de.hpi.swa.lox.runtime.data.LoxObject;
 import de.hpi.swa.lox.runtime.data.Nil;
 
-@GenerateBytecode(//
-        languageClass = LoxLanguage.class, enableMaterializedLocalAccesses = true, //
+@GenerateBytecode(languageClass = LoxLanguage.class, enableMaterializedLocalAccesses = true, //
         boxingEliminationTypes = { long.class }, // BUG? boolean.class
         enableUncachedInterpreter = true, //
-        enableSerialization = true)
+        enableSerialization = true, enableRootTagging = true, enableRootBodyTagging = false, enableTagInstrumentation = true)
 @ShortCircuitOperation(name = "LoxAnd", booleanConverter = LoxBytecodeRootNode.LoxIsTruthy.class, operator = Operator.AND_RETURN_CONVERTED)
 @ShortCircuitOperation(name = "LoxOr", booleanConverter = LoxBytecodeRootNode.LoxIsTruthy.class, operator = Operator.OR_RETURN_CONVERTED)
 public abstract class LoxBytecodeRootNode extends LoxRootNode implements BytecodeRootNode {

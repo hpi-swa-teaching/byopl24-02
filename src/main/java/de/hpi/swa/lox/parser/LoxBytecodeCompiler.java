@@ -22,6 +22,12 @@ import com.oracle.truffle.api.RootCallTarget;
 import com.oracle.truffle.api.TruffleLanguage.Env;
 import com.oracle.truffle.api.bytecode.BytecodeLocal;
 import com.oracle.truffle.api.bytecode.BytecodeParser;
+import com.oracle.truffle.api.instrumentation.StandardTags.CallTag;
+import com.oracle.truffle.api.instrumentation.StandardTags.ExpressionTag;
+import com.oracle.truffle.api.instrumentation.StandardTags.ReadVariableTag;
+import com.oracle.truffle.api.instrumentation.StandardTags.RootBodyTag;
+import com.oracle.truffle.api.instrumentation.StandardTags.StatementTag;
+import com.oracle.truffle.api.instrumentation.StandardTags.WriteVariableTag;
 import com.oracle.truffle.api.source.Source;
 import com.oracle.truffle.api.strings.TruffleString;
 
@@ -59,6 +65,7 @@ import de.hpi.swa.lox.parser.LoxParser.PrimaryContext;
 import de.hpi.swa.lox.parser.LoxParser.PrintStmtContext;
 import de.hpi.swa.lox.parser.LoxParser.ProgramContext;
 import de.hpi.swa.lox.parser.LoxParser.ReturnStmtContext;
+import de.hpi.swa.lox.parser.LoxParser.StatementContext;
 import de.hpi.swa.lox.parser.LoxParser.StringContext;
 import de.hpi.swa.lox.parser.LoxParser.SuperExprContext;
 import de.hpi.swa.lox.parser.LoxParser.TermContext;
@@ -80,6 +87,14 @@ public final class LoxBytecodeCompiler extends LoxBaseVisitor<Void> {
     protected final Source source;
 
     private final LoxBytecodeRootNodeGen.Builder b;
+
+    private static final Class<?>[] EXPRESSION = new Class<?>[] { ExpressionTag.class };
+    private static final Class<?>[] READ_VARIABLE = new Class<?>[] { ExpressionTag.class, ReadVariableTag.class };
+    private static final Class<?>[] WRITE_VARIABLE = new Class<?>[] { ExpressionTag.class, WriteVariableTag.class };
+    private static final Class<?>[] STATEMENT = new Class<?>[] { StatementTag.class };
+    private static final Class<?>[] CONDITION = new Class<?>[] { StatementTag.class, ExpressionTag.class };
+    private static final Class<?>[] CALL = new Class<?>[] { CallTag.class, ExpressionTag.class };
+    private static final Class<?>[] ROOT = new Class<?>[] { RootBodyTag.class };
 
     private record LocalVariable(BytecodeLocal variableStore, int functionDepth) {
     }
@@ -353,6 +368,26 @@ public final class LoxBytecodeCompiler extends LoxBaseVisitor<Void> {
         b.endReturn();
         b.endRoot();
         return result;
+    }
+
+    @Override
+    public Void visitExpression(ExpressionContext ctx) {
+        beginAttribution(ctx);
+        b.beginTag(EXPRESSION);
+        super.visitExpression(ctx);
+        b.endTag(EXPRESSION);
+        endAttribution();
+        return null;
+    }
+
+    @Override
+    public Void visitStatement(StatementContext ctx) {
+        beginAttribution(ctx);
+        b.beginTag(STATEMENT);
+        super.visitStatement(ctx);
+        b.endTag(STATEMENT);
+        endAttribution();
+        return null;
     }
 
     @Override
@@ -675,6 +710,8 @@ public final class LoxBytecodeCompiler extends LoxBaseVisitor<Void> {
 
     @Override
     public Void visitVarDecl(VarDeclContext ctx) {
+        beginAttribution(ctx);
+        b.beginTag(STATEMENT);
         var variableName = ctx.IDENTIFIER().getText();
         // Declare in scope
         lexicalScope.declare(variableName, ctx);
@@ -684,6 +721,8 @@ public final class LoxBytecodeCompiler extends LoxBaseVisitor<Void> {
             visit(ctx.expression());
             lexicalScope.endStore();
         }
+        endAttribution();
+        b.endTag(STATEMENT);
         return null;
     }
 
@@ -759,18 +798,22 @@ public final class LoxBytecodeCompiler extends LoxBaseVisitor<Void> {
         if (ctx.alt == null) {
             b.beginIfThen();
             beginAttribution(ctx.condition);
+            b.beginTag(CONDITION);
             b.beginLoxIsTruthy();
             visit(ctx.condition);
             b.endLoxIsTruthy();
+            b.endTag(CONDITION);
             endAttribution();
             visit(ctx.then);
             b.endIfThen();
         } else {
             b.beginIfThenElse();
             beginAttribution(ctx.condition);
+            b.beginTag(CONDITION);
             b.beginLoxIsTruthy();
             visit(ctx.condition);
             b.endLoxIsTruthy();
+            b.endTag(CONDITION);
             endAttribution();
             visit(ctx.then);
             visit(ctx.alt);
@@ -783,9 +826,11 @@ public final class LoxBytecodeCompiler extends LoxBaseVisitor<Void> {
     public Void visitWhileStmt(WhileStmtContext ctx) {
         b.beginWhile();
         beginAttribution(ctx.condition);
+        b.beginTag(CONDITION);
         b.beginLoxIsTruthy();
         visit(ctx.condition);
         b.endLoxIsTruthy();
+        b.endTag(CONDITION);
         endAttribution();
         visit(ctx.body);
         b.endWhile();
@@ -805,9 +850,11 @@ public final class LoxBytecodeCompiler extends LoxBaseVisitor<Void> {
         }
         b.beginWhile();
         beginAttribution(ctx.condition);
+        b.beginTag(CONDITION);
         b.beginLoxIsTruthy();
         visit(ctx.condition);
         b.endLoxIsTruthy();
+        b.endTag(CONDITION);
         endAttribution();
         b.beginBlock();
         visit(ctx.body);
@@ -826,18 +873,22 @@ public final class LoxBytecodeCompiler extends LoxBaseVisitor<Void> {
         // Visit declaration of element var.
         visitVarDecl(ctx.elementVar);
         beginAttribution(ctx);
+        b.beginTag(CONDITION);
         // Check if variable to iterate through is actually an array.
         b.beginLoxIsArray();
         visitVariableExpr(ctx.toIterate);
         b.endLoxIsArray();
+        b.endTag(CONDITION);
         endAttribution();
         // Begin loop operation that retrieves every element of array.
         b.beginWhile();
         beginAttribution(ctx);
+        b.beginTag(CONDITION);
         // Check if iterator through has next element.
         b.beginLoxArrayHasNext();
         visitVariableExpr(ctx.toIterate);
         b.endLoxArrayHasNext();
+        b.endTag(CONDITION);
         endAttribution();
         b.beginBlock();
         // Assign elementVar to next value.
@@ -863,18 +914,22 @@ public final class LoxBytecodeCompiler extends LoxBaseVisitor<Void> {
         // Visit declaration of index var.
         visitVarDecl(ctx.indexVar);
         beginAttribution(ctx);
+        b.beginTag(CONDITION);
         // Check if variable to iterate through is actually an array.
         b.beginLoxIsArray();
         visitVariableExpr(ctx.toIterate);
         b.endLoxIsArray();
+        b.endTag(CONDITION);
         endAttribution();
         // Begin loop operation that retrieves every element of array.
         b.beginWhile();
         beginAttribution(ctx);
+        b.beginTag(CONDITION);
         // Check if iterator through has next element.
         b.beginLoxArrayHasNext();
         visitVariableExpr(ctx.toIterate);
         b.endLoxArrayHasNext();
+        b.endTag(CONDITION);
         endAttribution();
         b.beginBlock();
         // Assign indexVar to next index.
@@ -956,9 +1011,13 @@ public final class LoxBytecodeCompiler extends LoxBaseVisitor<Void> {
         var function = ctx.function();
         String funName = function.IDENTIFIER().getText();
         lexicalScope.declare(funName, ctx);
+        beginAttribution(ctx);
+        b.beginTag(STATEMENT);
         lexicalScope.beginStore(funName);
         visitFunction(function);
         lexicalScope.endStore();
+        b.endTag(STATEMENT);
+        endAttribution();
         return null;
     }
 
@@ -1032,6 +1091,8 @@ public final class LoxBytecodeCompiler extends LoxBaseVisitor<Void> {
         for (int i = calls.size() - 1; i >= 0; i--) {
             CallArgumentsContext callArguments = calls.get(i);
             if (callArguments.IDENTIFIER() == null) {
+                beginAttribution(ctx);
+                b.beginTag(CALL);
                 b.beginLoxCallFunction();
             } else {
                 // Property call
@@ -1050,6 +1111,8 @@ public final class LoxBytecodeCompiler extends LoxBaseVisitor<Void> {
                     }
                 }
                 b.endLoxCallFunction();
+                b.endTag(CALL);
+                endAttribution();
             } else {
                 // Property call
                 b.endLoxReadProperty();
@@ -1067,6 +1130,8 @@ public final class LoxBytecodeCompiler extends LoxBaseVisitor<Void> {
         lexicalScope.declare("super", ctx);
         b.beginLoxDeclareClass(name);
         b.beginBlock();
+        beginAttribution(ctx);
+        b.beginTag(STATEMENT);
         if (ctx.extends_ != null) {
             String superclassName = ctx.extends_.getText();
             lexicalScope.beginStore("super");
@@ -1077,6 +1142,8 @@ public final class LoxBytecodeCompiler extends LoxBaseVisitor<Void> {
             b.emitLoadConstant(Nil.INSTANCE);
             lexicalScope.endStore();
         }
+        b.endTag(STATEMENT);
+        endAttribution();
         lexicalScope.loadIntoScope("super");
         b.endBlock();
         for (var fun : ctx.function()) {
