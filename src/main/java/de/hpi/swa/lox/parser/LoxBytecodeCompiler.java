@@ -28,6 +28,7 @@ import com.oracle.truffle.api.instrumentation.StandardTags.ReadVariableTag;
 import com.oracle.truffle.api.instrumentation.StandardTags.RootBodyTag;
 import com.oracle.truffle.api.instrumentation.StandardTags.StatementTag;
 import com.oracle.truffle.api.instrumentation.StandardTags.WriteVariableTag;
+import com.oracle.truffle.api.nodes.RootNode;
 import com.oracle.truffle.api.source.Source;
 import com.oracle.truffle.api.strings.TruffleString;
 
@@ -1066,7 +1067,7 @@ public final class LoxBytecodeCompiler extends LoxBaseVisitor<Void> {
         // End encapsulation of function in separate call target.
         LoxRootNode node = b.endRoot();
         node.name = funName;
-        b.emitLoxCreateFunction(funName, node.getCallTarget(), lexicalScope.maxFunctionDepth);
+        b.emitLoxCreateFunction(funName, (RootNode) node, lexicalScope.maxFunctionDepth);
         return null;
     }
 

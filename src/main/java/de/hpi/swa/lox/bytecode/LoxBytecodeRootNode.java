@@ -4,7 +4,6 @@ import java.io.IOException;
 import java.util.Objects;
 
 import com.oracle.truffle.api.CompilerDirectives.TruffleBoundary;
-import com.oracle.truffle.api.RootCallTarget;
 import com.oracle.truffle.api.bytecode.BytecodeNode;
 import com.oracle.truffle.api.bytecode.BytecodeRootNode;
 import com.oracle.truffle.api.bytecode.ConstantOperand;
@@ -28,6 +27,7 @@ import com.oracle.truffle.api.interop.UnsupportedMessageException;
 import com.oracle.truffle.api.interop.UnsupportedTypeException;
 import com.oracle.truffle.api.library.CachedLibrary;
 import com.oracle.truffle.api.nodes.Node;
+import com.oracle.truffle.api.nodes.RootNode;
 import com.oracle.truffle.api.object.DynamicObjectLibrary;
 import com.oracle.truffle.api.strings.TruffleString;
 
@@ -530,15 +530,15 @@ public abstract class LoxBytecodeRootNode extends LoxRootNode implements Bytecod
 
     @Operation
     @ConstantOperand(type = String.class)
-    @ConstantOperand(type = RootCallTarget.class)
+    @ConstantOperand(type = RootNode.class)
     @ConstantOperand(type = int.class)
     public static final class LoxCreateFunction {
 
         @Specialization
-        static LoxFunction doDefault(VirtualFrame frame, String funName, RootCallTarget callTarget,
+        static LoxFunction doDefault(VirtualFrame frame, String funName, RootNode node,
                 int maxFunctionDepth) {
             MaterializedFrame materializedFunctionFrame = maxFunctionDepth > 0 ? frame.materialize() : null;
-            return new LoxFunction(funName, callTarget, materializedFunctionFrame);
+            return new LoxFunction(funName, node, materializedFunctionFrame);
         }
     }
 

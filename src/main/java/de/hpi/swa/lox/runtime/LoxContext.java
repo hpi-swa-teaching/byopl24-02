@@ -37,7 +37,7 @@ public final class LoxContext {
 
         // Load builtins
         for (var e : builtins.entrySet()) {
-            this.globalObject.set(e.getKey(), new LoxFunction(e.getKey(), e.getValue().getCallTarget(), null));
+            this.globalObject.set(e.getKey(), new LoxFunction(e.getKey(), e.getValue(), null));
         }
     }
 
