@@ -723,8 +723,8 @@ public final class LoxBytecodeCompiler extends LoxBaseVisitor<Void> {
             visit(ctx.expression());
             lexicalScope.endStore();
         }
-        endAttribution();
         b.endTag(STATEMENT);
+        endAttribution();
         return null;
     }
 
