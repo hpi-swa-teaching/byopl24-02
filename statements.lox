@@ -1,0 +1,28 @@
+var a = 2;
+fun f() {
+    return 3;
+}
+
+f();
+
+class A {
+    m() {
+
+    }
+}
+
+for (var i = 0; i < 3; i = i + 1){
+    print(i);
+}
+
+while (a < 100){
+    a = a * a;
+}
+
+if (a > 3) {
+    return 6;
+}
+
+{
+    var b = 3 + 4;
+}

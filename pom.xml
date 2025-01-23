@@ -1,4 +1,6 @@
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
   <modelVersion>4.0.0</modelVersion>
   <groupId>de.hpi.swa</groupId>
   <artifactId>lox-language</artifactId>
@@ -29,21 +31,23 @@
         <artifactId>maven-surefire-plugin</artifactId>
         <version>3.1.2</version>
         <configuration>
-           <argLine>
-               --add-exports=java.base/jdk.internal.module=truffle.tck
-               -Dpolyglot.engine.WarnInterpreterOnly=false
-            </argLine>
-            <includes>
-              <include>**Test.java</include>
-            </includes>
-            <excludes>
-              <exclude>**/Abstract*Test.java</exclude>
-            </excludes>
+          <argLine>
+            --add-exports=java.base/jdk.internal.module=truffle.tck
+            -Dpolyglot.engine.WarnInterpreterOnly=false
+          </argLine>
+          <includes>
+            <include>**Test.java</include>
+          </includes>
+          <excludes>
+            <exclude>**/Abstract*Test.java</exclude>
+          </excludes>
         </configuration>
       </plugin>
       <!-- Plugin to compile the g4 files ahead of the java files
-           See https://github.com/antlr/antlr4/blob/master/antlr4-maven-plugin/src/site/apt/examples/simple.apt.vm
-           Except that the grammar does not need to contain the package declaration as stated in the documentation (I do not know why)
+           See
+      https://github.com/antlr/antlr4/blob/master/antlr4-maven-plugin/src/site/apt/examples/simple.apt.vm
+           Except that the grammar does not need to contain the package declaration as stated in the
+      documentation (I do not know why)
            To use this plugin, type:
              mvn antlr4:antlr4
            In any case, Maven will invoke this plugin before the Java source is compiled
@@ -106,11 +110,6 @@
 
   <dependencies>
     <dependency>
-      <groupId>org.graalvm.polyglot</groupId>
-      <artifactId>polyglot</artifactId>
-      <version>${graalvm.version}</version>
-    </dependency>
-    <dependency>
       <groupId>org.graalvm.sdk</groupId>
       <artifactId>launcher-common</artifactId>
       <version>${graalvm.version}</version>
@@ -148,13 +147,27 @@
       <artifactId>truffle-sl</artifactId>
       <version>${graalvm.version}</version>
     </dependency>
+    <dependency>
+      <groupId>org.graalvm.polyglot</groupId>
+      <artifactId>inspect-community</artifactId>
+      <version>${graalvm.version}</version>
+      <type>pom</type>
+    </dependency>
+    <dependency>
+      <groupId>org.graalvm.polyglot</groupId>
+      <artifactId>dap-community</artifactId>
+      <version>${graalvm.version}</version>
+      <type>pom</type>
+    </dependency>
   </dependencies>
 
   <profiles>
     <profile>
       <id>windows</id>
       <activation>
-        <os><family>windows</family></os>
+        <os>
+          <family>windows</family>
+        </os>
       </activation>
       <properties>
         <repodir>windows</repodir>
@@ -163,7 +176,9 @@
     <profile>
       <id>mac</id>
       <activation>
-        <os><name>mac os x</name></os>
+        <os>
+          <name>mac os x</name>
+        </os>
       </activation>
       <properties>
         <repodir>mac</repodir>
@@ -174,7 +189,8 @@
       <activation>
         <os>
           <name>!mac os x</name>
-          <family>unix</family></os>
+          <family>unix</family>
+        </os>
       </activation>
       <properties>
         <repodir>linux</repodir>
