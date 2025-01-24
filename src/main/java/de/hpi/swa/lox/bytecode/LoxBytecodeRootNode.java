@@ -197,7 +197,7 @@ public abstract class LoxBytecodeRootNode extends LoxRootNode implements Bytecod
         }
 
         @Fallback
-        static Object doObjects(Object left, Object right, @Bind Node node) {
+        static boolean doObjects(Object left, Object right, @Bind Node node) {
             return left.equals(right);
         }
     }
