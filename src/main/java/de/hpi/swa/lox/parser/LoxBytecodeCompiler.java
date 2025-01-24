@@ -712,11 +712,11 @@ public final class LoxBytecodeCompiler extends LoxBaseVisitor<Void> {
 
     @Override
     public Void visitVarDecl(VarDeclContext ctx) {
-        beginAttribution(ctx);
-        b.beginTag(STATEMENT);
         var variableName = ctx.IDENTIFIER().getText();
         // Declare in scope
         lexicalScope.declare(variableName, ctx);
+        beginAttribution(ctx);
+        b.beginTag(STATEMENT);
         if (ctx.expression() != null) {
             // If an expression is following, define with assigned value (store).
             lexicalScope.beginStore(variableName);
