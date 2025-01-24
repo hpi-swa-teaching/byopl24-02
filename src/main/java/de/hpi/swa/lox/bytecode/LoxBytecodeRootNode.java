@@ -191,13 +191,14 @@ public abstract class LoxBytecodeRootNode extends LoxRootNode implements Bytecod
 
     @Operation
     public static final class LoxEqual {
-        @Specialization
+        @Specialization // LoxNumbers need no TruffleBoundary here.
         static boolean doLoxNumbers(LoxNumber left, LoxNumber right) {
             return left.equals(right);
         }
 
         @Fallback
-        static boolean doObjects(Object left, Object right, @Bind Node node) {
+        @TruffleBoundary
+        static boolean doDefault(Object left, Object right) {
             return left.equals(right);
         }
     }
