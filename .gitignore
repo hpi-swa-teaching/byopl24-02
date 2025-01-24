@@ -25,6 +25,8 @@ mxbuild/
 
 .project
 .classpath
+.script-classpath
+graal_dumps/
 
 .idea/
 

@@ -1,7 +1,7 @@
 #!/bin/sh
 DIR=$(dirname "$0")
-if [ ! -e $DIR/classpath ]; then
-    ./mvnw -q exec:exec -Dexec.executable=echo -Dexec.args="%classpath" >classpath
+if [ ! -e $DIR/.script-classpath ]; then
+    ./mvnw -q exec:exec -Dexec.executable=echo -Dexec.args="%classpath" >.script-classpath
 fi
 CLASSPATH=$(cat $DIR/classpath)
 JAVA="java"
