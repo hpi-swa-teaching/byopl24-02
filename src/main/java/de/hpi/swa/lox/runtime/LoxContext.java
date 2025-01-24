@@ -24,6 +24,7 @@ public final class LoxContext {
     private GlobalObject globalObject;
 
     public LoxContext(LoxLanguage language, TruffleLanguage.Env env, Map<String, BuiltInNode> builtins) {
+        super();
         this.env = env;
         this.globalObject = new GlobalObject();
 

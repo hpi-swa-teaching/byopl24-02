@@ -27,6 +27,7 @@ public class LoxFunction implements TruffleObject {
     public final LoxObject self;
 
     public LoxFunction(String name, RootNode node, MaterializedFrame outerFunctionFrame, LoxObject self) {
+        super();
         this.name = name;
         this.outerFunctionFrame = outerFunctionFrame;
         this.node = node;

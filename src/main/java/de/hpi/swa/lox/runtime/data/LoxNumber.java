@@ -19,6 +19,7 @@ public class LoxNumber implements TruffleObject {
     public static final LoxNumber NaN = new LoxNumber(Double.NaN);
 
     public LoxNumber(String numberText) {
+        super();
         try {
             // Try to parse number text to Double value.
             // This gives us floating number handling and can also deal with integers.
@@ -33,14 +34,17 @@ public class LoxNumber implements TruffleObject {
     }
 
     public LoxNumber(Double value) {
+        super();
         this.internalValue = value;
     }
 
     public LoxNumber(int value) {
+        super();
         this.internalValue = (double) value;
     }
 
     public LoxNumber(long value) {
+        super();
         this.internalValue = (double) value;
     }
 
