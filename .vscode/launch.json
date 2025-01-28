@@ -1,22 +1,38 @@
 {
-    "configurations": [
-        {
-            "type": "java",
-            "name": "LoxMain",
-            "request": "launch",
-            "mainClass": "de.hpi.swa.lox.cli.LoxMain",
-            "projectName": "de.hpi.swa.lox",
-        },
-        {
-            "type": "java",
-            "name": "Attach to swalanguage",
-            "projectName": "de.hpi.swa.lox",
-            "request": "attach",
-            "hostName": "localhost",
-            "port": 8000,
-            "sourceRoots": [
-                "${workspaceFolder}/src/main/java",
-            ]
-        }
-    ]
+  "configurations": [
+    {
+      "type": "java",
+      "name": "LoxMain",
+      "request": "launch",
+      "mainClass": "de.hpi.swa.lox.cli.LoxMain",
+      "projectName": "de.hpi.swa.lox"
+    },
+    {
+      "type": "java",
+      "name": "Attach to swalanguage",
+      "projectName": "de.hpi.swa.lox",
+      "request": "attach",
+      "hostName": "localhost",
+      "port": 8000,
+      "sourceRoots": ["${workspaceFolder}/src/main/java"]
+    },
+    {
+      "type": "java",
+      "name": "Attach to java remote debugger",
+      "projectName": "lox-language",
+      "request": "attach",
+      "hostName": "localhost",
+      "port": 5005,
+      "sourceRoots": ["${workspaceFolder}/src/main/java"]
+    },
+    {
+      "type": "debugpy",
+      "name": "Attach dap",
+      "request": "attach",
+      "connect": {
+        "host": "localhost",
+        "port": 4711
+      }
+    }
+  ]
 }

@@ -38,12 +38,6 @@ public class LoxObject extends DynamicObject {
     public Object getMembers(boolean includeInternal) {
         List<Object> keys = new ArrayList<>();
         keys.addAll(Arrays.asList(DynamicObjectLibrary.getUncached().getKeyArray(this)));
-        LoxClass klass = this.klazz;
-        while (klass != null) {
-            // Get members from super classes iteratively
-            keys.addAll(Arrays.asList(DynamicObjectLibrary.getUncached().getKeyArray(klass)));
-            klass = (LoxClass) DynamicObjectLibrary.getUncached().getOrDefault(klass, "super", null);
-        }
         return LoxContext.get(null).getEnv().asGuestValue(keys);
     }
 

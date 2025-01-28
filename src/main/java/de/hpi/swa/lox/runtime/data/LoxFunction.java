@@ -11,6 +11,7 @@ import com.oracle.truffle.api.interop.TruffleObject;
 import com.oracle.truffle.api.library.ExportLibrary;
 import com.oracle.truffle.api.library.ExportMessage;
 import com.oracle.truffle.api.nodes.IndirectCallNode;
+import com.oracle.truffle.api.nodes.RootNode;
 
 /**
  * Representation of Functions that hold their own CallTarget separate from the
@@ -20,28 +21,29 @@ import com.oracle.truffle.api.nodes.IndirectCallNode;
 public class LoxFunction implements TruffleObject {
     public final String name;
 
-    private final RootCallTarget callTarget;
+    private final RootNode node;
 
     private final MaterializedFrame outerFunctionFrame;
     public final LoxObject self;
 
-    public LoxFunction(String name, RootCallTarget callTarget, MaterializedFrame outerFunctionFrame, LoxObject self) {
+    public LoxFunction(String name, RootNode node, MaterializedFrame outerFunctionFrame, LoxObject self) {
+        super();
         this.name = name;
-        this.callTarget = callTarget;
         this.outerFunctionFrame = outerFunctionFrame;
+        this.node = node;
         this.self = self;
     }
 
-    public LoxFunction(String name, RootCallTarget callTarget, MaterializedFrame outerFunctionFrame) {
-        this(name, callTarget, outerFunctionFrame, null);
+    public LoxFunction(String name, RootNode node, MaterializedFrame outerFunctionFrame) {
+        this(name, node, outerFunctionFrame, null);
     }
 
     public LoxFunction(LoxObject object, LoxFunction m) {
-        this(m.name, m.callTarget, m.outerFunctionFrame, object);
+        this(m.name, m.node, m.outerFunctionFrame, object);
     }
 
     public RootCallTarget getCallTarget() {
-        return callTarget;
+        return node.getCallTarget();
     }
 
     static LoxFunction getCurrentFunctionFromFrame(Frame frame) {
@@ -104,7 +106,7 @@ public class LoxFunction implements TruffleObject {
     @ExportMessage
     public Object execute(Object[] arguments, @Cached IndirectCallNode callNode) {
         Object[] args = createArguments(arguments);
-        var result = callNode.call(callTarget, args);
+        var result = callNode.call(this.getCallTarget(), args);
         if (result instanceof LoxNumber) {
             return convertLoxNumberToDouble(result); // Truffle does not support LoxNumber directly
         }

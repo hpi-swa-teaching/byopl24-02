@@ -4,7 +4,6 @@ import java.io.IOException;
 import java.util.Objects;
 
 import com.oracle.truffle.api.CompilerDirectives.TruffleBoundary;
-import com.oracle.truffle.api.RootCallTarget;
 import com.oracle.truffle.api.bytecode.BytecodeNode;
 import com.oracle.truffle.api.bytecode.BytecodeRootNode;
 import com.oracle.truffle.api.bytecode.ConstantOperand;
@@ -13,6 +12,7 @@ import com.oracle.truffle.api.bytecode.LocalAccessor;
 import com.oracle.truffle.api.bytecode.Operation;
 import com.oracle.truffle.api.bytecode.ShortCircuitOperation;
 import com.oracle.truffle.api.bytecode.Variadic;
+import com.oracle.truffle.api.debug.DebuggerTags;
 import com.oracle.truffle.api.bytecode.ShortCircuitOperation.Operator;
 import com.oracle.truffle.api.dsl.Bind;
 import com.oracle.truffle.api.dsl.Cached;
@@ -27,6 +27,7 @@ import com.oracle.truffle.api.interop.UnsupportedMessageException;
 import com.oracle.truffle.api.interop.UnsupportedTypeException;
 import com.oracle.truffle.api.library.CachedLibrary;
 import com.oracle.truffle.api.nodes.Node;
+import com.oracle.truffle.api.nodes.RootNode;
 import com.oracle.truffle.api.object.DynamicObjectLibrary;
 import com.oracle.truffle.api.strings.TruffleString;
 
@@ -47,11 +48,10 @@ import de.hpi.swa.lox.runtime.data.LoxNumber;
 import de.hpi.swa.lox.runtime.data.LoxObject;
 import de.hpi.swa.lox.runtime.data.Nil;
 
-@GenerateBytecode(//
-        languageClass = LoxLanguage.class, enableMaterializedLocalAccesses = true, //
+@GenerateBytecode(languageClass = LoxLanguage.class, enableMaterializedLocalAccesses = true, //
         boxingEliminationTypes = { long.class }, // BUG? boolean.class
         enableUncachedInterpreter = true, //
-        enableSerialization = true)
+        enableSerialization = true, enableRootTagging = true, enableRootBodyTagging = false, enableTagInstrumentation = true)
 @ShortCircuitOperation(name = "LoxAnd", booleanConverter = LoxBytecodeRootNode.LoxIsTruthy.class, operator = Operator.AND_RETURN_CONVERTED)
 @ShortCircuitOperation(name = "LoxOr", booleanConverter = LoxBytecodeRootNode.LoxIsTruthy.class, operator = Operator.OR_RETURN_CONVERTED)
 public abstract class LoxBytecodeRootNode extends LoxRootNode implements BytecodeRootNode {
@@ -191,14 +191,15 @@ public abstract class LoxBytecodeRootNode extends LoxRootNode implements Bytecod
 
     @Operation
     public static final class LoxEqual {
-        @Specialization
+        @Specialization // LoxNumbers need no TruffleBoundary here.
         static boolean doLoxNumbers(LoxNumber left, LoxNumber right) {
             return left.equals(right);
         }
 
-        @Specialization
+        @Fallback
+        @TruffleBoundary
         static boolean doDefault(Object left, Object right) {
-            return left == right;
+            return left.equals(right);
         }
     }
 
@@ -530,15 +531,15 @@ public abstract class LoxBytecodeRootNode extends LoxRootNode implements Bytecod
 
     @Operation
     @ConstantOperand(type = String.class)
-    @ConstantOperand(type = RootCallTarget.class)
+    @ConstantOperand(type = RootNode.class)
     @ConstantOperand(type = int.class)
     public static final class LoxCreateFunction {
 
         @Specialization
-        static LoxFunction doDefault(VirtualFrame frame, String funName, RootCallTarget callTarget,
+        static LoxFunction doDefault(VirtualFrame frame, String funName, RootNode node,
                 int maxFunctionDepth) {
             MaterializedFrame materializedFunctionFrame = maxFunctionDepth > 0 ? frame.materialize() : null;
-            return new LoxFunction(funName, callTarget, materializedFunctionFrame);
+            return new LoxFunction(funName, node, materializedFunctionFrame);
         }
     }
 
@@ -698,4 +699,12 @@ public abstract class LoxBytecodeRootNode extends LoxRootNode implements Bytecod
         }
     }
 
+    @Operation(tags = DebuggerTags.AlwaysHalt.class)
+    public static final class LoxHalt {
+        @TruffleBoundary
+        @Specialization
+        static void doDefault(@Bind LoxContext context) {
+            System.err.println("Halt");
+        }
+    }
 }

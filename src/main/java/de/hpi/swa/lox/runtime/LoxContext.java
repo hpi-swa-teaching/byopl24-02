@@ -24,6 +24,7 @@ public final class LoxContext {
     private GlobalObject globalObject;
 
     public LoxContext(LoxLanguage language, TruffleLanguage.Env env, Map<String, BuiltInNode> builtins) {
+        super();
         this.env = env;
         this.globalObject = new GlobalObject();
 
@@ -37,7 +38,7 @@ public final class LoxContext {
 
         // Load builtins
         for (var e : builtins.entrySet()) {
-            this.globalObject.set(e.getKey(), new LoxFunction(e.getKey(), e.getValue().getCallTarget(), null));
+            this.globalObject.set(e.getKey(), new LoxFunction(e.getKey(), e.getValue(), null));
         }
     }
 
