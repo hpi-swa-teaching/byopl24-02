@@ -364,11 +364,18 @@ public final class LoxBytecodeCompiler extends LoxBaseVisitor<Void> {
     @Override
     public Void visitProgram(ProgramContext ctx) {
         b.beginRoot();
+        beginAttribution(ctx);
+        b.beginTag(ROOT);
+        b.beginBlock();
         var result = super.visitProgram(ctx);
         b.beginReturn();
         b.emitLoadConstant(0);
         b.endReturn();
-        b.endRoot();
+        b.endBlock();
+        b.endTag(ROOT);
+        endAttribution();
+        LoxRootNode programNode = b.endRoot();
+        programNode.name = "program";
         return result;
     }
 
@@ -1028,6 +1035,7 @@ public final class LoxBytecodeCompiler extends LoxBaseVisitor<Void> {
         String funName = ctx.IDENTIFIER().getText();
         // Begin a new, separate call target.
         b.beginRoot();
+        beginAttribution(ctx);
         // Group all function operations together.
         b.beginBlock();
         // Create new variable scope for function.
@@ -1050,7 +1058,7 @@ public final class LoxBytecodeCompiler extends LoxBaseVisitor<Void> {
             b.emitLoxLoadFunctionArgument(i);
             lexicalScope.endStore();
         }
-
+        b.beginTag(ROOT);
         // Group function body execution and exiting the function together.
         b.beginBlock();
         // Execute function body.
@@ -1059,12 +1067,14 @@ public final class LoxBytecodeCompiler extends LoxBaseVisitor<Void> {
         lexicalScope = lexicalScope.parentScope;
         // End all grouping.
         b.endBlock();
+        b.endTag(ROOT);
         b.endBlock();
         // Begin returning of the separate call target to return to the root execution.
         b.beginReturn();
         // Default return value is nil (if no return statement was executed earlier).
         b.emitLoadConstant(Nil.INSTANCE);
         b.endReturn();
+        endAttribution();
         // End encapsulation of function in separate call target.
         LoxRootNode node = b.endRoot();
         node.name = funName;
