@@ -851,6 +851,8 @@ public final class LoxBytecodeCompiler extends LoxBaseVisitor<Void> {
         lexicalScope = new LoxLexicalScope(lexicalScope);
         b.beginBlock();
         ParserRuleContext init = ctx.loopVar;
+        // Either loop variable outside
+        // Or declaration
         if (init == null) {
             init = ctx.exprStmt();
         }
@@ -858,6 +860,7 @@ public final class LoxBytecodeCompiler extends LoxBaseVisitor<Void> {
             visit(init);
         }
         b.beginWhile();
+        // Condition is required, because our language misses break statement
         beginAttribution(ctx.condition);
         b.beginTag(CONDITION);
         b.beginLoxIsTruthy();
@@ -867,12 +870,16 @@ public final class LoxBytecodeCompiler extends LoxBaseVisitor<Void> {
         endAttribution();
         b.beginBlock();
         visit(ctx.body);
-        visit(ctx.increment);
+        if (ctx.increment != null) {
+            visit(ctx.increment);
+        }
+
         b.endBlock();
         b.endWhile();
         lexicalScope = lexicalScope.parentScope;
         b.endBlock();
         return null;
+
     }
 
     @Override

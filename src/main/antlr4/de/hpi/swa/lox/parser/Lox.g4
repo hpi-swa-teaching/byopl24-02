@@ -30,7 +30,7 @@ exprStmt       : expression ';' ;
 printStmt      : 'print' expression ';' ;
 
 forStmt        : 'for' '(' (loopVar=varDeclStmt | exprStmt | ';' )
-                            condition=expression? ';'
+                            condition=expression ';'
                             increment=expression? ')' body=statement ;
 
 forOfStmt      : 'for' '(' elementVar=varDecl  'of' toIterate=variableExpr ')' body=statement ;

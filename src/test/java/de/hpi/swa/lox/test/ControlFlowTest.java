@@ -63,4 +63,10 @@ public class ControlFlowTest extends AbstractLoxTest {
                 "var i = 8; for(var i=1; i <= 3; i = i + 1) {} print i;", "8\n");
     }
 
+    @Test
+    public void testEmptyForLoop() {
+        runAndExpect("print 1 2 3",
+                "var i=1; for(; i <= 3;) {print i; i = i + 1;}", "1\n2\n3\n");
+    }
+
 }

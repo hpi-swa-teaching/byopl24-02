@@ -66,6 +66,10 @@ class A {
 }
 ```
 
+### Condition required in for loops
+
+We decided to require a condition in for loops. Reason is, that our language doesn't provide the `break` statement.
+
 ## Tools
 
 ### Migrating to our syntax
