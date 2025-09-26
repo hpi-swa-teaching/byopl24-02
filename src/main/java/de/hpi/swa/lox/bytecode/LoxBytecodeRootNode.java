@@ -4,6 +4,8 @@ import java.io.IOException;
 import java.util.Objects;
 
 import com.oracle.truffle.api.CompilerDirectives.TruffleBoundary;
+import com.oracle.truffle.api.CompilerDirectives.CompilationFinal;
+import com.oracle.truffle.api.profiles.BranchProfile;
 import com.oracle.truffle.api.bytecode.BytecodeNode;
 import com.oracle.truffle.api.bytecode.BytecodeRootNode;
 import com.oracle.truffle.api.bytecode.ConstantOperand;
@@ -408,9 +410,28 @@ public abstract class LoxBytecodeRootNode extends LoxRootNode implements Bytecod
 
     @Operation
     public static final class LoxReadArray {
-        @Specialization(guards = "index.getValue().intValue() >= 0")
+        // Fast path for small constant indices (most common case)
+        @Specialization(guards = {"isValidSmallIndex(index)"})
+        static Object readArraySmall(LoxArray array, LoxNumber index,
+                @Cached("create()") BranchProfile fastPath,
+                @Cached("create()") BranchProfile slowPath) {
+            int idx = index.getValue().intValue();
+            if (idx < array.getSize()) {
+                fastPath.enter();
+                return array.getUnchecked(idx);
+            }
+            slowPath.enter();
+            return array.get(idx); // Fall back to bounds-checked version
+        }
+
+        @Specialization(guards = "index.getValue().intValue() >= 0", replaces = "readArraySmall")
         static Object readArray(LoxArray array, LoxNumber index) {
             return array.get(index.getValue().intValue());
+        }
+        
+        static boolean isValidSmallIndex(LoxNumber index) {
+            int idx = index.getValue().intValue();
+            return idx >= 0 && idx < 16;
         }
 
         @Fallback
@@ -418,6 +439,39 @@ public abstract class LoxBytecodeRootNode extends LoxRootNode implements Bytecod
             throw new LoxRuntimeError("array👉index👈 not readable", node);
         }
 
+    }
+
+    @Operation
+    public static final class LoxReadArrayInt {
+        @Specialization(guards = "index >= 0")
+        static Object readArrayInt(LoxArray array, int index) {
+            return array.get(index);
+        }
+
+        @Fallback
+        static Object fallback(Object array, Object index, @Bind Node node) {
+            throw new LoxRuntimeError("array👉index👈 not readable", node);
+        }
+    }
+
+    @Operation
+    public static final class LoxWriteArrayInt {
+        @Specialization(guards = {"index >= 0", "array.getSize() > index"})
+        static Void writeArrayIntInSize(LoxArray array, int index, Object value) {
+            array.setUnchecked(index, value);
+            return null;
+        }
+
+        @Specialization(guards = "index >= 0", replaces = "writeArrayIntInSize")
+        static Void writeArrayInt(LoxArray array, int index, Object value) {
+            array.set(index, value);
+            return null;
+        }
+
+        @Fallback
+        static Object fallback(Object array, Object index, Object value, @Bind Node node) {
+            throw new LoxRuntimeError("array👉index👈 not writable", node);
+        }
     }
 
     @Operation
@@ -430,11 +484,25 @@ public abstract class LoxBytecodeRootNode extends LoxRootNode implements Bytecod
 
     @Operation
     public static final class LoxWriteArray {
+        // Fast path for small indices within existing size - no bounds checking needed
+        @Specialization(guards = { "isValidSmallIndexInSize(index, array)" })
+        static Void writeArraySmallInSize(LoxArray array, LoxNumber index, Object value,
+                @Cached("create()") BranchProfile fastPath) {
+            fastPath.enter();
+            array.setUnchecked(index.getValue().intValue(), value);
+            return null;
+        }
+
         @Specialization(guards = { "index.getValue().intValue() >= 0",
-                "array.getSize() > index.getValue().intValue()" })
+                "array.getSize() > index.getValue().intValue()" }, replaces = "writeArraySmallInSize")
         static Void writeArrayInSize(LoxArray array, LoxNumber index, Object value) {
             array.setInSize(index.getValue().intValue(), value);
             return null;
+        }
+        
+        static boolean isValidSmallIndexInSize(LoxNumber index, LoxArray array) {
+            int idx = index.getValue().intValue();
+            return idx >= 0 && idx < 16 && array.getSize() > idx;
         }
 
         @Specialization(guards = { "index.getValue().intValue() >= 0",

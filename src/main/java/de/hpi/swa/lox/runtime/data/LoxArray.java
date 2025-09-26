@@ -15,6 +15,7 @@ public class LoxArray implements TruffleObject {
     int size = 0;
 
     private boolean iteratorNeedsUpdate = false;
+    private boolean trackIterator = true; // Can be disabled for performance
 
     private ListIterator<Object> iterator;
 
@@ -42,11 +43,19 @@ public class LoxArray implements TruffleObject {
 
     @TruffleBoundary
     private ListIterator<Object> buildListIterator() {
-        return Arrays.asList(innerArray)
-                .stream()
-                // We should not iterate through our unassigned indices!
-                .filter(element -> element != null)
-                .toList().listIterator();
+        // More efficient iterator creation - avoid stream overhead
+        Object[] nonNullElements = new Object[size];
+        int count = 0;
+        for (int i = 0; i < size; i++) {
+            if (innerArray[i] != null) {
+                nonNullElements[count++] = innerArray[i];
+            }
+        }
+        // Trim to actual size
+        if (count < size) {
+            nonNullElements = Arrays.copyOf(nonNullElements, count);
+        }
+        return Arrays.asList(nonNullElements).listIterator();
     }
 
     public ListIterator<Object> getLoxIterator() {
@@ -98,8 +107,37 @@ public class LoxArray implements TruffleObject {
         iteratorNeedsUpdate = true;
     }
 
+    // Unchecked access methods for performance optimization
+    public Object getUnchecked(int index) {
+        return innerArray[index];
+    }
+
+    public void setUnchecked(int index, Object value) {
+        innerArray[index] = value;
+        // Set flag for iterator update only if tracking
+        if (trackIterator) {
+            iteratorNeedsUpdate = true;
+        }
+    }
+
     private void ensureCapacity() {
-        innerArray = Arrays.copyOf(innerArray, Math.max(innerArray.length, size) * 2);
+        ensureCapacity(size);
+    }
+
+    private void ensureCapacity(int newCapacity) {
+        if (newCapacity > innerArray.length) {
+            // Use more conservative growth for large arrays
+            int growth = innerArray.length < 1024 ? innerArray.length : innerArray.length / 2;
+            int newSize = Math.max(newCapacity, innerArray.length + growth);
+            innerArray = Arrays.copyOf(innerArray, newSize);
+        }
+    }
+
+    // Add capacity hints for known usage patterns
+    public static LoxArray createWithHint(Object[] initial, int expectedSize) {
+        LoxArray result = new LoxArray(initial);
+        result.ensureCapacity(expectedSize);
+        return result;
     }
 
     @TruffleBoundary
