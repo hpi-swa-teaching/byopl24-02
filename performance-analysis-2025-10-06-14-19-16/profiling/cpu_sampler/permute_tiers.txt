@@ -1,0 +1,37 @@
+load benchmark: permute.lox
+Starting permute benchmark ...
+permute: innerIterations=10 runtime: 117633us
+permute: innerIterations=10 runtime: 2692us
+permute: innerIterations=10 runtime: 2979us
+permute: innerIterations=10 runtime: 2936us
+permute: innerIterations=10 runtime: 5335us
+permute: innerIterations=10 runtime: 8801us
+permute: iterations=6 average: 23396us total: 140376us
+
+Total Runtime: 140376us
+------------------------------------------------------------------------------------------------------------------------------------------------------------
+Sampling Histogram. Recorded 18 samples with period 10ms. Missed 8 samples.
+  Self Time: Time spent on the top of the stack.
+  Total Time: Time spent somewhere on the stack.
+  T0: Percent of time spent in interpreter.
+  T1: Percent of time spent in code compiled by tier 1 compiler.
+  T2: Percent of time spent in code compiled by tier 2 compiler.
+------------------------------------------------------------------------------------------------------------------------------------------------------------
+Thread[#1,main,5,main]
+ Name               ||             Total Time    |   T0   |   T1   |   T2   ||              Self Time    |   T0   |   T1   |   T2   || Location             
+------------------------------------------------------------------------------------------------------------------------------------------------------------
+ swap               ||              100ms  55.6% |  50.0% |  20.0% |  30.0% ||              100ms  55.6% |  50.0% |  20.0% |  30.0% || permute.lox~32-36:737-839
+ permute            ||              140ms  77.8% |  85.7% |  14.3% |   0.0% ||               40ms  22.2% | 100.0% |   0.0% |   0.0% || permute.lox~20-31:444-731
+ program            ||               10ms   5.6% | 100.0% |   0.0% |   0.0% ||               10ms   5.6% | 100.0% |   0.0% |   0.0% || run.lox~1-52:0-1471
+ init               ||               10ms   5.6% | 100.0% |   0.0% |   0.0% ||               10ms   5.6% | 100.0% |   0.0% |   0.0% || permute.lox~3-8:55-156
+ benchmark          ||              150ms  83.3% | 100.0% |   0.0% |   0.0% ||               10ms   5.6% | 100.0% |   0.0% |   0.0% || permute.lox~1-39:0-859
+ program            ||               10ms   5.6% | 100.0% |   0.0% |   0.0% ||               10ms   5.6% | 100.0% |   0.0% |   0.0% || benchmark.lox~1-16:0-313
+ runBenchmark       ||              150ms  83.3% | 100.0% |   0.0% |   0.0% ||                0ms   0.0% |   0.0% |   0.0% |   0.0% || run.lox~46-51:1298-1469
+ doRuns             ||              150ms  83.3% | 100.0% |   0.0% |   0.0% ||                0ms   0.0% |   0.0% |   0.0% |   0.0% || run.lox~36-40:1080-1204
+ innerBenchmarkLoop ||              150ms  83.3% | 100.0% |   0.0% |   0.0% ||                0ms   0.0% |   0.0% |   0.0% |   0.0% || benchmark.lox~1-16:0-313
+ init               ||               20ms  11.1% | 100.0% |   0.0% |   0.0% ||                0ms   0.0% |   0.0% |   0.0% |   0.0% || run.lox~2-8:16-201
+ processArguments   ||               20ms  11.1% | 100.0% |   0.0% |   0.0% ||                0ms   0.0% |   0.0% |   0.0% |   0.0% || harness.lox~2-10:17-260
+ program            ||              180ms 100.0% | 100.0% |   0.0% |   0.0% ||                0ms   0.0% |   0.0% |   0.0% |   0.0% || harness.lox~1:0-23
+ loadBenchmark      ||               20ms  11.1% | 100.0% |   0.0% |   0.0% ||                0ms   0.0% |   0.0% |   0.0% |   0.0% || run.lox~1-52:0-1471
+ measure            ||              150ms  83.3% | 100.0% |   0.0% |   0.0% ||                0ms   0.0% |   0.0% |   0.0% |   0.0% || run.lox~1-52:0-1471
+------------------------------------------------------------------------------------------------------------------------------------------------------------

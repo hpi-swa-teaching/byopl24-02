@@ -1,0 +1,92 @@
+{
+  "benchmark_run_date": "2025-10-06",
+  "benchmark_run_time": "14:19:16",
+  "benchmarks": {
+    "queens": {
+      "size": 8,
+      "num_runs": 10,
+      "runs_us": [287318, 26983, 132538, 16280, 19555, 15282, 16910, 17386, 17431, 16227],
+      "statistics": {
+        "mean_us": 56591.0,
+        "median_us": 17408.5,
+        "min_us": 15282,
+        "max_us": 287318,
+        "std_dev_us": 80837.45,
+        "total_us": 565910
+      },
+      "command": "./lox harness.lox queens 10 8",
+      "observations": "Significant warmup effect: first run is 18x slower than average of subsequent runs. Standard deviation is high due to first run outlier."
+    },
+    "sieve": {
+      "size": 5000,
+      "num_runs": 10,
+      "runs_us": [490538, 203196, 214428, 245742, 247083, 346183, 251114, 246472, 242583, 255003],
+      "statistics": {
+        "mean_us": 274234.2,
+        "median_us": 246777.5,
+        "min_us": 203196,
+        "max_us": 490538,
+        "std_dev_us": 77369.11,
+        "total_us": 2742342
+      },
+      "command": "./lox harness.lox sieve 10 5000",
+      "observations": "First run shows warmup effect (2.4x slower than minimum). After warmup, performance is relatively stable with occasional outlier (run 6: 346183us)."
+    },
+    "towers": {
+      "size": 13,
+      "num_runs": 10,
+      "runs_us": [611766, 401293, 141714, 136839, 144300, 146166, 138919, 142407, 134895, 142900],
+      "statistics": {
+        "mean_us": 214119.9,
+        "median_us": 142653.5,
+        "min_us": 134895,
+        "max_us": 611766,
+        "std_dev_us": 144930.74,
+        "total_us": 2141199
+      },
+      "command": "./lox harness.lox towers 10 13",
+      "observations": "Strong warmup effect: first run is 4.5x slower, second run is 3x slower. Performance stabilizes from run 3 onwards with minimal variance."
+    },
+    "permute": {
+      "size": 6,
+      "num_runs": 10,
+      "runs_us": [120692, 1070, 1276, 1028, 1538, 1646, 3048, 1689, 1398, 2863],
+      "statistics": {
+        "mean_us": 13624.8,
+        "median_us": 1617.0,
+        "min_us": 1028,
+        "max_us": 120692,
+        "std_dev_us": 37134.12,
+        "total_us": 136248
+      },
+      "command": "./lox harness.lox permute 10 6",
+      "observations": "Extreme warmup effect: first run is 112x slower than subsequent runs. After warmup, performance is very stable (1-3ms range)."
+    },
+    "list": {
+      "size": 18,
+      "num_runs": 10,
+      "runs_us": [331055, 193021, 102200, 103839, 101085, 99315, 99501, 98904, 99610, 100166],
+      "statistics": {
+        "mean_us": 132869.6,
+        "median_us": 100625.5,
+        "min_us": 98904,
+        "max_us": 331055,
+        "std_dev_us": 73067.53,
+        "total_us": 1328696
+      },
+      "command": "./lox harness.lox list 10 18",
+      "observations": "Significant warmup effect: first run is 3.3x slower, second run is 1.9x slower. After warmup (run 3+), performance is very stable with only 5% variance."
+    }
+  },
+  "summary": {
+    "total_benchmarks": 5,
+    "total_runs": 50,
+    "overall_observations": [
+      "All benchmarks show significant JIT warmup effects with first run 2-112x slower",
+      "Performance stabilizes after 2-3 runs in most benchmarks",
+      "Permute has the most extreme warmup effect (112x)",
+      "After warmup, benchmarks show good stability (5-10% variance)",
+      "Queens and permute are fastest (sub-20ms stable), sieve is slowest (240ms stable)"
+    ]
+  }
+}

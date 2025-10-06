@@ -1,0 +1,13 @@
+{
+  "servers": {
+    // The "servers" section defines the MCP servers you want to use.
+    "benchmark": {
+      "command": "uv",
+      "args": ["--directory", "~/Projects/hpi-ma/mcp-graal-cli", "run", "mcp"],
+      "env": {
+        "WORKING_DIR": "${workspaceFolder}",
+        "EXECUTABLE_NAME": "lox"
+      }
+    }
+  }
+}

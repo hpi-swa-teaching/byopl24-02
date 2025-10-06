@@ -1,0 +1,328 @@
+{
+  "benchmarks_folder": "/Users/antonykamp/Projects/hpi-ma/byopl24-02",
+  "analysis_date": "2025-10-06",
+  "harness_file": "/Users/antonykamp/Projects/hpi-ma/byopl24-02/harness.lox",
+  "infrastructure": {
+    "base_class": "/Users/antonykamp/Projects/hpi-ma/byopl24-02/benchmark.lox",
+    "runner": "/Users/antonykamp/Projects/hpi-ma/byopl24-02/run.lox",
+    "harness": "/Users/antonykamp/Projects/hpi-ma/byopl24-02/harness.lox"
+  },
+  "benchmarks": [
+    {
+      "name": "queens",
+      "file": "/Users/antonykamp/Projects/hpi-ma/byopl24-02/queens.lox",
+      "class_name": "Queens",
+      "description": "N-Queens problem solver using backtracking algorithm to place 8 queens on an 8x8 chessboard",
+      "purpose": "Tests recursive backtracking, array operations, and constraint satisfaction algorithms",
+      "computational_patterns": [
+        "Recursive backtracking",
+        "Array indexing and access",
+        "Boolean constraint checking",
+        "Depth-first search"
+      ],
+      "measures": [
+        "Recursive function calls (placeQueen)",
+        "Array element access (freeRows, freeMaxs, freeMins, queenRows)",
+        "Boolean operations for constraint validation",
+        "Backtracking algorithm performance"
+      ],
+      "expected_result": true,
+      "inner_iterations": 10,
+      "problem_size": "8x8 board",
+      "features_tested": [
+        "Class inheritance (extends Benchmark)",
+        "Array creation and manipulation with emoji syntax",
+        "Method calls",
+        "Recursive algorithms",
+        "Boolean logic",
+        "Self references"
+      ],
+      "complexity": "O(n!) - factorial time complexity for n-queens problem",
+      "key_operations": {
+        "array_allocations": 4,
+        "array_sizes": [8, 8, 16, 16],
+        "recursion_depth": "up to 8 levels",
+        "iterations_per_run": 10
+      }
+    },
+    {
+      "name": "sieve",
+      "file": "/Users/antonykamp/Projects/hpi-ma/byopl24-02/sieve.lox",
+      "class_name": "Sieve",
+      "description": "Sieve of Eratosthenes algorithm for finding prime numbers up to 5000",
+      "purpose": "Tests array operations, loop performance, and memory access patterns",
+      "computational_patterns": [
+        "Iterative array traversal",
+        "Nested loops",
+        "Sequential memory access",
+        "Marking/filtering algorithm"
+      ],
+      "measures": [
+        "Array allocation and initialization (5000 elements)",
+        "Nested loop performance (for + while)",
+        "Integer arithmetic operations",
+        "Sequential memory access patterns",
+        "Array element updates"
+      ],
+      "expected_result": 669,
+      "problem_size": "5000 numbers",
+      "features_tested": [
+        "Class inheritance",
+        "Large array indexing (5000 elements)",
+        "While loops",
+        "For loops",
+        "Integer operations",
+        "Boolean array values"
+      ],
+      "complexity": "O(n log log n) - sieve of Eratosthenes time complexity",
+      "key_operations": {
+        "array_allocations": 1,
+        "array_size": 5000,
+        "initialization_iterations": 5000,
+        "prime_finding_iterations": "variable (up to ~5000)"
+      }
+    },
+    {
+      "name": "towers",
+      "file": "/Users/antonykamp/Projects/hpi-ma/byopl24-02/towers.lox",
+      "class_name": "Towers",
+      "description": "Towers of Hanoi puzzle solver for 13 disks using recursive algorithm",
+      "purpose": "Tests object allocation, deep recursion, and linked data structure manipulation",
+      "computational_patterns": [
+        "Deep recursion",
+        "Object instantiation",
+        "Linked list operations",
+        "Stack-based algorithm"
+      ],
+      "measures": [
+        "Object instantiation (TowersDisk objects - 14 instances)",
+        "Recursive function calls (moveDisks)",
+        "Object field access (size, next)",
+        "Linked list push/pop operations",
+        "Array access for pile management"
+      ],
+      "expected_result": 8191,
+      "problem_size": "13 disks (2^13 - 1 = 8191 moves)",
+      "features_tested": [
+        "Multiple class definitions",
+        "Class inheritance",
+        "Object instantiation with constructor parameters",
+        "Object field references",
+        "Recursion depth (exponential)",
+        "Method calls on objects",
+        "Linked data structures"
+      ],
+      "complexity": "O(2^n) - exponential time complexity for n disks",
+      "key_operations": {
+        "object_allocations": 14,
+        "total_moves": 8191,
+        "recursion_depth": "up to 13 levels",
+        "recursive_calls": 16383
+      }
+    },
+    {
+      "name": "permute",
+      "file": "/Users/antonykamp/Projects/hpi-ma/byopl24-02/permute.lox",
+      "class_name": "Permute",
+      "description": "Generate all permutations of 6 elements using recursive backtracking with swapping",
+      "purpose": "Tests recursive algorithms with in-place array manipulation and variable scoping",
+      "computational_patterns": [
+        "Recursive backtracking",
+        "In-place array swapping",
+        "Counter accumulation",
+        "Nested recursion"
+      ],
+      "measures": [
+        "Recursive function calls (permute - 720 factorial permutations)",
+        "Array element swapping (swap method)",
+        "Counter increments (count variable)",
+        "Deep recursion with local variables"
+      ],
+      "expected_result": 720,
+      "problem_size": "6 elements (6! = 720 permutations)",
+      "features_tested": [
+        "Recursion with state modification",
+        "Array manipulation (read and write)",
+        "Variable scoping in recursion",
+        "Integer arithmetic",
+        "Self field access"
+      ],
+      "complexity": "O(n!) - factorial time complexity for permutation generation",
+      "key_operations": {
+        "array_allocations": 1,
+        "array_size": 6,
+        "total_permutations": 720,
+        "recursive_calls": "~4680 (approximate)",
+        "swap_operations": "~9360 (approximate)"
+      }
+    },
+    {
+      "name": "list",
+      "file": "/Users/antonykamp/Projects/hpi-ma/byopl24-02/list.lox",
+      "class_name": "List",
+      "description": "Takeuchi function (TAKL) benchmark using linked lists with highly recursive computation",
+      "purpose": "Tests deep recursion, extensive object allocation, and linked list traversal",
+      "computational_patterns": [
+        "Multiple recursive calls per invocation",
+        "Linked list construction",
+        "List traversal",
+        "Memory-intensive recursion"
+      ],
+      "measures": [
+        "Object allocation (Element nodes - 31 initial nodes)",
+        "Recursive function calls (takl with 3 recursive calls per invocation)",
+        "Linked list traversal (isShorterThan, length)",
+        "Object field access (val, next)",
+        "Deep recursion with multiple branches"
+      ],
+      "expected_result": 10,
+      "problem_size": "Lists of length 15, 10, and 6 (31 initial nodes)",
+      "features_tested": [
+        "Multiple class definitions",
+        "Deep recursion with multiple recursive calls",
+        "Object instantiation",
+        "Linked list operations",
+        "Method calls on objects",
+        "Recursive method calls",
+        "Nil/null handling"
+      ],
+      "complexity": "Highly exponential - Takeuchi function has extreme recursion depth",
+      "key_operations": {
+        "initial_object_allocations": 31,
+        "total_recursive_calls": "extremely high (thousands)",
+        "list_traversals": "many during isShorterThan checks",
+        "recursion_depth": "very deep"
+      }
+    }
+  ],
+  "non_benchmark_files": [
+    {
+      "name": "primeCount",
+      "file": "/Users/antonykamp/Projects/hpi-ma/byopl24-02/primeCount.lox",
+      "description": "Standalone prime counting script (not using benchmark framework)",
+      "type": "standalone_script"
+    },
+    {
+      "name": "arrayLiterals",
+      "file": "/Users/antonykamp/Projects/hpi-ma/byopl24-02/arrayLiterals.lox",
+      "description": "Array literal examples demonstrating emoji syntax",
+      "type": "example_code"
+    },
+    {
+      "name": "statements",
+      "file": "/Users/antonykamp/Projects/hpi-ma/byopl24-02/statements.lox",
+      "description": "Statement examples for language features",
+      "type": "example_code"
+    },
+    {
+      "name": "game",
+      "file": "/Users/antonykamp/Projects/hpi-ma/byopl24-02/game.lox",
+      "description": "Game code example",
+      "type": "example_code"
+    },
+    {
+      "name": "display_bounce",
+      "file": "/Users/antonykamp/Projects/hpi-ma/byopl24-02/display_bounce.lox",
+      "description": "Display bounce animation example",
+      "type": "example_code"
+    }
+  ],
+  "benchmark_framework": {
+    "base_class": "Benchmark",
+    "base_class_file": "/Users/antonykamp/Projects/hpi-ma/byopl24-02/benchmark.lox",
+    "required_methods": [
+      "init() - Initialize benchmark state",
+      "benchmark() - Execute the benchmark and return result",
+      "verifyResult(result) - Verify the result is correct (returns boolean)"
+    ],
+    "provided_methods": [
+      "innerBenchmarkLoop(innerIterations) - Runs benchmark multiple times and validates results"
+    ],
+    "execution_flow": [
+      "1. harness.lox processes command-line arguments (ARGV)",
+      "2. harness.lox creates Run instance with benchmark name",
+      "3. Run.loadBenchmark() loads the benchmark file using load()",
+      "4. Run.runBenchmark() executes the benchmark",
+      "5. Run.measure() times execution using clock() built-in",
+      "6. Benchmark.innerBenchmarkLoop() runs benchmark N times",
+      "7. Each iteration calls benchmark() and verifyResult()",
+      "8. Results are printed in microseconds"
+    ],
+    "timing_mechanism": "Uses built-in clock() function, converts to microseconds (×1000×1000)"
+  },
+  "execution_instructions": {
+    "command": "./lox harness.lox <benchmark_name> <num_iterations> <inner_iterations>",
+    "examples": [
+      "./lox harness.lox queens 10 1",
+      "./lox harness.lox sieve 5 1",
+      "./lox harness.lox towers 10 1",
+      "./lox harness.lox permute 10 1",
+      "./lox harness.lox list 10 1"
+    ],
+    "parameters": {
+      "benchmark_name": "Name of the benchmark class (without .lox extension)",
+      "num_iterations": "Number of times to execute benchmark outer loop (default: 1)",
+      "inner_iterations": "Number of times benchmark runs in inner loop (default: 1)"
+    }
+  },
+  "profiling_tools_available": {
+    "graalvm_options": [
+      "--cpusampler - CPU sampling profiler",
+      "--cputracer - CPU tracer for method-level profiling",
+      "--cpusampler.Output=flamegraph - Generate flamegraph visualization",
+      "--cpusampler.OutputFile=<file.svg> - Specify output file for flamegraph",
+      "--engine.TraceCompilation - Trace JIT compilation decisions",
+      "--engine.CompilationStatistics - Show compilation statistics"
+    ],
+    "instrumentation_tags": [
+      "StatementTag - Track statement execution",
+      "ExpressionTag - Track expression evaluation",
+      "CallTag - Track function calls",
+      "ReadVariableTag - Track variable reads",
+      "WriteVariableTag - Track variable writes",
+      "RootBodyTag - Track function body execution"
+    ]
+  },
+  "summary": {
+    "total_benchmarks": 5,
+    "benchmark_categories": [
+      {
+        "category": "Algorithmic Complexity",
+        "benchmarks": ["queens", "permute", "list"],
+        "focus": "Deep recursion and backtracking algorithms"
+      },
+      {
+        "category": "Array Operations",
+        "benchmarks": ["sieve", "queens", "permute"],
+        "focus": "Array allocation, indexing, and sequential access"
+      },
+      {
+        "category": "Object Allocation",
+        "benchmarks": ["towers", "list"],
+        "focus": "Object instantiation and linked data structures"
+      },
+      {
+        "category": "Loop Performance",
+        "benchmarks": ["sieve"],
+        "focus": "Nested loops and iterative algorithms"
+      }
+    ],
+    "language_features_covered": [
+      "Classes and inheritance (using 🤝 operator)",
+      "Arrays with emoji syntax (👉👈)",
+      "Deep recursion",
+      "Object instantiation with constructors",
+      "Method calls and self references",
+      "Integer and boolean arithmetic",
+      "Loops (for, while)",
+      "Built-in functions (clock, load)"
+    ],
+    "performance_characteristics": {
+      "queens": "Medium recursion depth, heavy array access",
+      "sieve": "Large array, sequential access, moderate iterations",
+      "towers": "Exponential recursion, moderate object allocation",
+      "permute": "Factorial complexity, in-place array manipulation",
+      "list": "Extreme recursion depth, heavy object allocation"
+    }
+  }
+}

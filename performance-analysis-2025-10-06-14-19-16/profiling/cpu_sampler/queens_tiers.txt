@@ -1,0 +1,40 @@
+load benchmark: queens.lox
+Starting queens benchmark ...
+queens: innerIterations=10 runtime: 293917us
+queens: innerIterations=10 runtime: 251895us
+queens: innerIterations=10 runtime: 39298us
+queens: innerIterations=10 runtime: 22507us
+queens: innerIterations=10 runtime: 21083us
+queens: innerIterations=10 runtime: 23115us
+queens: innerIterations=10 runtime: 28445us
+queens: innerIterations=10 runtime: 21990us
+queens: iterations=8 average: 87781.25us total: 702250us
+
+Total Runtime: 702250us
+------------------------------------------------------------------------------------------------------------------------------------------
+Sampling Histogram. Recorded 75 samples with period 10ms. Missed 7 samples.
+  Self Time: Time spent on the top of the stack.
+  Total Time: Time spent somewhere on the stack.
+  T0: Percent of time spent in interpreter.
+  T1: Percent of time spent in code compiled by tier 1 compiler.
+------------------------------------------------------------------------------------------------------------------------------------------
+Thread[#1,main,5,main]
+ Name               ||             Total Time    |   T0   |   T1   ||              Self Time    |   T0   |   T1   || Location             
+------------------------------------------------------------------------------------------------------------------------------------------
+ getRowColumn       ||              680ms  90.7% | 100.0% |   0.0% ||              680ms  90.7% | 100.0% |   0.0% || queens.lox~1-57:0-1607
+ queens             ||              700ms  93.3% |  15.7% |  84.3% ||               20ms   2.7% | 100.0% |   0.0% || queens.lox~1-57:0-1607
+ program            ||               10ms   1.3% | 100.0% |   0.0% ||               10ms   1.3% | 100.0% |   0.0% || run.lox~1-52:0-1471
+ loadBenchmark      ||               30ms   4.0% | 100.0% |   0.0% ||               10ms   1.3% | 100.0% |   0.0% || run.lox~1-52:0-1471
+ program            ||               10ms   1.3% | 100.0% |   0.0% ||               10ms   1.3% | 100.0% |   0.0% || benchmark.lox~1-16:0-313
+ init               ||               10ms   1.3% | 100.0% |   0.0% ||               10ms   1.3% | 100.0% |   0.0% || benchmark.lox~11:260-268
+ measure            ||              710ms  94.7% | 100.0% |   0.0% ||               10ms   1.3% | 100.0% |   0.0% || run.lox~1-52:0-1471
+ runBenchmark       ||              710ms  94.7% | 100.0% |   0.0% ||                0ms   0.0% |   0.0% |   0.0% || run.lox~46-51:1298-1469
+ doRuns             ||              710ms  94.7% | 100.0% |   0.0% ||                0ms   0.0% |   0.0% |   0.0% || run.lox~36-40:1080-1204
+ innerBenchmarkLoop ||              700ms  93.3% |  95.7% |   4.3% ||                0ms   0.0% |   0.0% |   0.0% || benchmark.lox~1-16:0-313
+ init               ||               30ms   4.0% | 100.0% |   0.0% ||                0ms   0.0% |   0.0% |   0.0% || run.lox~2-8:16-201
+ placeQueen         ||              680ms  90.7% |  10.3% |  89.7% ||                0ms   0.0% |   0.0% |   0.0% || queens.lox~1-57:0-1607
+ processArguments   ||               30ms   4.0% | 100.0% |   0.0% ||                0ms   0.0% |   0.0% |   0.0% || harness.lox~2-10:17-260
+ init               ||               10ms   1.3% | 100.0% |   0.0% ||                0ms   0.0% |   0.0% |   0.0% || queens.lox~3-9:54-206
+ program            ||              750ms 100.0% | 100.0% |   0.0% ||                0ms   0.0% |   0.0% |   0.0% || harness.lox~1:0-23
+ benchmark          ||              700ms  93.3% |  31.4% |  68.6% ||                0ms   0.0% |   0.0% |   0.0% || queens.lox~1-57:0-1607
+------------------------------------------------------------------------------------------------------------------------------------------

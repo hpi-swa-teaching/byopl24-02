@@ -1,0 +1,350 @@
+load benchmark: towers.lox
+Starting towers benchmark ...
+towers: innerIterations=10 runtime: 531622us
+towers: innerIterations=10 runtime: 340629us
+towers: innerIterations=10 runtime: 100297us
+towers: innerIterations=10 runtime: 96373us
+towers: innerIterations=10 runtime: 98675us
+towers: innerIterations=10 runtime: 99487us
+towers: innerIterations=10 runtime: 97920us
+towers: innerIterations=10 runtime: 101245us
+towers: innerIterations=10 runtime: 95987us
+towers: innerIterations=10 runtime: 98793us
+towers: innerIterations=10 runtime: 96858us
+towers: innerIterations=10 runtime: 97109us
+towers: innerIterations=10 runtime: 96907us
+towers: iterations=13 average: 150146.3076923077us total: 1951902us
+
+Total Runtime: 1951902us
+[To redirect Truffle log output to a file use one of the following options:
+* '--log.file=<path>' if the option is passed using a guest language launcher.
+* '-Dpolyglot.log.file=<path>' if the option is passed using the host Java launcher.
+* Configure logging using the polyglot embedding API.]
+[engine] Truffle runtime statistics for engine 2
+    Compilations                : 129
+      Success                   : 124
+      Temporary Bailouts        : 1
+        jdk.graal.compiler.core.common.CancellationBailoutException: Compilation cancelled.: 1
+      Permanent Bailouts        : 1
+        jdk.graal.compiler.code.SourceStackTraceBailoutException$1: Partial evaluation did not reduce value to a constant, is a regular compiler node: 593|ValuePhi(8, i32) (591|LoopBegin; 8|Constant(0, i32); ): 1
+      Failed                    : 0
+      Interrupted               : 3
+    Invalidated                 : 0
+    Queues                      : 130
+    Dequeues                    : 1
+        Target inlined into only caller: 1
+    Splits                      : 0
+    Compilation Accuracy        : 1.000000
+    Queue Accuracy              : 0.992308
+    Compilation Utilization     : 2.341599
+    Remaining Compilation Queue : 1
+    Time to queue               : count= 130, sum= 136375277, min=   12413, average=  1049040.60, max= 1955574, maxTarget=root pushDisk
+    Time waiting in queue       : count= 115, sum=     95443, min=       1, average=      829.95, max=   30999, maxTarget=ClockBuiltInNodeGen@5400db36
+  ---------------------------   :
+  AST node statistics           :
+    Truffle node count          : count= 128, sum=       371, min=       1, average=        2.90, max=       6, maxTarget=root moveTopDisk
+    Truffle call count          : count= 128, sum=       120, min=       0, average=        0.94, max=       2, maxTarget=root moveTopDisk
+      Indirect                  : count= 128, sum=         0, min=       0, average=        0.00, max=       0, maxTarget=root moveTopDisk
+      Direct                    : count= 128, sum=       120, min=       0, average=        0.94, max=       2, maxTarget=root moveTopDisk
+        Dispatched              : count= 128, sum=        62, min=       0, average=        0.48, max=       2, maxTarget=root moveTopDisk
+        Inlined                 : count= 128, sum=        58, min=       0, average=        0.45, max=       2, maxTarget=root moveTopDisk
+        ----------              :
+        Cloned                  : count= 128, sum=         0, min=       0, average=        0.00, max=       0, maxTarget=root moveTopDisk
+        Not Cloned              : count= 128, sum=         0, min=       0, average=        0.00, max=       0, maxTarget=root moveTopDisk
+    Truffle loops               : count= 128, sum=         0, min=       0, average=        0.00, max=       0, maxTarget=root moveTopDisk
+  Truffle nodes                 :
+        LoxBytecodeRootNodeGen  : count= 128, sum=       185, min=       0, average=        1.45, max=       3, maxTarget=root moveTopDisk
+        CachedBytecodeNode      : count= 128, sum=       185, min=       0, average=        1.45, max=       3, maxTarget=root moveTopDisk
+        ClockBuiltInNodeGen     : count= 128, sum=         1, min=       0, average=        0.01, max=       1, maxTarget=ClockBuiltInNodeGen@5400db36
+  ---------------------------   :
+  Compilation Tier 1            :
+    Compilation Rate            :    677809.83 bytes/second
+      Truffle Tier Rate         :   1435350.76 bytes/second
+      Graal Tier Rate           :   1762861.98 bytes/second
+      Installation Rate         :   5760146.41 bytes/second
+    Time for compilation (us)   : count=  76, sum=   1735466, min=    1331, average=    22835.08, max=   81900, maxTarget=root pushDisk
+      Truffle Tier (us)         : count=  74, sum=    819532, min=     744, average=    11074.76, max=   63060, maxTarget=root pushDisk
+      Graal Tier (us)           : count=  74, sum=    667276, min=     482, average=     9017.25, max=   16938, maxTarget=root pushDisk
+      Code Installation (us)    : count=  74, sum=    204216, min=     104, average=     2759.68, max=    8634, maxTarget=root pushDisk
+    Graal node count            :
+      After Truffle Tier        : count=  76, sum=     72715, min=     108, average=      956.78, max=    1431, maxTarget=root pushDisk
+      After Graal Tier          : count=  75, sum=    193204, min=     138, average=     2576.05, max=    3980, maxTarget=root pushDisk
+    Graal compilation result    :
+      Code size                 : count=  74, sum=   1176316, min=     640, average=    15896.16, max=   25672, maxTarget=root pushDisk
+      Total frame size          : count=  74, sum=     21264, min=      48, average=      287.35, max=     368, maxTarget=root pushDisk
+      Exception handlers        : count=  74, sum=      3058, min=       1, average=       41.32, max=      73, maxTarget=root pushDisk
+      Infopoints                : count=  74, sum=     14697, min=      10, average=      198.61, max=     307, maxTarget=root pushDisk
+        CALL                    : count=  74, sum=     12247, min=       8, average=      165.50, max=     260, maxTarget=root pushDisk
+        IMPLICIT_EXCEPTION      : count=  74, sum=      2432, min=       1, average=       32.86, max=      47, maxTarget=root pushDisk
+        SAFEPOINT               : count=  74, sum=        18, min=       0, average=        0.24, max=       2, maxTarget=root buildTowerAt
+    Marks                       : count=  75, sum=      3676, min=       8, average=       49.01, max=      80, maxTarget=root pushDisk
+    Data references             : count=  75, sum=     36668, min=       5, average=      488.91, max=     860, maxTarget=root pushDisk
+    Graal nodes after Truffle tier:
+        FrameState              : count=  76, sum=     14417, min=      17, average=      189.70, max=     288, maxTarget=root pushDisk
+        BeginNode               : count=  76, sum=      8180, min=      13, average=      107.63, max=     177, maxTarget=root pushDisk
+        EndNode                 : count=  76, sum=      5436, min=       9, average=       71.53, max=     119, maxTarget=root pushDisk
+        ConstantNode            : count=  76, sum=      4903, min=      13, average=       64.51, max=      76, maxTarget=root pushDisk
+        FixedGuardNode          : count=  76, sum=      4455, min=       1, average=       58.62, max=      87, maxTarget=root pushDisk
+        InstanceOfNode          : count=  77, sum=      3375, min=       0, average=       43.83, max=      76, maxTarget=root pushDisk
+        ExceptionObjectNode     : count=  77, sum=      3206, min=       1, average=       41.64, max=      73, maxTarget=root pushDisk
+        InvokeWithExceptionNode : count=  77, sum=      3206, min=       1, average=       41.64, max=      73, maxTarget=root pushDisk
+        MethodCallTargetNode    : count=  77, sum=      3206, min=       1, average=       41.64, max=      73, maxTarget=root pushDisk
+        IfNode                  : count=  77, sum=      2497, min=       6, average=       32.43, max=      52, maxTarget=root pushDisk
+        VirtualObjectState      : count=  77, sum=      2253, min=       2, average=       29.26, max=      40, maxTarget=root pushDisk
+        PiNode                  : count=  77, sum=      2019, min=       3, average=       26.22, max=      31, maxTarget=root popDiskFrom
+        LoadFieldNode           : count=  77, sum=      1831, min=       5, average=       23.78, max=      32, maxTarget=root benchmark
+        IntegerEqualsNode       : count=  77, sum=      1711, min=       3, average=       22.22, max=      34, maxTarget=root pushDisk
+        VirtualInstanceNode     : count=  77, sum=       997, min=       1, average=       12.95, max=      20, maxTarget=root pushDisk
+        DeoptimizeNode          : count=  77, sum=       992, min=       1, average=       12.88, max=      29, maxTarget=root pushDisk
+        AllocatedObjectNode     : count=  76, sum=       914, min=       0, average=       12.03, max=      18, maxTarget=root pushDisk
+        CommitAllocationNode    : count=  76, sum=       845, min=       0, average=       11.12, max=      18, maxTarget=root pushDisk
+        ValuePhiNode            : count=  77, sum=       833, min=       3, average=       10.82, max=      15, maxTarget=root popDiskFrom
+        AllocatingBoxNode       : count=  76, sum=       781, min=       0, average=       10.28, max=      18, maxTarget=root pushDisk
+        MergeNode               : count=  77, sum=       742, min=       3, average=        9.64, max=      16, maxTarget=root popDiskFrom
+        LoadIndexedNode         : count=  77, sum=       610, min=       1, average=        7.92, max=      12, maxTarget=root benchmark
+        ObjectEqualsNode        : count=  76, sum=       597, min=       0, average=        7.86, max=      10, maxTarget=root pushDisk
+        UnboxNode               : count=  76, sum=       542, min=       0, average=        7.13, max=      12, maxTarget=root popDiskFrom
+        FloatConvertNode        : count=  76, sum=       540, min=       0, average=        7.11, max=      13, maxTarget=root pushDisk
+        IsNullNode              : count=  77, sum=       518, min=       1, average=        6.73, max=      14, maxTarget=root buildTowerAt
+        VirtualArrayNode        : count=  77, sum=       364, min=       1, average=        4.73, max=       6, maxTarget=root moveTopDisk
+        IntegerLessThanNode     : count=  77, sum=       288, min=       2, average=        3.74, max=      17, maxTarget=root benchmark
+        MaterializedObjectState : count=  76, sum=       285, min=       0, average=        3.75, max=      10, maxTarget=root buildTowerAt
+        StoreFieldNode          : count=  77, sum=       286, min=       2, average=        3.71, max=      14, maxTarget=root benchmark
+        StateSplitProxyNode     : count=  77, sum=       278, min=       2, average=        3.61, max=       6, maxTarget=root moveTopDisk
+        AddNode                 : count=  77, sum=       271, min=       2, average=        3.52, max=      10, maxTarget=root benchmark
+        ConditionalNode         : count=  76, sum=       200, min=       0, average=        2.63, max=       4, maxTarget=root pushDisk
+        NarrowNode              : count=  76, sum=       137, min=       0, average=        1.80, max=       4, maxTarget=root innerBenchmarkLoop
+        StoreIndexedNode        : count=  76, sum=       110, min=       0, average=        1.45, max=       5, maxTarget=root benchmark
+        IntegerBelowNode        : count=  76, sum=        86, min=       0, average=        1.13, max=       3, maxTarget=root benchmark
+        PureBoxNode             : count=  76, sum=        84, min=       0, average=        1.11, max=       2, maxTarget=root pushDisk
+        RightShiftNode          : count=  77, sum=        77, min=       1, average=        1.00, max=       1, maxTarget=root moveTopDisk
+        MulNode                 : count=  77, sum=        77, min=       1, average=        1.00, max=       1, maxTarget=root moveTopDisk
+        ParameterNode           : count=  77, sum=        77, min=       1, average=        1.00, max=       1, maxTarget=root moveTopDisk
+        StartNode               : count=  77, sum=        77, min=       1, average=        1.00, max=       1, maxTarget=root moveTopDisk
+        PiArrayNode             : count=  77, sum=        77, min=       1, average=        1.00, max=       1, maxTarget=root moveTopDisk
+        ReturnNode              : count=  77, sum=        76, min=       0, average=        0.99, max=       1, maxTarget=root moveTopDisk
+        ArrayLengthNode         : count=  76, sum=        65, min=       0, average=        0.86, max=       5, maxTarget=root benchmark
+        ZeroExtendNode          : count=  76, sum=        53, min=       0, average=        0.70, max=       3, maxTarget=root innerBenchmarkLoop
+        FloatLessThanNode       : count=  76, sum=        50, min=       0, average=        0.66, max=       1, maxTarget=root pushDisk
+        ValueProxyNode          : count=  76, sum=        45, min=       0, average=        0.59, max=       5, maxTarget=root buildTowerAt
+        VirtualBoxingNode       : count=  76, sum=        19, min=       0, average=        0.25, max=       3, maxTarget=root innerBenchmarkLoop
+        LoopEndNode             : count=  76, sum=        18, min=       0, average=        0.24, max=       2, maxTarget=root buildTowerAt
+        LoopExitNode            : count=  76, sum=         9, min=       0, average=        0.12, max=       1, maxTarget=root buildTowerAt
+        LoopBeginNode           : count=  76, sum=         9, min=       0, average=        0.12, max=       1, maxTarget=root buildTowerAt
+        ClassIsAssignableFromNode: count=  76, sum=         8, min=       0, average=        0.11, max=       1, maxTarget=root buildTowerAt
+        SubNode                 : count=  76, sum=         8, min=       0, average=        0.11, max=       1, maxTarget=root buildTowerAt
+        IntegerTestNode         : count=  76, sum=         8, min=       0, average=        0.11, max=       1, maxTarget=root buildTowerAt
+        UnsignedRightShiftNode  : count=  76, sum=         3, min=       0, average=        0.04, max=       3, maxTarget=root benchmark
+        UnreachableControlSinkNode: count=  76, sum=         3, min=       0, average=        0.04, max=       3, maxTarget=root benchmark
+        GetClassNode            : count=  76, sum=         3, min=       0, average=        0.04, max=       3, maxTarget=root benchmark
+        UnreachableBeginNode    : count=  76, sum=         3, min=       0, average=        0.04, max=       3, maxTarget=root benchmark
+        a                       : count=  76, sum=         3, min=       0, average=        0.04, max=       3, maxTarget=root benchmark
+        FloatEqualsNode         : count=  76, sum=         2, min=       0, average=        0.03, max=       2, maxTarget=root verifyResult
+        RawStoreNode            : count=  76, sum=         2, min=       0, average=        0.03, max=       2, maxTarget=root init
+        ReinterpretNode         : count=  76, sum=         2, min=       0, average=        0.03, max=       2, maxTarget=root verifyResult
+        TrustedBoxedValue       : count=  76, sum=         1, min=       0, average=        0.01, max=       1, maxTarget=root innerBenchmarkLoop
+    Graal nodes after Graal tier:
+        AArch64AddressNode      : count=  76, sum=     26902, min=      12, average=      353.97, max=     562, maxTarget=root pushDisk
+        BeginNode               : count=  76, sum=     25889, min=      20, average=      340.64, max=     550, maxTarget=root pushDisk
+        WriteNode               : count=  76, sum=     16086, min=       4, average=      211.66, max=     349, maxTarget=root pushDisk
+        FrameState              : count=  76, sum=     14640, min=       9, average=      192.63, max=     294, maxTarget=root pushDisk
+        EndNode                 : count=  76, sum=     11108, min=      11, average=      146.16, max=     239, maxTarget=root pushDisk
+        ReadNode                : count=  76, sum=      9929, min=       9, average=      130.64, max=     197, maxTarget=root pushDisk
+        IfNode                  : count=  76, sum=      9816, min=       8, average=      129.16, max=     202, maxTarget=root pushDisk
+        ConstantNode            : count=  76, sum=      6706, min=      17, average=       88.24, max=     108, maxTarget=root benchmark
+        PiNode                  : count=  76, sum=      6218, min=       2, average=       81.82, max=     123, maxTarget=root pushDisk
+        MemoryAnchorNode        : count=  76, sum=      5416, min=       2, average=       71.26, max=     121, maxTarget=root pushDisk
+        DeoptimizeNode          : count=  76, sum=      5135, min=       1, average=       67.57, max=     103, maxTarget=root pushDisk
+        ReadRegisterNode        : count=  76, sum=      4792, min=       1, average=       63.05, max=     109, maxTarget=root pushDisk
+        PointerEqualsNode       : count=  76, sum=      3884, min=       0, average=       51.11, max=      86, maxTarget=root pushDisk
+        FloatingReadNode        : count=  76, sum=      3845, min=       0, average=       50.59, max=      85, maxTarget=root pushDisk
+        HotSpotCompressionNode  : count=  76, sum=      3506, min=       1, average=       46.13, max=      63, maxTarget=root pushDisk
+        MergeNode               : count=  76, sum=      3302, min=       4, average=       43.45, max=      67, maxTarget=root pushDisk
+        HotSpotDirectCallTargetNode: count=  76, sum=      3136, min=       1, average=       41.26, max=      73, maxTarget=root pushDisk
+        InvokeWithExceptionNode : count=  76, sum=      3133, min=       1, average=       41.22, max=      73, maxTarget=root pushDisk
+        ValuePhiNode            : count=  76, sum=      3105, min=       2, average=       40.86, max=      65, maxTarget=root pushDisk
+        NullCheckNode           : count=  76, sum=      2464, min=       1, average=       32.42, max=      47, maxTarget=root pushDisk
+        AddNode                 : count=  76, sum=      2273, min=       2, average=       29.91, max=      44, maxTarget=root pushDisk
+        IntegerEqualsNode       : count=  76, sum=      2137, min=       4, average=       28.12, max=      41, maxTarget=root pushDisk
+        VirtualObjectState      : count=  76, sum=      2125, min=       2, average=       27.96, max=      39, maxTarget=root pushDisk
+        IntegerBelowNode        : count=  76, sum=      2006, min=       0, average=       26.39, max=      41, maxTarget=root pushDisk
+        ForeignCallNode         : count=  76, sum=      1867, min=       1, average=       24.57, max=      39, maxTarget=root pushDisk
+        PrefetchAllocateNode    : count=  76, sum=      1783, min=       0, average=       23.46, max=      36, maxTarget=root pushDisk
+        FixedValueAnchorNode    : count=  76, sum=      1659, min=       0, average=       21.83, max=      36, maxTarget=root pushDisk
+        WordCastNode            : count=  76, sum=      1659, min=       0, average=       21.83, max=      36, maxTarget=root pushDisk
+        MembarNode              : count=  76, sum=      1590, min=       0, average=       20.92, max=      36, maxTarget=root pushDisk
+        VirtualInstanceNode     : count=  76, sum=       977, min=       1, average=       12.86, max=      20, maxTarget=root pushDisk
+        ZeroExtendNode          : count=  76, sum=       760, min=       1, average=       10.00, max=      18, maxTarget=root popDiskFrom
+        IsNullNode              : count=  76, sum=       715, min=       1, average=        9.41, max=      16, maxTarget=root popDiskFrom
+        LeftShiftNode           : count=  76, sum=       544, min=       0, average=        7.16, max=      23, maxTarget=root benchmark
+        FloatConvertNode        : count=  76, sum=       527, min=       0, average=        6.93, max=      13, maxTarget=root pushDisk
+        IntegerLessThanNode     : count=  76, sum=       399, min=       2, average=        5.25, max=      22, maxTarget=root benchmark
+        VirtualArrayNode        : count=  76, sum=       359, min=       1, average=        4.72, max=       6, maxTarget=root moveTopDisk
+        ObjectEqualsNode        : count=  76, sum=       355, min=       0, average=        4.67, max=       6, maxTarget=root pushDisk
+        MaterializedObjectState : count=  76, sum=       284, min=       0, average=        3.74, max=      10, maxTarget=root buildTowerAt
+        SignExtendNode          : count=  76, sum=       230, min=       0, average=        3.03, max=      10, maxTarget=root benchmark
+        PiArrayNode             : count=  76, sum=       138, min=       1, average=        1.82, max=       3, maxTarget=root moveTopDisk
+        SubNode                 : count=  76, sum=       123, min=       0, average=        1.62, max=       5, maxTarget=root benchmark
+        IntegerTestNode         : count=  76, sum=       123, min=       0, average=        1.62, max=       5, maxTarget=root benchmark
+        G1PostWriteBarrierNode  : count=  76, sum=       123, min=       0, average=        1.62, max=       9, maxTarget=root benchmark
+        UnsignedRightShiftNode  : count=  76, sum=       118, min=       0, average=        1.55, max=       8, maxTarget=root benchmark
+        G1PreWriteBarrierNode   : count=  76, sum=       115, min=       0, average=        1.51, max=       9, maxTarget=root benchmark
+        AndNode                 : count=  76, sum=       115, min=       0, average=        1.51, max=       5, maxTarget=root benchmark
+        NegateNode              : count=  76, sum=       115, min=       0, average=        1.51, max=       5, maxTarget=root benchmark
+        OrNode                  : count=  76, sum=       115, min=       0, average=        1.51, max=       5, maxTarget=root benchmark
+        BitCountNode            : count=  76, sum=       115, min=       0, average=        1.51, max=       5, maxTarget=root benchmark
+        PointerCastNode         : count=  76, sum=       115, min=       0, average=        1.51, max=       5, maxTarget=root benchmark
+        ConditionalNode         : count=  76, sum=       113, min=       0, average=        1.49, max=       3, maxTarget=root buildTowerAt
+        AArch64PointerAddNode   : count=  76, sum=        84, min=       0, average=        1.11, max=       3, maxTarget=root benchmark
+        RightShiftNode          : count=  76, sum=        76, min=       1, average=        1.00, max=       1, maxTarget=root moveTopDisk
+        MulNode                 : count=  76, sum=        76, min=       1, average=        1.00, max=       1, maxTarget=root moveTopDisk
+        ParameterNode           : count=  76, sum=        76, min=       1, average=        1.00, max=       1, maxTarget=root moveTopDisk
+        StartNode               : count=  76, sum=        76, min=       1, average=        1.00, max=       1, maxTarget=root moveTopDisk
+        CurrentJavaThreadNode   : count=  76, sum=        75, min=       0, average=        0.99, max=       1, maxTarget=root moveTopDisk
+        ReturnNode              : count=  76, sum=        75, min=       0, average=        0.99, max=       1, maxTarget=root moveTopDisk
+        FloatLessThanNode       : count=  76, sum=        49, min=       0, average=        0.64, max=       1, maxTarget=root pushDisk
+        SafepointNode           : count=  76, sum=        18, min=       0, average=        0.24, max=       2, maxTarget=root buildTowerAt
+        LoopEndNode             : count=  76, sum=        18, min=       0, average=        0.24, max=       2, maxTarget=root buildTowerAt
+        VirtualBoxingNode       : count=  76, sum=        10, min=       0, average=        0.13, max=       2, maxTarget=root innerBenchmarkLoop
+        LoopExitNode            : count=  76, sum=         9, min=       0, average=        0.12, max=       1, maxTarget=root buildTowerAt
+        LoopBeginNode           : count=  76, sum=         9, min=       0, average=        0.12, max=       1, maxTarget=root buildTowerAt
+        InvokeNode              : count=  76, sum=         3, min=       0, average=        0.04, max=       3, maxTarget=root benchmark
+        FloatEqualsNode         : count=  76, sum=         2, min=       0, average=        0.03, max=       2, maxTarget=root verifyResult
+        ReinterpretNode         : count=  76, sum=         2, min=       0, average=        0.03, max=       2, maxTarget=root verifyResult
+  ---------------------------   :
+  Compilation Tier 2            :
+    Compilation Rate            :    551175.08 bytes/second
+      Truffle Tier Rate         :   1561066.09 bytes/second
+      Graal Tier Rate           :   1037910.48 bytes/second
+      Installation Rate         :   4756390.82 bytes/second
+    Time for compilation (us)   : count=  51, sum=   2856370, min=    5571, average=    56007.26, max=   99509, maxTarget=root buildTowerAt
+      Truffle Tier (us)         : count=  51, sum=   1008515, min=    3733, average=    19774.82, max=   35698, maxTarget=root moveTopDisk
+      Graal Tier (us)           : count=  51, sum=   1516855, min=    1597, average=    29742.26, max=   59581, maxTarget=root buildTowerAt
+      Code Installation (us)    : count=  51, sum=    330998, min=     239, average=     6490.17, max=   10548, maxTarget=root moveTopDisk
+    Graal node count            :
+      After Truffle Tier        : count=  52, sum=     93245, min=     129, average=     1793.17, max=    2410, maxTarget=root moveTopDisk
+      After Graal Tier          : count=  51, sum=    224970, min=     211, average=     4411.18, max=    5620, maxTarget=root moveTopDisk
+    Graal compilation result    :
+      Code size                 : count=  51, sum=   1574360, min=    1524, average=    30869.80, max=   42712, maxTarget=root moveTopDisk
+      Total frame size          : count=  51, sum=     14560, min=      48, average=      285.49, max=     432, maxTarget=root buildTowerAt
+      Exception handlers        : count=  51, sum=      4148, min=       0, average=       81.33, max=     104, maxTarget=root moveTopDisk
+      Infopoints                : count=  51, sum=     19760, min=      25, average=      387.45, max=     494, maxTarget=root moveTopDisk
+        CALL                    : count=  51, sum=     15859, min=      22, average=      310.96, max=     396, maxTarget=root moveTopDisk
+        IMPLICIT_EXCEPTION      : count=  51, sum=      3901, min=       3, average=       76.49, max=     112, maxTarget=root buildTowerAt
+    Marks                       : count=  51, sum=      4505, min=       7, average=       88.33, max=     111, maxTarget=root moveTopDisk
+    Data references             : count=  51, sum=     50100, min=      12, average=      982.35, max=    1542, maxTarget=root moveTopDisk
+    Graal nodes after Truffle tier:
+        FrameState              : count=  52, sum=     20256, min=      45, average=      389.54, max=     541, maxTarget=root moveTopDisk
+        BeginNode               : count=  52, sum=     10163, min=       0, average=      195.44, max=     255, maxTarget=root moveTopDisk
+        EndNode                 : count=  52, sum=      6761, min=       0, average=      130.02, max=     170, maxTarget=root moveTopDisk
+        ConstantNode            : count=  52, sum=      6024, min=      35, average=      115.85, max=     160, maxTarget=root moveTopDisk
+        FixedGuardNode          : count=  52, sum=      5708, min=       6, average=      109.77, max=     144, maxTarget=root moveTopDisk
+        InstanceOfNode          : count=  52, sum=      5070, min=       1, average=       97.50, max=     133, maxTarget=root moveTopDisk
+        ExceptionObjectNode     : count=  52, sum=      4444, min=       0, average=       85.46, max=     111, maxTarget=root moveTopDisk
+        InvokeWithExceptionNode : count=  52, sum=      4444, min=       0, average=       85.46, max=     111, maxTarget=root moveTopDisk
+        MethodCallTargetNode    : count=  52, sum=      4444, min=       0, average=       85.46, max=     111, maxTarget=root moveTopDisk
+        VirtualObjectState      : count=  52, sum=      3125, min=       7, average=       60.10, max=      83, maxTarget=root moveTopDisk
+        IfNode                  : count=  52, sum=      2863, min=       0, average=       55.06, max=      72, maxTarget=root moveTopDisk
+        PiNode                  : count=  52, sum=      2636, min=       7, average=       50.69, max=      72, maxTarget=root moveTopDisk
+        LoadFieldNode           : count=  52, sum=      1877, min=       4, average=       36.10, max=      50, maxTarget=root moveTopDisk
+        IntegerEqualsNode       : count=  52, sum=      1837, min=       0, average=       35.33, max=      44, maxTarget=root moveTopDisk
+        DeoptimizeNode          : count=  52, sum=      1402, min=       0, average=       26.96, max=      39, maxTarget=root moveTopDisk
+        VirtualInstanceNode     : count=  52, sum=      1334, min=       2, average=       25.65, max=      33, maxTarget=root moveTopDisk
+        AllocatedObjectNode     : count=  52, sum=      1179, min=       1, average=       22.67, max=      29, maxTarget=root moveTopDisk
+        CommitAllocationNode    : count=  52, sum=      1113, min=       1, average=       21.40, max=      27, maxTarget=root moveTopDisk
+        AllocatingBoxNode       : count=  52, sum=      1046, min=       0, average=       20.12, max=      25, maxTarget=root moveTopDisk
+        UnboxNode               : count=  52, sum=       948, min=       0, average=       18.23, max=      28, maxTarget=root moveTopDisk
+        ValuePhiNode            : count=  52, sum=       882, min=       0, average=       16.96, max=      25, maxTarget=root moveTopDisk
+        MergeNode               : count=  52, sum=       856, min=       0, average=       16.46, max=      26, maxTarget=root moveTopDisk
+        ObjectEqualsNode        : count=  52, sum=       749, min=       2, average=       14.40, max=      19, maxTarget=root moveTopDisk
+        FloatConvertNode        : count=  52, sum=       696, min=       0, average=       13.38, max=      16, maxTarget=root moveTopDisk
+        LoadIndexedNode         : count=  52, sum=       655, min=       2, average=       12.60, max=      18, maxTarget=root moveTopDisk
+        VirtualArrayNode        : count=  52, sum=       449, min=       4, average=        8.63, max=      13, maxTarget=root buildTowerAt
+        IsNullNode              : count=  52, sum=       346, min=       0, average=        6.65, max=      12, maxTarget=root buildTowerAt
+        MaterializedObjectState : count=  52, sum=       278, min=       0, average=        5.35, max=      11, maxTarget=root buildTowerAt
+        ConditionalNode         : count=  52, sum=       207, min=       1, average=        3.98, max=       5, maxTarget=root buildTowerAt
+        NarrowNode              : count=  52, sum=       199, min=       0, average=        3.83, max=       5, maxTarget=root moveTopDisk
+        StoreIndexedNode        : count=  52, sum=       181, min=       2, average=        3.48, max=       5, maxTarget=root moveTopDisk
+        IntegerBelowNode        : count=  52, sum=       172, min=       0, average=        3.31, max=       5, maxTarget=root moveTopDisk
+        IntegerLessThanNode     : count=  52, sum=       143, min=       0, average=        2.75, max=       4, maxTarget=root moveTopDisk
+        StateSplitProxyNode     : count=  52, sum=       116, min=       0, average=        2.23, max=       4, maxTarget=root moveTopDisk
+        StoreFieldNode          : count=  52, sum=        80, min=       1, average=        1.54, max=       2, maxTarget=root moveTopDisk
+        ZeroExtendNode          : count=  52, sum=        79, min=       0, average=        1.52, max=       2, maxTarget=root moveTopDisk
+        ArrayLengthNode         : count=  52, sum=        58, min=       0, average=        1.12, max=       2, maxTarget=root moveTopDisk
+        FloatLessThanNode       : count=  52, sum=        57, min=       0, average=        1.10, max=       2, maxTarget=root buildTowerAt
+        ParameterNode           : count=  52, sum=        52, min=       1, average=        1.00, max=       1, maxTarget=root popDiskFrom
+        StartNode               : count=  52, sum=        52, min=       1, average=        1.00, max=       1, maxTarget=root popDiskFrom
+        ReturnNode              : count=  52, sum=        52, min=       1, average=        1.00, max=       1, maxTarget=root popDiskFrom
+        PiArrayNode             : count=  52, sum=        52, min=       1, average=        1.00, max=       1, maxTarget=root popDiskFrom
+        PureBoxNode             : count=  52, sum=        42, min=       0, average=        0.81, max=       2, maxTarget=root pushDisk
+        ValueProxyNode          : count=  52, sum=        28, min=       0, average=        0.54, max=       4, maxTarget=root buildTowerAt
+        AddNode                 : count=  52, sum=        21, min=       0, average=        0.40, max=       1, maxTarget=root moveTopDisk
+        RawStoreNode            : count=  52, sum=        18, min=       0, average=        0.35, max=       2, maxTarget=root buildTowerAt
+        ClassIsAssignableFromNode: count=  52, sum=         8, min=       0, average=        0.15, max=       1, maxTarget=root buildTowerAt
+        IntegerTestNode         : count=  52, sum=         8, min=       0, average=        0.15, max=       1, maxTarget=root buildTowerAt
+        SubNode                 : count=  52, sum=         7, min=       0, average=        0.13, max=       1, maxTarget=root buildTowerAt
+        LoopExitNode            : count=  52, sum=         7, min=       0, average=        0.13, max=       1, maxTarget=root buildTowerAt
+        VirtualBoxingNode       : count=  52, sum=         7, min=       0, average=        0.13, max=       1, maxTarget=root buildTowerAt
+        LoopEndNode             : count=  52, sum=         7, min=       0, average=        0.13, max=       1, maxTarget=root buildTowerAt
+        LoopBeginNode           : count=  52, sum=         7, min=       0, average=        0.13, max=       1, maxTarget=root buildTowerAt
+    Graal nodes after Graal tier:
+        AArch64AddressNode      : count=  51, sum=     31286, min=      24, average=      613.45, max=     787, maxTarget=root moveTopDisk
+        BeginNode               : count=  51, sum=     30797, min=      12, average=      603.86, max=     770, maxTarget=root moveTopDisk
+        FrameState              : count=  51, sum=     20214, min=      33, average=      396.35, max=     560, maxTarget=root buildTowerAt
+        WriteNode               : count=  51, sum=     18367, min=      10, average=      360.14, max=     463, maxTarget=root moveTopDisk
+        ReadNode                : count=  51, sum=     17315, min=      11, average=      339.51, max=     431, maxTarget=root moveTopDisk
+        EndNode                 : count=  51, sum=     14511, min=       8, average=      284.53, max=     361, maxTarget=root moveTopDisk
+        IfNode                  : count=  51, sum=     11254, min=       6, average=      220.67, max=     281, maxTarget=root moveTopDisk
+        MemoryAnchorNode        : count=  51, sum=      9535, min=       2, average=      186.96, max=     237, maxTarget=root moveTopDisk
+        ConstantNode            : count=  51, sum=      6858, min=      45, average=      134.47, max=     175, maxTarget=root buildTowerAt
+        ReadRegisterNode        : count=  51, sum=      6403, min=       1, average=      125.55, max=     160, maxTarget=root moveTopDisk
+        PointerEqualsNode       : count=  51, sum=      5589, min=       3, average=      109.59, max=     144, maxTarget=root moveTopDisk
+        DeoptimizeNode          : count=  51, sum=      4451, min=       1, average=       87.27, max=     115, maxTarget=root moveTopDisk
+        InvokeWithExceptionNode : count=  51, sum=      4148, min=       0, average=       81.33, max=     104, maxTarget=root moveTopDisk
+        HotSpotDirectCallTargetNode: count=  51, sum=      4148, min=       0, average=       81.33, max=     104, maxTarget=root moveTopDisk
+        ValuePhiNode            : count=  51, sum=      3979, min=       3, average=       78.02, max=     100, maxTarget=root moveTopDisk
+        MergeNode               : count=  51, sum=      3958, min=       4, average=       77.61, max=     100, maxTarget=root moveTopDisk
+        HotSpotCompressionNode  : count=  51, sum=      3476, min=       5, average=       68.16, max=     103, maxTarget=root buildTowerAt
+        VirtualObjectState      : count=  51, sum=      2794, min=       7, average=       54.78, max=      73, maxTarget=root buildTowerAt
+        IntegerBelowNode        : count=  51, sum=      2750, min=       2, average=       53.92, max=      70, maxTarget=root moveTopDisk
+        PrefetchAllocateNode    : count=  51, sum=      2385, min=       3, average=       46.76, max=      60, maxTarget=root moveTopDisk
+        AddNode                 : count=  51, sum=      2363, min=       1, average=       46.33, max=      59, maxTarget=root moveTopDisk
+        WordCastNode            : count=  51, sum=      2319, min=       1, average=       45.47, max=      58, maxTarget=root moveTopDisk
+        ForeignCallNode         : count=  51, sum=      2279, min=       2, average=       44.69, max=      55, maxTarget=root moveTopDisk
+        MembarNode              : count=  51, sum=      2200, min=       2, average=       43.14, max=      54, maxTarget=root moveTopDisk
+        NullCheckNode           : count=  51, sum=      2199, min=       1, average=       43.12, max=      54, maxTarget=root moveTopDisk
+        FixedValueAnchorNode    : count=  51, sum=      2185, min=       1, average=       42.84, max=      54, maxTarget=root moveTopDisk
+        IntegerEqualsNode       : count=  51, sum=      2007, min=       1, average=       39.35, max=      49, maxTarget=root buildTowerAt
+        VirtualInstanceNode     : count=  51, sum=      1294, min=       2, average=       25.37, max=      33, maxTarget=root moveTopDisk
+        FloatConvertNode        : count=  51, sum=       650, min=       0, average=       12.75, max=      16, maxTarget=root moveTopDisk
+        IsNullNode              : count=  51, sum=       535, min=       0, average=       10.49, max=      17, maxTarget=root buildTowerAt
+        VirtualArrayNode        : count=  51, sum=       428, min=       4, average=        8.39, max=      12, maxTarget=root moveTopDisk
+        DynamicDeoptimizeNode   : count=  51, sum=       363, min=       1, average=        7.12, max=      13, maxTarget=root buildTowerAt
+        MaterializedObjectState : count=  51, sum=       274, min=       0, average=        5.37, max=      12, maxTarget=root buildTowerAt
+        G1PostWriteBarrierNode  : count=  51, sum=       239, min=       2, average=        4.69, max=      12, maxTarget=root buildTowerAt
+        G1PreWriteBarrierNode   : count=  51, sum=       231, min=       2, average=        4.53, max=      11, maxTarget=root buildTowerAt
+        LeftShiftNode           : count=  51, sum=       185, min=       0, average=        3.63, max=       8, maxTarget=root buildTowerAt
+        ZeroExtendNode          : count=  51, sum=       169, min=       0, average=        3.31, max=       6, maxTarget=root buildTowerAt
+        IntegerLessThanNode     : count=  51, sum=       161, min=       0, average=        3.16, max=       5, maxTarget=root buildTowerAt
+        AArch64PointerAddNode   : count=  51, sum=       153, min=       0, average=        3.00, max=       4, maxTarget=root moveTopDisk
+        FloatLessThanNode       : count=  51, sum=        77, min=       0, average=        1.51, max=       5, maxTarget=root buildTowerAt
+        ObjectEqualsNode        : count=  51, sum=        56, min=       0, average=        1.10, max=       2, maxTarget=root buildTowerAt
+        CurrentJavaThreadNode   : count=  51, sum=        51, min=       1, average=        1.00, max=       1, maxTarget=root popDiskFrom
+        ParameterNode           : count=  51, sum=        51, min=       1, average=        1.00, max=       1, maxTarget=root popDiskFrom
+        StartNode               : count=  51, sum=        51, min=       1, average=        1.00, max=       1, maxTarget=root popDiskFrom
+        ReturnNode              : count=  51, sum=        51, min=       1, average=        1.00, max=       1, maxTarget=root popDiskFrom
+        LoopEndNode             : count=  51, sum=        42, min=       0, average=        0.82, max=       6, maxTarget=root buildTowerAt
+        SubNode                 : count=  51, sum=        29, min=       0, average=        0.57, max=       4, maxTarget=root buildTowerAt
+        IntegerTestNode         : count=  51, sum=        16, min=       0, average=        0.31, max=       2, maxTarget=root buildTowerAt
+        q                       : count=  51, sum=         9, min=       0, average=        0.18, max=       1, maxTarget=root init
+        AndNode                 : count=  51, sum=         8, min=       0, average=        0.16, max=       1, maxTarget=root buildTowerAt
+        ConditionalNode         : count=  51, sum=         8, min=       0, average=        0.16, max=       1, maxTarget=root buildTowerAt
+        NegateNode              : count=  51, sum=         8, min=       0, average=        0.16, max=       1, maxTarget=root buildTowerAt
+        UnsignedRightShiftNode  : count=  51, sum=         8, min=       0, average=        0.16, max=       1, maxTarget=root buildTowerAt
+        OrNode                  : count=  51, sum=         8, min=       0, average=        0.16, max=       1, maxTarget=root buildTowerAt
+        BitCountNode            : count=  51, sum=         8, min=       0, average=        0.16, max=       1, maxTarget=root buildTowerAt
+        NarrowNode              : count=  51, sum=         8, min=       0, average=        0.16, max=       1, maxTarget=root buildTowerAt
+        PointerCastNode         : count=  51, sum=         8, min=       0, average=        0.16, max=       1, maxTarget=root buildTowerAt
+        LoopExitNode            : count=  51, sum=         7, min=       0, average=        0.14, max=       1, maxTarget=root buildTowerAt
+        VirtualBoxingNode       : count=  51, sum=         7, min=       0, average=        0.14, max=       1, maxTarget=root buildTowerAt
+        LoopBeginNode           : count=  51, sum=         7, min=       0, average=        0.14, max=       1, maxTarget=root buildTowerAt

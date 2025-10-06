@@ -1,0 +1,322 @@
+load benchmark: list.lox
+Starting list benchmark ...
+list: innerIterations=10 runtime: 322763us
+list: innerIterations=10 runtime: 140707us
+list: innerIterations=10 runtime: 90350us
+list: innerIterations=10 runtime: 75462us
+list: innerIterations=10 runtime: 114596us
+list: innerIterations=10 runtime: 72635us
+list: innerIterations=10 runtime: 72592us
+list: innerIterations=10 runtime: 73004us
+list: innerIterations=10 runtime: 72879us
+list: innerIterations=10 runtime: 72335us
+list: innerIterations=10 runtime: 73633us
+list: innerIterations=10 runtime: 71474us
+list: innerIterations=10 runtime: 72518us
+list: innerIterations=10 runtime: 72072us
+list: innerIterations=10 runtime: 72550us
+list: innerIterations=10 runtime: 72113us
+list: innerIterations=10 runtime: 73192us
+list: innerIterations=10 runtime: 113138us
+list: iterations=18 average: 96000.72222222222us total: 1728013us
+
+Total Runtime: 1728013us
+[To redirect Truffle log output to a file use one of the following options:
+* '--log.file=<path>' if the option is passed using a guest language launcher.
+* '-Dpolyglot.log.file=<path>' if the option is passed using the host Java launcher.
+* Configure logging using the polyglot embedding API.]
+[engine] Truffle runtime statistics for engine 2
+    Compilations                : 12
+      Success                   : 9
+      Temporary Bailouts        : 0
+      Permanent Bailouts        : 3
+        jdk.graal.compiler.code.SourceStackTraceBailoutException$1: Partial evaluation did not reduce value to a constant, is a regular compiler node: 547|ValuePhi(8, i32) (545|LoopBegin; 8|Constant(0, i32); ): 1
+        jdk.graal.compiler.code.SourceStackTraceBailoutException$1: Partial evaluation did not reduce value to a constant, is a regular compiler node: 473|ValuePhi(8, i32) (471|LoopBegin; 8|Constant(0, i32); ): 1
+        jdk.graal.compiler.code.SourceStackTraceBailoutException$1: Partial evaluation did not reduce value to a constant, is a regular compiler node: 366|ValuePhi(8, i32) (364|LoopBegin; 8|Constant(0, i32); ): 1
+      Failed                    : 0
+      Interrupted               : 0
+    Invalidated                 : 0
+    Queues                      : 12
+    Dequeues                    : 0
+    Splits                      : 0
+    Compilation Accuracy        : 1.000000
+    Queue Accuracy              : 1.000000
+    Compilation Utilization     : 0.175110
+    Remaining Compilation Queue : 0
+    Time to queue               : count=  12, sum=   4436676, min=    6605, average=   369723.08, max= 1255573, maxTarget=ClockBuiltInNodeGen@72efb5c1
+    Time waiting in queue       : count=  12, sum=      8164, min=      13, average=      680.33, max=    5735, maxTarget=root takl
+  ---------------------------   :
+  AST node statistics           :
+    Truffle node count          : count=   9, sum=        16, min=       1, average=        1.78, max=       2, maxTarget=root init
+    Truffle call count          : count=   9, sum=         7, min=       0, average=        0.78, max=       5, maxTarget=root benchmark
+      Indirect                  : count=   9, sum=         0, min=       0, average=        0.00, max=       0, maxTarget=root init
+      Direct                    : count=   9, sum=         7, min=       0, average=        0.78, max=       5, maxTarget=root benchmark
+        Dispatched              : count=   9, sum=         7, min=       0, average=        0.78, max=       5, maxTarget=root benchmark
+        Inlined                 : count=   9, sum=         0, min=       0, average=        0.00, max=       0, maxTarget=root init
+        ----------              :
+        Cloned                  : count=   9, sum=         0, min=       0, average=        0.00, max=       0, maxTarget=root init
+        Not Cloned              : count=   9, sum=         0, min=       0, average=        0.00, max=       0, maxTarget=root init
+    Truffle loops               : count=   9, sum=         0, min=       0, average=        0.00, max=       0, maxTarget=root init
+  Truffle nodes                 :
+        CachedBytecodeNode      : count=   9, sum=         7, min=       0, average=        0.78, max=       1, maxTarget=root init
+        LoxBytecodeRootNodeGen  : count=   9, sum=         7, min=       0, average=        0.78, max=       1, maxTarget=root init
+        ClockBuiltInNodeGen     : count=   9, sum=         1, min=       0, average=        0.11, max=       1, maxTarget=ClockBuiltInNodeGen@72efb5c1
+        StringBuiltInNodeGen    : count=   9, sum=         1, min=       0, average=        0.11, max=       1, maxTarget=StringBuiltInNodeGen@18f48ef4
+  ---------------------------   :
+  Compilation Tier 1            :
+    Compilation Rate            :    202553.64 bytes/second
+      Truffle Tier Rate         :    306862.23 bytes/second
+      Graal Tier Rate           :   1146089.70 bytes/second
+      Installation Rate         :   4728086.38 bytes/second
+    Time for compilation (us)   : count=  10, sum=    208715, min=     501, average=    20871.51, max=   77159, maxTarget=root isShorterThan
+      Truffle Tier (us)         : count=   7, sum=    137768, min=     911, average=    19681.24, max=   53836, maxTarget=root isShorterThan
+      Graal Tier (us)           : count=   7, sum=     36887, min=     627, average=     5269.60, max=   18584, maxTarget=root isShorterThan
+      Code Installation (us)    : count=   7, sum=      8941, min=     133, average=     1277.35, max=    4737, maxTarget=root isShorterThan
+    Graal node count            :
+      After Truffle Tier        : count=   7, sum=      3676, min=     108, average=      525.14, max=    1840, maxTarget=root isShorterThan
+      After Graal Tier          : count=   7, sum=      8208, min=     138, average=     1172.57, max=    4691, maxTarget=root isShorterThan
+    Graal compilation result    :
+      Code size                 : count=   7, sum=     42276, min=     640, average=     6039.43, max=   24188, maxTarget=root isShorterThan
+      Total frame size          : count=   7, sum=      1232, min=      48, average=      176.00, max=     464, maxTarget=root isShorterThan
+      Exception handlers        : count=   7, sum=       129, min=       1, average=       18.43, max=      98, maxTarget=root isShorterThan
+      Infopoints                : count=   7, sum=       641, min=      10, average=       91.57, max=     360, maxTarget=root isShorterThan
+        CALL                    : count=   7, sum=       540, min=       8, average=       77.14, max=     308, maxTarget=root isShorterThan
+        IMPLICIT_EXCEPTION      : count=   7, sum=        97, min=       1, average=       13.86, max=      50, maxTarget=root isShorterThan
+        SAFEPOINT               : count=   7, sum=         4, min=       0, average=        0.57, max=       2, maxTarget=root isShorterThan
+    Marks                       : count=   7, sum=       182, min=       8, average=       26.00, max=     107, maxTarget=root isShorterThan
+    Data references             : count=   7, sum=       538, min=       5, average=       76.86, max=     285, maxTarget=root isShorterThan
+    Graal nodes after Truffle tier:
+        FrameState              : count=   7, sum=       754, min=      17, average=      107.71, max=     382, maxTarget=root isShorterThan
+        BeginNode               : count=   7, sum=       384, min=      13, average=       54.86, max=     242, maxTarget=root isShorterThan
+        ConstantNode            : count=   7, sum=       320, min=      13, average=       45.71, max=      94, maxTarget=root isShorterThan
+        EndNode                 : count=   7, sum=       253, min=       9, average=       36.14, max=     162, maxTarget=root isShorterThan
+        FixedGuardNode          : count=   7, sum=       170, min=       1, average=       24.29, max=      82, maxTarget=root isShorterThan
+        VirtualObjectState      : count=   7, sum=       143, min=       2, average=       20.43, max=      66, maxTarget=root isShorterThan
+        InstanceOfNode          : count=   7, sum=       135, min=       0, average=       19.29, max=      98, maxTarget=root isShorterThan
+        ExceptionObjectNode     : count=   7, sum=       129, min=       1, average=       18.43, max=      98, maxTarget=root isShorterThan
+        IfNode                  : count=   7, sum=       129, min=       6, average=       18.43, max=      73, maxTarget=root isShorterThan
+        InvokeWithExceptionNode : count=   7, sum=       129, min=       1, average=       18.43, max=      98, maxTarget=root isShorterThan
+        MethodCallTargetNode    : count=   7, sum=       129, min=       1, average=       18.43, max=      98, maxTarget=root isShorterThan
+        PiNode                  : count=   7, sum=       102, min=       3, average=       14.57, max=      43, maxTarget=root benchmark
+        LoadFieldNode           : count=   7, sum=        93, min=       5, average=       13.29, max=      29, maxTarget=root benchmark
+        IntegerEqualsNode       : count=   7, sum=        86, min=       3, average=       12.29, max=      43, maxTarget=root isShorterThan
+        ValuePhiNode            : count=   7, sum=        63, min=       3, average=        9.00, max=      25, maxTarget=root isShorterThan
+        DeoptimizeNode          : count=   7, sum=        57, min=       1, average=        8.14, max=      26, maxTarget=root isShorterThan
+        MergeNode               : count=   7, sum=        54, min=       3, average=        7.71, max=      18, maxTarget=root isShorterThan
+        VirtualInstanceNode     : count=   7, sum=        44, min=       1, average=        6.29, max=      26, maxTarget=root isShorterThan
+        AllocatedObjectNode     : count=   7, sum=        39, min=       0, average=        5.57, max=      24, maxTarget=root isShorterThan
+        CommitAllocationNode    : count=   7, sum=        34, min=       0, average=        4.86, max=      24, maxTarget=root isShorterThan
+        AddNode                 : count=   7, sum=        29, min=       2, average=        4.14, max=       8, maxTarget=root innerBenchmarkLoop
+        LoadIndexedNode         : count=   7, sum=        29, min=       1, average=        4.14, max=      12, maxTarget=root benchmark
+        IsNullNode              : count=   7, sum=        29, min=       1, average=        4.14, max=      12, maxTarget=root benchmark
+        VirtualArrayNode        : count=   7, sum=        28, min=       1, average=        4.00, max=       8, maxTarget=root benchmark
+        StateSplitProxyNode     : count=   7, sum=        28, min=       2, average=        4.00, max=      12, maxTarget=root benchmark
+        StoreFieldNode          : count=   7, sum=        27, min=       2, average=        3.86, max=       7, maxTarget=root benchmark
+        AllocatingBoxNode       : count=   7, sum=        26, min=       0, average=        3.71, max=      24, maxTarget=root isShorterThan
+        UnboxNode               : count=   7, sum=        26, min=       0, average=        3.71, max=      12, maxTarget=root isShorterThan
+        ObjectEqualsNode        : count=   7, sum=        26, min=       0, average=        3.71, max=      13, maxTarget=root benchmark
+        MaterializedObjectState : count=   7, sum=        25, min=       0, average=        3.57, max=      18, maxTarget=root benchmark
+        IntegerLessThanNode     : count=   7, sum=        24, min=       2, average=        3.43, max=       8, maxTarget=root isShorterThan
+        ValueProxyNode          : count=   7, sum=        15, min=       0, average=        2.14, max=      10, maxTarget=root isShorterThan
+        ConditionalNode         : count=   7, sum=        14, min=       0, average=        2.00, max=       6, maxTarget=root isShorterThan
+        FloatConvertNode        : count=   7, sum=        12, min=       0, average=        1.71, max=      12, maxTarget=root isShorterThan
+        NarrowNode              : count=   7, sum=         8, min=       0, average=        1.14, max=       4, maxTarget=root isShorterThan
+        ArrayLengthNode         : count=   7, sum=         7, min=       0, average=        1.00, max=       5, maxTarget=root benchmark
+        RightShiftNode          : count=   7, sum=         7, min=       1, average=        1.00, max=       1, maxTarget=root init
+        MulNode                 : count=   7, sum=         7, min=       1, average=        1.00, max=       1, maxTarget=root init
+        ParameterNode           : count=   7, sum=         7, min=       1, average=        1.00, max=       1, maxTarget=root init
+        StartNode               : count=   7, sum=         7, min=       1, average=        1.00, max=       1, maxTarget=root init
+        ReturnNode              : count=   7, sum=         7, min=       1, average=        1.00, max=       1, maxTarget=root init
+        PiArrayNode             : count=   7, sum=         7, min=       1, average=        1.00, max=       1, maxTarget=root init
+        PureBoxNode             : count=   7, sum=         6, min=       0, average=        0.86, max=       4, maxTarget=root isShorterThan
+        VirtualBoxingNode       : count=   7, sum=         5, min=       0, average=        0.71, max=       3, maxTarget=root innerBenchmarkLoop
+        ZeroExtendNode          : count=   7, sum=         4, min=       0, average=        0.57, max=       3, maxTarget=root innerBenchmarkLoop
+        LoopEndNode             : count=   7, sum=         4, min=       0, average=        0.57, max=       2, maxTarget=root isShorterThan
+        LoopExitNode            : count=   7, sum=         3, min=       0, average=        0.43, max=       2, maxTarget=root isShorterThan
+        FloatEqualsNode         : count=   7, sum=         2, min=       0, average=        0.29, max=       2, maxTarget=root verifyResult
+        StoreIndexedNode        : count=   7, sum=         2, min=       0, average=        0.29, max=       2, maxTarget=root init
+        RawStoreNode            : count=   7, sum=         2, min=       0, average=        0.29, max=       2, maxTarget=root init
+        LoopBeginNode           : count=   7, sum=         2, min=       0, average=        0.29, max=       1, maxTarget=root isShorterThan
+        ReinterpretNode         : count=   7, sum=         2, min=       0, average=        0.29, max=       2, maxTarget=root verifyResult
+        FloatLessThanNode       : count=   7, sum=         1, min=       0, average=        0.14, max=       1, maxTarget=root innerBenchmarkLoop
+        TrustedBoxedValue       : count=   7, sum=         1, min=       0, average=        0.14, max=       1, maxTarget=root innerBenchmarkLoop
+    Graal nodes after Graal tier:
+        AArch64AddressNode      : count=   7, sum=      1086, min=      12, average=      155.14, max=     673, maxTarget=root isShorterThan
+        BeginNode               : count=   7, sum=      1043, min=      20, average=      149.00, max=     626, maxTarget=root isShorterThan
+        FrameState              : count=   7, sum=       680, min=       9, average=       97.14, max=     367, maxTarget=root isShorterThan
+        WriteNode               : count=   7, sum=       677, min=       4, average=       96.71, max=     465, maxTarget=root isShorterThan
+        EndNode                 : count=   7, sum=       463, min=      11, average=       66.14, max=     288, maxTarget=root isShorterThan
+        ReadNode                : count=   7, sum=       419, min=       9, average=       59.86, max=     219, maxTarget=root isShorterThan
+        ConstantNode            : count=   7, sum=       402, min=      17, average=       57.43, max=     110, maxTarget=root benchmark
+        IfNode                  : count=   7, sum=       394, min=       8, average=       56.29, max=     216, maxTarget=root isShorterThan
+        PiNode                  : count=   7, sum=       258, min=       2, average=       36.86, max=     132, maxTarget=root isShorterThan
+        MemoryAnchorNode        : count=   7, sum=       231, min=       2, average=       33.00, max=     161, maxTarget=root isShorterThan
+        DeoptimizeNode          : count=   7, sum=       215, min=       1, average=       30.71, max=     106, maxTarget=root isShorterThan
+        ReadRegisterNode        : count=   7, sum=       194, min=       1, average=       27.71, max=     146, maxTarget=root isShorterThan
+        MergeNode               : count=   7, sum=       157, min=       4, average=       22.43, max=      81, maxTarget=root isShorterThan
+        PointerEqualsNode       : count=   7, sum=       147, min=       0, average=       21.00, max=     100, maxTarget=root isShorterThan
+        ValuePhiNode            : count=   7, sum=       146, min=       2, average=       20.86, max=      81, maxTarget=root isShorterThan
+        FloatingReadNode        : count=   7, sum=       141, min=       0, average=       20.14, max=      96, maxTarget=root isShorterThan
+        HotSpotCompressionNode  : count=   7, sum=       131, min=       1, average=       18.71, max=      48, maxTarget=root isShorterThan
+        InvokeWithExceptionNode : count=   7, sum=       129, min=       1, average=       18.43, max=      98, maxTarget=root isShorterThan
+        HotSpotDirectCallTargetNode: count=   7, sum=       129, min=       1, average=       18.43, max=      98, maxTarget=root isShorterThan
+        VirtualObjectState      : count=   7, sum=       123, min=       2, average=       17.57, max=      51, maxTarget=root isShorterThan
+        IntegerEqualsNode       : count=   7, sum=       102, min=       4, average=       14.57, max=      43, maxTarget=root isShorterThan
+        NullCheckNode           : count=   7, sum=        97, min=       1, average=       13.86, max=      50, maxTarget=root isShorterThan
+        AddNode                 : count=   7, sum=        97, min=       2, average=       13.86, max=      54, maxTarget=root isShorterThan
+        ForeignCallNode         : count=   7, sum=        77, min=       1, average=       11.00, max=      51, maxTarget=root isShorterThan
+        PrefetchAllocateNode    : count=   7, sum=        77, min=       0, average=       11.00, max=      48, maxTarget=root isShorterThan
+        IntegerBelowNode        : count=   7, sum=        75, min=       0, average=       10.71, max=      50, maxTarget=root isShorterThan
+        FixedValueAnchorNode    : count=   7, sum=        65, min=       0, average=        9.29, max=      48, maxTarget=root isShorterThan
+        WordCastNode            : count=   7, sum=        65, min=       0, average=        9.29, max=      48, maxTarget=root isShorterThan
+        MembarNode              : count=   7, sum=        60, min=       0, average=        8.57, max=      48, maxTarget=root isShorterThan
+        VirtualInstanceNode     : count=   7, sum=        44, min=       1, average=        6.29, max=      26, maxTarget=root isShorterThan
+        ZeroExtendNode          : count=   7, sum=        39, min=       1, average=        5.57, max=      15, maxTarget=root benchmark
+        IsNullNode              : count=   7, sum=        32, min=       1, average=        4.57, max=      13, maxTarget=root isShorterThan
+        VirtualArrayNode        : count=   7, sum=        27, min=       1, average=        3.86, max=       8, maxTarget=root benchmark
+        IntegerLessThanNode     : count=   7, sum=        24, min=       2, average=        3.43, max=       7, maxTarget=root isShorterThan
+        MaterializedObjectState : count=   7, sum=        24, min=       0, average=        3.43, max=      18, maxTarget=root benchmark
+        ObjectEqualsNode        : count=   7, sum=        17, min=       0, average=        2.43, max=       8, maxTarget=root benchmark
+        PiArrayNode             : count=   7, sum=        13, min=       1, average=        1.86, max=       5, maxTarget=root benchmark
+        FloatConvertNode        : count=   7, sum=        12, min=       0, average=        1.71, max=      12, maxTarget=root isShorterThan
+        ConditionalNode         : count=   7, sum=        10, min=       0, average=        1.43, max=       4, maxTarget=root isShorterThan
+        RightShiftNode          : count=   7, sum=         7, min=       1, average=        1.00, max=       1, maxTarget=root init
+        MulNode                 : count=   7, sum=         7, min=       1, average=        1.00, max=       1, maxTarget=root init
+        CurrentJavaThreadNode   : count=   7, sum=         7, min=       1, average=        1.00, max=       1, maxTarget=root init
+        ParameterNode           : count=   7, sum=         7, min=       1, average=        1.00, max=       1, maxTarget=root init
+        StartNode               : count=   7, sum=         7, min=       1, average=        1.00, max=       1, maxTarget=root init
+        ReturnNode              : count=   7, sum=         7, min=       1, average=        1.00, max=       1, maxTarget=root init
+        G1PreWriteBarrierNode   : count=   7, sum=         5, min=       0, average=        0.71, max=       5, maxTarget=root init
+        G1PostWriteBarrierNode  : count=   7, sum=         5, min=       0, average=        0.71, max=       5, maxTarget=root init
+        SafepointNode           : count=   7, sum=         4, min=       0, average=        0.57, max=       2, maxTarget=root isShorterThan
+        LeftShiftNode           : count=   7, sum=         4, min=       0, average=        0.57, max=       4, maxTarget=root init
+        LoopEndNode             : count=   7, sum=         4, min=       0, average=        0.57, max=       2, maxTarget=root isShorterThan
+        LoopExitNode            : count=   7, sum=         3, min=       0, average=        0.43, max=       2, maxTarget=root isShorterThan
+        FloatEqualsNode         : count=   7, sum=         2, min=       0, average=        0.29, max=       2, maxTarget=root verifyResult
+        SignExtendNode          : count=   7, sum=         2, min=       0, average=        0.29, max=       2, maxTarget=root init
+        VirtualBoxingNode       : count=   7, sum=         2, min=       0, average=        0.29, max=       2, maxTarget=root innerBenchmarkLoop
+        LoopBeginNode           : count=   7, sum=         2, min=       0, average=        0.29, max=       1, maxTarget=root isShorterThan
+        ReinterpretNode         : count=   7, sum=         2, min=       0, average=        0.29, max=       2, maxTarget=root verifyResult
+        FloatLessThanNode       : count=   7, sum=         1, min=       0, average=        0.14, max=       1, maxTarget=root innerBenchmarkLoop
+        AndNode                 : count=   7, sum=         1, min=       0, average=        0.14, max=       1, maxTarget=root init
+        SubNode                 : count=   7, sum=         1, min=       0, average=        0.14, max=       1, maxTarget=root init
+        NegateNode              : count=   7, sum=         1, min=       0, average=        0.14, max=       1, maxTarget=root init
+        UnsignedRightShiftNode  : count=   7, sum=         1, min=       0, average=        0.14, max=       1, maxTarget=root init
+        OrNode                  : count=   7, sum=         1, min=       0, average=        0.14, max=       1, maxTarget=root init
+        BitCountNode            : count=   7, sum=         1, min=       0, average=        0.14, max=       1, maxTarget=root init
+        IntegerTestNode         : count=   7, sum=         1, min=       0, average=        0.14, max=       1, maxTarget=root init
+        PointerCastNode         : count=   7, sum=         1, min=       0, average=        0.14, max=       1, maxTarget=root init
+  ---------------------------   :
+  Compilation Tier 2            :
+    Compilation Rate            :    287364.30 bytes/second
+      Truffle Tier Rate         :    680867.63 bytes/second
+      Graal Tier Rate           :    561746.13 bytes/second
+      Installation Rate         :   4328525.53 bytes/second
+    Time for compilation (us)   : count=   2, sum=     93289, min=    7684, average=    46644.63, max=   85604, maxTarget=root isShorterThan
+      Truffle Tier (us)         : count=   2, sum=     39373, min=    5357, average=    19686.65, max=   34015, maxTarget=root isShorterThan
+      Graal Tier (us)           : count=   2, sum=     47722, min=    1930, average=    23861.31, max=   45791, maxTarget=root isShorterThan
+      Code Installation (us)    : count=   2, sum=      6193, min=     396, average=     3096.67, max=    5797, maxTarget=root isShorterThan
+    Graal node count            :
+      After Truffle Tier        : count=   2, sum=      1830, min=     129, average=      915.00, max=    1701, maxTarget=root isShorterThan
+      After Graal Tier          : count=   2, sum=      5303, min=     211, average=     2651.50, max=    5092, maxTarget=root isShorterThan
+    Graal compilation result    :
+      Code size                 : count=   2, sum=     26808, min=    1544, average=    13404.00, max=   25264, maxTarget=root isShorterThan
+      Total frame size          : count=   2, sum=       448, min=      48, average=      224.00, max=     400, maxTarget=root isShorterThan
+      Exception handlers        : count=   2, sum=       101, min=       0, average=       50.50, max=     101, maxTarget=root isShorterThan
+      Infopoints                : count=   2, sum=       416, min=      25, average=      208.00, max=     391, maxTarget=root isShorterThan
+        CALL                    : count=   2, sum=       353, min=      22, average=      176.50, max=     331, maxTarget=root isShorterThan
+        IMPLICIT_EXCEPTION      : count=   2, sum=        63, min=       3, average=       31.50, max=      60, maxTarget=root isShorterThan
+    Marks                       : count=   2, sum=       116, min=       7, average=       58.00, max=     109, maxTarget=root isShorterThan
+    Data references             : count=   2, sum=       363, min=      12, average=      181.50, max=     351, maxTarget=root isShorterThan
+    Graal nodes after Truffle tier:
+        FrameState              : count=   2, sum=       403, min=      45, average=      201.50, max=     358, maxTarget=root isShorterThan
+        BeginNode               : count=   2, sum=       223, min=       0, average=      111.50, max=     223, maxTarget=root isShorterThan
+        EndNode                 : count=   2, sum=       139, min=       0, average=       69.50, max=     139, maxTarget=root isShorterThan
+        ConstantNode            : count=   2, sum=       123, min=      35, average=       61.50, max=      88, maxTarget=root isShorterThan
+        InstanceOfNode          : count=   2, sum=        99, min=       1, average=       49.50, max=      98, maxTarget=root isShorterThan
+        ExceptionObjectNode     : count=   2, sum=        97, min=       0, average=       48.50, max=      97, maxTarget=root isShorterThan
+        MethodCallTargetNode    : count=   2, sum=        97, min=       0, average=       48.50, max=      97, maxTarget=root isShorterThan
+        InvokeWithExceptionNode : count=   2, sum=        97, min=       0, average=       48.50, max=      97, maxTarget=root isShorterThan
+        FixedGuardNode          : count=   2, sum=        88, min=       6, average=       44.00, max=      82, maxTarget=root isShorterThan
+        IfNode                  : count=   2, sum=        64, min=       0, average=       32.00, max=      64, maxTarget=root isShorterThan
+        VirtualObjectState      : count=   2, sum=        63, min=       7, average=       31.50, max=      56, maxTarget=root isShorterThan
+        IntegerEqualsNode       : count=   2, sum=        40, min=       0, average=       20.00, max=      40, maxTarget=root isShorterThan
+        PiNode                  : count=   2, sum=        29, min=       7, average=       14.50, max=      22, maxTarget=root isShorterThan
+        VirtualInstanceNode     : count=   2, sum=        28, min=       2, average=       14.00, max=      26, maxTarget=root isShorterThan
+        DeoptimizeNode          : count=   2, sum=        25, min=       0, average=       12.50, max=      25, maxTarget=root isShorterThan
+        AllocatedObjectNode     : count=   2, sum=        25, min=       1, average=       12.50, max=      24, maxTarget=root isShorterThan
+        CommitAllocationNode    : count=   2, sum=        25, min=       1, average=       12.50, max=      24, maxTarget=root isShorterThan
+        AllocatingBoxNode       : count=   2, sum=        24, min=       0, average=       12.00, max=      24, maxTarget=root isShorterThan
+        ValuePhiNode            : count=   2, sum=        19, min=       0, average=        9.50, max=      19, maxTarget=root isShorterThan
+        MergeNode               : count=   2, sum=        14, min=       0, average=        7.00, max=      14, maxTarget=root isShorterThan
+        LoopEndNode             : count=   2, sum=        12, min=       0, average=        6.00, max=      12, maxTarget=root isShorterThan
+        UnboxNode               : count=   2, sum=        12, min=       0, average=        6.00, max=      12, maxTarget=root isShorterThan
+        FloatConvertNode        : count=   2, sum=        12, min=       0, average=        6.00, max=      12, maxTarget=root isShorterThan
+        LoadFieldNode           : count=   2, sum=        11, min=       4, average=        5.50, max=       7, maxTarget=root isShorterThan
+        VirtualArrayNode        : count=   2, sum=         9, min=       4, average=        4.50, max=       5, maxTarget=root init
+        ObjectEqualsNode        : count=   2, sum=         9, min=       2, average=        4.50, max=       7, maxTarget=root isShorterThan
+        ValueProxyNode          : count=   2, sum=         8, min=       0, average=        4.00, max=       8, maxTarget=root isShorterThan
+        LoadIndexedNode         : count=   2, sum=         7, min=       2, average=        3.50, max=       5, maxTarget=root isShorterThan
+        ConditionalNode         : count=   2, sum=         4, min=       1, average=        2.00, max=       3, maxTarget=root isShorterThan
+        NarrowNode              : count=   2, sum=         4, min=       0, average=        2.00, max=       4, maxTarget=root isShorterThan
+        StoreIndexedNode        : count=   2, sum=         2, min=       0, average=        1.00, max=       2, maxTarget=root init
+        ParameterNode           : count=   2, sum=         2, min=       1, average=        1.00, max=       1, maxTarget=root isShorterThan
+        RawStoreNode            : count=   2, sum=         2, min=       0, average=        1.00, max=       2, maxTarget=root init
+        StartNode               : count=   2, sum=         2, min=       1, average=        1.00, max=       1, maxTarget=root isShorterThan
+        LoopExitNode            : count=   2, sum=         2, min=       0, average=        1.00, max=       2, maxTarget=root isShorterThan
+        PureBoxNode             : count=   2, sum=         2, min=       0, average=        1.00, max=       2, maxTarget=root isShorterThan
+        ReturnNode              : count=   2, sum=         2, min=       1, average=        1.00, max=       1, maxTarget=root isShorterThan
+        PiArrayNode             : count=   2, sum=         2, min=       1, average=        1.00, max=       1, maxTarget=root isShorterThan
+        LoopBeginNode           : count=   2, sum=         1, min=       0, average=        0.50, max=       1, maxTarget=root isShorterThan
+        StoreFieldNode          : count=   2, sum=         1, min=       0, average=        0.50, max=       1, maxTarget=root init
+        ZeroExtendNode          : count=   2, sum=         1, min=       0, average=        0.50, max=       1, maxTarget=root isShorterThan
+        MaterializedObjectState : count=   2, sum=         1, min=       0, average=        0.50, max=       1, maxTarget=root init
+    Graal nodes after Graal tier:
+        AArch64AddressNode      : count=   2, sum=       682, min=      24, average=      341.00, max=     658, maxTarget=root isShorterThan
+        BeginNode               : count=   2, sum=       681, min=      12, average=      340.50, max=     669, maxTarget=root isShorterThan
+        FrameState              : count=   2, sum=       673, min=      33, average=      336.50, max=     640, maxTarget=root isShorterThan
+        WriteNode               : count=   2, sum=       436, min=      10, average=      218.00, max=     426, maxTarget=root isShorterThan
+        ReadNode                : count=   2, sum=       356, min=      11, average=      178.00, max=     345, maxTarget=root isShorterThan
+        EndNode                 : count=   2, sum=       337, min=       8, average=      168.50, max=     329, maxTarget=root isShorterThan
+        IfNode                  : count=   2, sum=       241, min=       6, average=      120.50, max=     235, maxTarget=root isShorterThan
+        MemoryAnchorNode        : count=   2, sum=       228, min=       2, average=      114.00, max=     226, maxTarget=root isShorterThan
+        ReadRegisterNode        : count=   2, sum=       158, min=       1, average=       79.00, max=     157, maxTarget=root isShorterThan
+        ConstantNode            : count=   2, sum=       144, min=      45, average=       72.00, max=      99, maxTarget=root isShorterThan
+        PointerEqualsNode       : count=   2, sum=       115, min=       3, average=       57.50, max=     112, maxTarget=root isShorterThan
+        MergeNode               : count=   2, sum=       104, min=       4, average=       52.00, max=     100, maxTarget=root isShorterThan
+        ValuePhiNode            : count=   2, sum=       102, min=       3, average=       51.00, max=      99, maxTarget=root isShorterThan
+        DeoptimizeNode          : count=   2, sum=       102, min=       1, average=       51.00, max=     101, maxTarget=root isShorterThan
+        HotSpotDirectCallTargetNode: count=   2, sum=       101, min=       0, average=       50.50, max=     101, maxTarget=root isShorterThan
+        InvokeWithExceptionNode : count=   2, sum=       101, min=       0, average=       50.50, max=     101, maxTarget=root isShorterThan
+        VirtualObjectState      : count=   2, sum=        73, min=       7, average=       36.50, max=      66, maxTarget=root isShorterThan
+        IntegerBelowNode        : count=   2, sum=        62, min=       2, average=       31.00, max=      60, maxTarget=root isShorterThan
+        ForeignCallNode         : count=   2, sum=        61, min=       2, average=       30.50, max=      59, maxTarget=root isShorterThan
+        PrefetchAllocateNode    : count=   2, sum=        59, min=       3, average=       29.50, max=      56, maxTarget=root isShorterThan
+        AddNode                 : count=   2, sum=        58, min=       1, average=       29.00, max=      57, maxTarget=root isShorterThan
+        MembarNode              : count=   2, sum=        58, min=       2, average=       29.00, max=      56, maxTarget=root isShorterThan
+        WordCastNode            : count=   2, sum=        57, min=       1, average=       28.50, max=      56, maxTarget=root isShorterThan
+        NullCheckNode           : count=   2, sum=        57, min=       1, average=       28.50, max=      56, maxTarget=root isShorterThan
+        FixedValueAnchorNode    : count=   2, sum=        55, min=       1, average=       27.50, max=      54, maxTarget=root isShorterThan
+        HotSpotCompressionNode  : count=   2, sum=        52, min=       5, average=       26.00, max=      47, maxTarget=root isShorterThan
+        IntegerEqualsNode       : count=   2, sum=        41, min=       1, average=       20.50, max=      40, maxTarget=root isShorterThan
+        VirtualInstanceNode     : count=   2, sum=        28, min=       2, average=       14.00, max=      26, maxTarget=root isShorterThan
+        IsNullNode              : count=   2, sum=        17, min=       0, average=        8.50, max=      17, maxTarget=root isShorterThan
+        FloatConvertNode        : count=   2, sum=        12, min=       0, average=        6.00, max=      12, maxTarget=root isShorterThan
+        VirtualArrayNode        : count=   2, sum=         8, min=       4, average=        4.00, max=       4, maxTarget=root isShorterThan
+        G1PreWriteBarrierNode   : count=   2, sum=         5, min=       0, average=        2.50, max=       5, maxTarget=root init
+        LoopExitNode            : count=   2, sum=         5, min=       0, average=        2.50, max=       5, maxTarget=root isShorterThan
+        G1PostWriteBarrierNode  : count=   2, sum=         5, min=       0, average=        2.50, max=       5, maxTarget=root init
+        DynamicDeoptimizeNode   : count=   2, sum=         5, min=       1, average=        2.50, max=       4, maxTarget=root isShorterThan
+        LoopEndNode             : count=   2, sum=         3, min=       0, average=        1.50, max=       3, maxTarget=root isShorterThan
+        ReturnNode              : count=   2, sum=         3, min=       1, average=        1.50, max=       2, maxTarget=root isShorterThan
+        VirtualBoxingNode       : count=   2, sum=         2, min=       0, average=        1.00, max=       2, maxTarget=root isShorterThan
+        CurrentJavaThreadNode   : count=   2, sum=         2, min=       1, average=        1.00, max=       1, maxTarget=root isShorterThan
+        ConditionalNode         : count=   2, sum=         2, min=       0, average=        1.00, max=       2, maxTarget=root isShorterThan
+        LoopBeginNode           : count=   2, sum=         2, min=       0, average=        1.00, max=       2, maxTarget=root isShorterThan
+        ParameterNode           : count=   2, sum=         2, min=       1, average=        1.00, max=       1, maxTarget=root isShorterThan
+        StartNode               : count=   2, sum=         2, min=       1, average=        1.00, max=       1, maxTarget=root isShorterThan
+        ObjectEqualsNode        : count=   2, sum=         2, min=       0, average=        1.00, max=       2, maxTarget=root isShorterThan
+        SubNode                 : count=   2, sum=         1, min=       0, average=        0.50, max=       1, maxTarget=root isShorterThan
+        ZeroExtendNode          : count=   2, sum=         1, min=       0, average=        0.50, max=       1, maxTarget=root isShorterThan
+        q                       : count=   2, sum=         1, min=       0, average=        0.50, max=       1, maxTarget=root init
+        IntegerLessThanNode     : count=   2, sum=         1, min=       0, average=        0.50, max=       1, maxTarget=root isShorterThan

@@ -1,0 +1,316 @@
+load benchmark: permute.lox
+Starting permute benchmark ...
+permute: innerIterations=10 runtime: 122247us
+permute: innerIterations=10 runtime: 1999us
+permute: innerIterations=10 runtime: 2007us
+permute: innerIterations=10 runtime: 2621us
+permute: innerIterations=10 runtime: 3326us
+permute: innerIterations=10 runtime: 2694us
+permute: iterations=6 average: 22482.333333333332us total: 134894us
+
+Total Runtime: 134894us
+[To redirect Truffle log output to a file use one of the following options:
+* '--log.file=<path>' if the option is passed using a guest language launcher.
+* '-Dpolyglot.log.file=<path>' if the option is passed using the host Java launcher.
+* Configure logging using the polyglot embedding API.]
+[engine] Truffle runtime statistics for engine 2
+    Compilations                : 8
+      Success                   : 5
+      Temporary Bailouts        : 1
+        jdk.graal.compiler.core.common.CancellationBailoutException: Compilation cancelled.: 1
+      Permanent Bailouts        : 0
+      Failed                    : 0
+      Interrupted               : 2
+    Invalidated                 : 0
+    Queues                      : 8
+    Dequeues                    : 1
+        local tags updated      : 1
+    Splits                      : 0
+    Compilation Accuracy        : 1.000000
+    Queue Accuracy              : 0.875000
+    Compilation Utilization     : 1.491666
+    Remaining Compilation Queue : 0
+    Time to queue               : count=   8, sum=    583323, min=    8291, average=    72915.40, max=  130798, maxTarget=root innerBenchmarkLoop
+    Time waiting in queue       : count=   8, sum=      2390, min=      15, average=      298.85, max=    1152, maxTarget=root permute
+  ---------------------------   :
+  AST node statistics           :
+    Truffle node count          : count=   6, sum=        12, min=       2, average=        2.00, max=       2, maxTarget=root swap
+    Truffle call count          : count=   6, sum=         6, min=       0, average=        1.00, max=       3, maxTarget=root permute
+      Indirect                  : count=   7, sum=         0, min=       0, average=        0.00, max=       0, maxTarget=root swap
+      Direct                    : count=   7, sum=         9, min=       0, average=        1.29, max=       3, maxTarget=root permute
+        Dispatched              : count=   7, sum=         6, min=       0, average=        0.86, max=       3, maxTarget=root permute
+        Inlined                 : count=   7, sum=         3, min=       0, average=        0.43, max=       3, maxTarget=root permute
+        ----------              :
+        Cloned                  : count=   7, sum=         0, min=       0, average=        0.00, max=       0, maxTarget=root swap
+        Not Cloned              : count=   7, sum=         0, min=       0, average=        0.00, max=       0, maxTarget=root swap
+    Truffle loops               : count=   7, sum=         0, min=       0, average=        0.00, max=       0, maxTarget=root swap
+  Truffle nodes                 :
+        LoxBytecodeRootNodeGen  : count=   7, sum=         9, min=       1, average=        1.29, max=       3, maxTarget=root permute
+        CachedBytecodeNode      : count=   7, sum=         9, min=       1, average=        1.29, max=       3, maxTarget=root permute
+  ---------------------------   :
+  Compilation Tier 1            :
+    Compilation Rate            :    107094.72 bytes/second
+      Truffle Tier Rate         :    207018.50 bytes/second
+      Graal Tier Rate           :   1264310.49 bytes/second
+      Installation Rate         :   5304709.32 bytes/second
+    Time for compilation (us)   : count=   5, sum=    175732, min=    3217, average=    35146.46, max=   66389, maxTarget=root permute
+      Truffle Tier (us)         : count=   4, sum=     90909, min=    2323, average=    22727.44, max=   47001, maxTarget=root swap
+      Graal Tier (us)           : count=   4, sum=     14885, min=     707, average=     3721.40, max=    7167, maxTarget=root permute
+      Code Installation (us)    : count=   4, sum=      3547, min=     186, average=      886.95, max=    1571, maxTarget=root permute
+    Graal node count            :
+      After Truffle Tier        : count=   5, sum=      2011, min=     147, average=      402.20, max=     658, maxTarget=root permute
+      After Graal Tier          : count=   4, sum=      3386, min=     189, average=      846.50, max=    1604, maxTarget=root permute
+    Graal compilation result    :
+      Code size                 : count=   4, sum=     18820, min=     668, average=     4705.00, max=    9464, maxTarget=root permute
+      Total frame size          : count=   4, sum=       736, min=      48, average=      184.00, max=     288, maxTarget=root permute
+      Exception handlers        : count=   4, sum=        14, min=       1, average=        3.50, max=       7, maxTarget=root permute
+      Infopoints                : count=   4, sum=       273, min=      10, average=       68.25, max=     136, maxTarget=root permute
+        CALL                    : count=   4, sum=       202, min=       8, average=       50.50, max=      97, maxTarget=root permute
+        IMPLICIT_EXCEPTION      : count=   4, sum=        67, min=       2, average=       16.75, max=      37, maxTarget=root permute
+        SAFEPOINT               : count=   4, sum=         4, min=       0, average=        1.00, max=       2, maxTarget=root permute
+    Marks                       : count=   4, sum=        46, min=       8, average=       11.50, max=      16, maxTarget=root permute
+    Data references             : count=   4, sum=       292, min=       7, average=       73.00, max=     178, maxTarget=root permute
+    Graal nodes after Truffle tier:
+        FrameState              : count=   5, sum=       321, min=      20, average=       64.20, max=     108, maxTarget=root permute
+        ConstantNode            : count=   5, sum=       230, min=      24, average=       46.00, max=      65, maxTarget=root permute
+        FixedGuardNode          : count=   5, sum=       138, min=       1, average=       27.60, max=      47, maxTarget=root permute
+        LoadFieldNode           : count=   5, sum=       126, min=      10, average=       25.20, max=      37, maxTarget=root permute
+        BeginNode               : count=   5, sum=       120, min=      13, average=       24.00, max=      34, maxTarget=root permute
+        VirtualObjectState      : count=   5, sum=       113, min=       6, average=       22.60, max=      41, maxTarget=root permute
+        PiNode                  : count=   5, sum=       111, min=       4, average=       22.20, max=      38, maxTarget=root permute
+        EndNode                 : count=   5, sum=        79, min=       9, average=       15.80, max=      22, maxTarget=root permute
+        IfNode                  : count=   5, sum=        52, min=       6, average=       10.40, max=      14, maxTarget=root permute
+        IsNullNode              : count=   5, sum=        45, min=       3, average=        9.00, max=      20, maxTarget=root permute
+        IntegerEqualsNode       : count=   5, sum=        42, min=       3, average=        8.40, max=      16, maxTarget=root permute
+        ValuePhiNode            : count=   5, sum=        42, min=       3, average=        8.40, max=      17, maxTarget=root permute
+        LoadIndexedNode         : count=   5, sum=        37, min=       2, average=        7.40, max=      13, maxTarget=root permute
+        AddNode                 : count=   5, sum=        33, min=       2, average=        6.60, max=      11, maxTarget=root permute
+        IntegerLessThanNode     : count=   5, sum=        31, min=       2, average=        6.20, max=      11, maxTarget=root benchmark
+        InstanceOfNode          : count=   5, sum=        30, min=       0, average=        6.00, max=      11, maxTarget=root permute
+        MergeNode               : count=   5, sum=        30, min=       3, average=        6.00, max=       9, maxTarget=root permute
+        StoreFieldNode          : count=   5, sum=        28, min=       2, average=        5.60, max=       9, maxTarget=root benchmark
+        ObjectEqualsNode        : count=   5, sum=        27, min=       0, average=        5.40, max=      10, maxTarget=root permute
+        VirtualArrayNode        : count=   5, sum=        25, min=       4, average=        5.00, max=       7, maxTarget=root permute
+        MaterializedObjectState : count=   5, sum=        25, min=       0, average=        5.00, max=      13, maxTarget=root permute
+        VirtualInstanceNode     : count=   5, sum=        23, min=       2, average=        4.60, max=       8, maxTarget=root permute
+        StateSplitProxyNode     : count=   5, sum=        22, min=       2, average=        4.40, max=       8, maxTarget=root permute
+        AllocatedObjectNode     : count=   5, sum=        20, min=       0, average=        4.00, max=       9, maxTarget=root permute
+        UnboxNode               : count=   5, sum=        19, min=       0, average=        3.80, max=       8, maxTarget=root permute
+        ExceptionObjectNode     : count=   5, sum=        18, min=       1, average=        3.60, max=       7, maxTarget=root permute
+        ConditionalNode         : count=   5, sum=        18, min=       0, average=        3.60, max=       7, maxTarget=root permute
+        DeoptimizeNode          : count=   5, sum=        18, min=       1, average=        3.60, max=       7, maxTarget=root permute
+        InvokeWithExceptionNode : count=   5, sum=        18, min=       1, average=        3.60, max=       7, maxTarget=root permute
+        MethodCallTargetNode    : count=   5, sum=        18, min=       1, average=        3.60, max=       7, maxTarget=root permute
+        CommitAllocationNode    : count=   5, sum=        16, min=       0, average=        3.20, max=       7, maxTarget=root permute
+        ValueProxyNode          : count=   5, sum=        15, min=       0, average=        3.00, max=       5, maxTarget=root permute
+        AllocatingBoxNode       : count=   5, sum=         9, min=       0, average=        1.80, max=       4, maxTarget=root permute
+        VirtualBoxingNode       : count=   5, sum=         9, min=       0, average=        1.80, max=       3, maxTarget=root permute
+        FloatConvertNode        : count=   5, sum=         9, min=       0, average=        1.80, max=       8, maxTarget=root swap
+        NarrowNode              : count=   5, sum=         8, min=       0, average=        1.60, max=       4, maxTarget=root innerBenchmarkLoop
+        ArrayLengthNode         : count=   5, sum=         7, min=       0, average=        1.40, max=       3, maxTarget=root permute
+        StoreIndexedNode        : count=   5, sum=         6, min=       0, average=        1.20, max=       3, maxTarget=root benchmark
+        ZeroExtendNode          : count=   5, sum=         6, min=       0, average=        1.20, max=       3, maxTarget=root innerBenchmarkLoop
+        LoopEndNode             : count=   5, sum=         6, min=       0, average=        1.20, max=       2, maxTarget=root permute
+        RightShiftNode          : count=   5, sum=         5, min=       1, average=        1.00, max=       1, maxTarget=root swap
+        MulNode                 : count=   5, sum=         5, min=       1, average=        1.00, max=       1, maxTarget=root swap
+        ParameterNode           : count=   5, sum=         5, min=       1, average=        1.00, max=       1, maxTarget=root swap
+        StartNode               : count=   5, sum=         5, min=       1, average=        1.00, max=       1, maxTarget=root swap
+        IntegerBelowNode        : count=   5, sum=         5, min=       0, average=        1.00, max=       4, maxTarget=root swap
+        ReturnNode              : count=   5, sum=         5, min=       1, average=        1.00, max=       1, maxTarget=root swap
+        PiArrayNode             : count=   5, sum=         5, min=       1, average=        1.00, max=       1, maxTarget=root swap
+        FloatEqualsNode         : count=   5, sum=         4, min=       0, average=        0.80, max=       2, maxTarget=root permute
+        ReinterpretNode         : count=   5, sum=         4, min=       0, average=        0.80, max=       2, maxTarget=root permute
+        FloatLessThanNode       : count=   5, sum=         3, min=       0, average=        0.60, max=       1, maxTarget=root permute
+        LoopExitNode            : count=   5, sum=         3, min=       0, average=        0.60, max=       1, maxTarget=root permute
+        LoopBeginNode           : count=   5, sum=         3, min=       0, average=        0.60, max=       1, maxTarget=root permute
+        PureBoxNode             : count=   5, sum=         3, min=       0, average=        0.60, max=       1, maxTarget=root permute
+        UnsignedRightShiftNode  : count=   5, sum=         1, min=       0, average=        0.20, max=       1, maxTarget=root benchmark
+        UnreachableControlSinkNode: count=   5, sum=         1, min=       0, average=        0.20, max=       1, maxTarget=root benchmark
+        GetClassNode            : count=   5, sum=         1, min=       0, average=        0.20, max=       1, maxTarget=root benchmark
+        UnreachableBeginNode    : count=   5, sum=         1, min=       0, average=        0.20, max=       1, maxTarget=root benchmark
+        a                       : count=   5, sum=         1, min=       0, average=        0.20, max=       1, maxTarget=root benchmark
+        TrustedBoxedValue       : count=   5, sum=         1, min=       0, average=        0.20, max=       1, maxTarget=root innerBenchmarkLoop
+    Graal nodes after Graal tier:
+        AArch64AddressNode      : count=   5, sum=       616, min=      17, average=      123.20, max=     235, maxTarget=root permute
+        BeginNode               : count=   5, sum=       559, min=      20, average=      111.80, max=     171, maxTarget=root permute
+        ConstantNode            : count=   5, sum=       321, min=      29, average=       64.20, max=      89, maxTarget=root benchmark
+        ReadNode                : count=   5, sum=       309, min=      14, average=       61.80, max=     105, maxTarget=root permute
+        FrameState              : count=   5, sum=       296, min=      12, average=       59.20, max=     106, maxTarget=root benchmark
+        WriteNode               : count=   5, sum=       270, min=       4, average=       54.00, max=     117, maxTarget=root permute
+        IfNode                  : count=   5, sum=       263, min=       9, average=       52.60, max=      79, maxTarget=root permute
+        EndNode                 : count=   5, sum=       241, min=      15, average=       48.20, max=      79, maxTarget=root benchmark
+        PiNode                  : count=   5, sum=       198, min=       5, average=       39.60, max=      70, maxTarget=root permute
+        HotSpotCompressionNode  : count=   5, sum=       158, min=       5, average=       31.60, max=      50, maxTarget=root permute
+        DeoptimizeNode          : count=   5, sum=       136, min=       1, average=       27.20, max=      47, maxTarget=root permute
+        MergeNode               : count=   5, sum=        99, min=       6, average=       19.80, max=      31, maxTarget=root benchmark
+        VirtualObjectState      : count=   5, sum=        95, min=       6, average=       19.00, max=      31, maxTarget=root permute
+        NullCheckNode           : count=   5, sum=        90, min=       2, average=       18.00, max=      37, maxTarget=root permute
+        ValuePhiNode            : count=   5, sum=        83, min=       5, average=       16.60, max=      29, maxTarget=root permute
+        AddNode                 : count=   5, sum=        81, min=       2, average=       16.20, max=      28, maxTarget=root permute
+        MemoryAnchorNode        : count=   5, sum=        78, min=       2, average=       15.60, max=      32, maxTarget=root permute
+        IntegerEqualsNode       : count=   5, sum=        71, min=       6, average=       14.20, max=      24, maxTarget=root permute
+        FloatingReadNode        : count=   5, sum=        70, min=       0, average=       14.00, max=      26, maxTarget=root benchmark
+        PointerEqualsNode       : count=   5, sum=        58, min=       0, average=       11.60, max=      18, maxTarget=root benchmark
+        IntegerBelowNode        : count=   5, sum=        57, min=       0, average=       11.40, max=      20, maxTarget=root permute
+        ReadRegisterNode        : count=   5, sum=        48, min=       1, average=        9.60, max=      21, maxTarget=root permute
+        ForeignCallNode         : count=   5, sum=        47, min=       1, average=        9.40, max=      18, maxTarget=root permute
+        PrefetchAllocateNode    : count=   5, sum=        40, min=       0, average=        8.00, max=      20, maxTarget=root permute
+        IntegerLessThanNode     : count=   5, sum=        37, min=       2, average=        7.40, max=      14, maxTarget=root benchmark
+        WordCastNode            : count=   5, sum=        30, min=       0, average=        6.00, max=      14, maxTarget=root permute
+        LeftShiftNode           : count=   5, sum=        29, min=       0, average=        5.80, max=      13, maxTarget=root benchmark
+        FixedValueAnchorNode    : count=   5, sum=        29, min=       0, average=        5.80, max=      13, maxTarget=root permute
+        ZeroExtendNode          : count=   5, sum=        26, min=       1, average=        5.20, max=       7, maxTarget=root swap
+        VirtualArrayNode        : count=   5, sum=        25, min=       4, average=        5.00, max=       7, maxTarget=root permute
+        MembarNode              : count=   5, sum=        25, min=       0, average=        5.00, max=      11, maxTarget=root permute
+        MaterializedObjectState : count=   5, sum=        24, min=       0, average=        4.80, max=      12, maxTarget=root permute
+        IsNullNode              : count=   5, sum=        22, min=       2, average=        4.40, max=       8, maxTarget=root swap
+        VirtualInstanceNode     : count=   5, sum=        22, min=       2, average=        4.40, max=       7, maxTarget=root permute
+        HotSpotDirectCallTargetNode: count=   5, sum=        19, min=       1, average=        3.80, max=       7, maxTarget=root permute
+        InvokeWithExceptionNode : count=   5, sum=        18, min=       1, average=        3.60, max=       7, maxTarget=root permute
+        ObjectEqualsNode        : count=   5, sum=        17, min=       0, average=        3.40, max=       7, maxTarget=root permute
+        ConditionalNode         : count=   5, sum=        16, min=       0, average=        3.20, max=       6, maxTarget=root permute
+        SignExtendNode          : count=   5, sum=        12, min=       0, average=        2.40, max=       6, maxTarget=root benchmark
+        PiArrayNode             : count=   5, sum=        10, min=       1, average=        2.00, max=       4, maxTarget=root permute
+        G1PostWriteBarrierNode  : count=   5, sum=         9, min=       0, average=        1.80, max=       5, maxTarget=root benchmark
+        FloatConvertNode        : count=   5, sum=         9, min=       0, average=        1.80, max=       8, maxTarget=root swap
+        G1PreWriteBarrierNode   : count=   5, sum=         8, min=       0, average=        1.60, max=       5, maxTarget=root benchmark
+        UnsignedRightShiftNode  : count=   5, sum=         7, min=       0, average=        1.40, max=       4, maxTarget=root benchmark
+        VirtualBoxingNode       : count=   5, sum=         7, min=       0, average=        1.40, max=       3, maxTarget=root benchmark
+        SafepointNode           : count=   5, sum=         6, min=       0, average=        1.20, max=       2, maxTarget=root permute
+        AndNode                 : count=   5, sum=         6, min=       0, average=        1.20, max=       3, maxTarget=root benchmark
+        SubNode                 : count=   5, sum=         6, min=       0, average=        1.20, max=       3, maxTarget=root benchmark
+        NegateNode              : count=   5, sum=         6, min=       0, average=        1.20, max=       3, maxTarget=root benchmark
+        OrNode                  : count=   5, sum=         6, min=       0, average=        1.20, max=       3, maxTarget=root benchmark
+        BitCountNode            : count=   5, sum=         6, min=       0, average=        1.20, max=       3, maxTarget=root benchmark
+        IntegerTestNode         : count=   5, sum=         6, min=       0, average=        1.20, max=       3, maxTarget=root benchmark
+        PointerCastNode         : count=   5, sum=         6, min=       0, average=        1.20, max=       3, maxTarget=root benchmark
+        LoopEndNode             : count=   5, sum=         6, min=       0, average=        1.20, max=       2, maxTarget=root permute
+        RightShiftNode          : count=   5, sum=         5, min=       1, average=        1.00, max=       1, maxTarget=root swap
+        MulNode                 : count=   5, sum=         5, min=       1, average=        1.00, max=       1, maxTarget=root swap
+        AArch64PointerAddNode   : count=   5, sum=         5, min=       0, average=        1.00, max=       4, maxTarget=root swap
+        CurrentJavaThreadNode   : count=   5, sum=         5, min=       1, average=        1.00, max=       1, maxTarget=root swap
+        ParameterNode           : count=   5, sum=         5, min=       1, average=        1.00, max=       1, maxTarget=root swap
+        StartNode               : count=   5, sum=         5, min=       1, average=        1.00, max=       1, maxTarget=root swap
+        ReturnNode              : count=   5, sum=         5, min=       1, average=        1.00, max=       1, maxTarget=root swap
+        FloatEqualsNode         : count=   5, sum=         4, min=       0, average=        0.80, max=       2, maxTarget=root permute
+        ReinterpretNode         : count=   5, sum=         4, min=       0, average=        0.80, max=       2, maxTarget=root permute
+        FloatLessThanNode       : count=   5, sum=         3, min=       0, average=        0.60, max=       1, maxTarget=root permute
+        LoopExitNode            : count=   5, sum=         3, min=       0, average=        0.60, max=       1, maxTarget=root permute
+        LoopBeginNode           : count=   5, sum=         3, min=       0, average=        0.60, max=       1, maxTarget=root permute
+        InvokeNode              : count=   5, sum=         1, min=       0, average=        0.20, max=       1, maxTarget=root benchmark
+  ---------------------------   :
+  Compilation Tier 2            :
+    Compilation Rate            :     64156.26 bytes/second
+      Truffle Tier Rate         :     74156.58 bytes/second
+      Graal Tier Rate           :    569845.20 bytes/second
+      Installation Rate         :   2881015.41 bytes/second
+    Time for compilation (us)   : count=   2, sum=     60103, min=   24216, average=    30051.63, max=   35887, maxTarget=root permute
+      Truffle Tier (us)         : count=   2, sum=     51998, min=   20849, average=    25999.04, max=   31148, maxTarget=root permute
+      Graal Tier (us)           : count=   2, sum=      6766, min=    2433, average=     3383.38, max=    4333, maxTarget=root permute
+      Code Installation (us)    : count=   2, sum=      1338, min=     405, average=      669.21, max=     933, maxTarget=root swap
+    Graal node count            :
+      After Truffle Tier        : count=   2, sum=       432, min=     198, average=      216.00, max=     234, maxTarget=root permute
+      After Graal Tier          : count=   2, sum=       739, min=     260, average=      369.50, max=     479, maxTarget=root permute
+    Graal compilation result    :
+      Code size                 : count=   2, sum=      3856, min=    1628, average=     1928.00, max=    2228, maxTarget=root permute
+      Total frame size          : count=   2, sum=       160, min=      48, average=       80.00, max=     112, maxTarget=root permute
+      Exception handlers        : count=   2, sum=         1, min=       0, average=        0.50, max=       1, maxTarget=root permute
+      Infopoints                : count=   2, sum=        71, min=      32, average=       35.50, max=      39, maxTarget=root permute
+        CALL                    : count=   2, sum=        51, min=      22, average=       25.50, max=      29, maxTarget=root permute
+        IMPLICIT_EXCEPTION      : count=   2, sum=        20, min=      10, average=       10.00, max=      10, maxTarget=root swap
+    Marks                       : count=   2, sum=        15, min=       7, average=        7.50, max=       8, maxTarget=root permute
+    Data references             : count=   2, sum=        33, min=       8, average=       16.50, max=      25, maxTarget=root permute
+    Graal nodes after Truffle tier:
+        ConstantNode            : count=   2, sum=        68, min=      23, average=       34.00, max=      45, maxTarget=root permute
+        FrameState              : count=   2, sum=        53, min=      17, average=       26.50, max=      36, maxTarget=root permute
+        FixedGuardNode          : count=   2, sum=        52, min=      14, average=       26.00, max=      38, maxTarget=root swap
+        PiNode                  : count=   2, sum=        43, min=      17, average=       21.50, max=      26, maxTarget=root swap
+        LoadFieldNode           : count=   2, sum=        42, min=      13, average=       21.00, max=      29, maxTarget=root swap
+        VirtualObjectState      : count=   2, sum=        24, min=       7, average=       12.00, max=      17, maxTarget=root permute
+        LoadIndexedNode         : count=   2, sum=        13, min=       4, average=        6.50, max=       9, maxTarget=root swap
+        ObjectEqualsNode        : count=   2, sum=        12, min=       4, average=        6.00, max=       8, maxTarget=root swap
+        VirtualArrayNode        : count=   2, sum=         9, min=       4, average=        4.50, max=       5, maxTarget=root permute
+        InstanceOfNode          : count=   2, sum=         9, min=       2, average=        4.50, max=       7, maxTarget=root swap
+        FloatConvertNode        : count=   2, sum=         8, min=       0, average=        4.00, max=       8, maxTarget=root swap
+        IsNullNode              : count=   2, sum=         8, min=       4, average=        4.00, max=       4, maxTarget=root swap
+        BeginNode               : count=   2, sum=         7, min=       0, average=        3.50, max=       7, maxTarget=root permute
+        ValuePhiNode            : count=   2, sum=         6, min=       0, average=        3.00, max=       6, maxTarget=root permute
+        VirtualInstanceNode     : count=   2, sum=         6, min=       2, average=        3.00, max=       4, maxTarget=root permute
+        IntegerEqualsNode       : count=   2, sum=         5, min=       0, average=        2.50, max=       5, maxTarget=root permute
+        ConditionalNode         : count=   2, sum=         5, min=       0, average=        2.50, max=       5, maxTarget=root permute
+        UnboxNode               : count=   2, sum=         4, min=       0, average=        2.00, max=       4, maxTarget=root permute
+        IntegerBelowNode        : count=   2, sum=         4, min=       0, average=        2.00, max=       4, maxTarget=root swap
+        EndNode                 : count=   2, sum=         4, min=       0, average=        2.00, max=       4, maxTarget=root permute
+        IntegerLessThanNode     : count=   2, sum=         4, min=       0, average=        2.00, max=       4, maxTarget=root swap
+        StoreIndexedNode        : count=   2, sum=         3, min=       1, average=        1.50, max=       2, maxTarget=root swap
+        IfNode                  : count=   2, sum=         3, min=       0, average=        1.50, max=       3, maxTarget=root permute
+        AllocatedObjectNode     : count=   2, sum=         3, min=       0, average=        1.50, max=       3, maxTarget=root permute
+        NarrowNode              : count=   2, sum=         3, min=       0, average=        1.50, max=       3, maxTarget=root permute
+        MaterializedObjectState : count=   2, sum=         3, min=       0, average=        1.50, max=       3, maxTarget=root permute
+        FloatEqualsNode         : count=   2, sum=         2, min=       0, average=        1.00, max=       2, maxTarget=root permute
+        MergeNode               : count=   2, sum=         2, min=       0, average=        1.00, max=       2, maxTarget=root permute
+        ParameterNode           : count=   2, sum=         2, min=       1, average=        1.00, max=       1, maxTarget=root swap
+        StateSplitProxyNode     : count=   2, sum=         2, min=       0, average=        1.00, max=       2, maxTarget=root permute
+        DeoptimizeNode          : count=   2, sum=         2, min=       0, average=        1.00, max=       2, maxTarget=root permute
+        StartNode               : count=   2, sum=         2, min=       1, average=        1.00, max=       1, maxTarget=root swap
+        StoreFieldNode          : count=   2, sum=         2, min=       0, average=        1.00, max=       2, maxTarget=root swap
+        ReinterpretNode         : count=   2, sum=         2, min=       0, average=        1.00, max=       2, maxTarget=root permute
+        ZeroExtendNode          : count=   2, sum=         2, min=       0, average=        1.00, max=       2, maxTarget=root permute
+        ReturnNode              : count=   2, sum=         2, min=       1, average=        1.00, max=       1, maxTarget=root swap
+        PiArrayNode             : count=   2, sum=         2, min=       1, average=        1.00, max=       1, maxTarget=root swap
+        CommitAllocationNode    : count=   2, sum=         2, min=       0, average=        1.00, max=       2, maxTarget=root permute
+        FloatLessThanNode       : count=   2, sum=         1, min=       0, average=        0.50, max=       1, maxTarget=root permute
+        ExceptionObjectNode     : count=   2, sum=         1, min=       0, average=        0.50, max=       1, maxTarget=root permute
+        AllocatingBoxNode       : count=   2, sum=         1, min=       0, average=        0.50, max=       1, maxTarget=root permute
+        AddNode                 : count=   2, sum=         1, min=       0, average=        0.50, max=       1, maxTarget=root permute
+        PureBoxNode             : count=   2, sum=         1, min=       0, average=        0.50, max=       1, maxTarget=root permute
+        MethodCallTargetNode    : count=   2, sum=         1, min=       0, average=        0.50, max=       1, maxTarget=root permute
+        InvokeWithExceptionNode : count=   2, sum=         1, min=       0, average=        0.50, max=       1, maxTarget=root permute
+    Graal nodes after Graal tier:
+        AArch64AddressNode      : count=   2, sum=       104, min=      33, average=       52.00, max=      71, maxTarget=root permute
+        ConstantNode            : count=   2, sum=        92, min=      32, average=       46.00, max=      60, maxTarget=root permute
+        BeginNode               : count=   2, sum=        80, min=      36, average=       40.00, max=      44, maxTarget=root permute
+        ReadNode                : count=   2, sum=        65, min=      29, average=       32.50, max=      36, maxTarget=root permute
+        EndNode                 : count=   2, sum=        47, min=      19, average=       23.50, max=      28, maxTarget=root permute
+        WriteNode               : count=   2, sum=        40, min=       4, average=       20.00, max=      36, maxTarget=root permute
+        IfNode                  : count=   2, sum=        39, min=      18, average=       19.50, max=      21, maxTarget=root permute
+        FrameState              : count=   2, sum=        39, min=      15, average=       19.50, max=      24, maxTarget=root permute
+        HotSpotCompressionNode  : count=   2, sum=        29, min=      14, average=       14.50, max=      15, maxTarget=root swap
+        VirtualObjectState      : count=   2, sum=        21, min=       7, average=       10.50, max=      14, maxTarget=root permute
+        ValuePhiNode            : count=   2, sum=        18, min=       4, average=        9.00, max=      14, maxTarget=root permute
+        PointerEqualsNode       : count=   2, sum=        16, min=       8, average=        8.00, max=       8, maxTarget=root swap
+        MergeNode               : count=   2, sum=        15, min=       3, average=        7.50, max=      12, maxTarget=root permute
+        IntegerBelowNode        : count=   2, sum=        11, min=       5, average=        5.50, max=       6, maxTarget=root swap
+        MemoryAnchorNode        : count=   2, sum=        10, min=       1, average=        5.00, max=       9, maxTarget=root permute
+        VirtualArrayNode        : count=   2, sum=         9, min=       4, average=        4.50, max=       5, maxTarget=root permute
+        PrefetchAllocateNode    : count=   2, sum=         7, min=       0, average=        3.50, max=       7, maxTarget=root permute
+        AddNode                 : count=   2, sum=         7, min=       0, average=        3.50, max=       7, maxTarget=root permute
+        WordCastNode            : count=   2, sum=         6, min=       0, average=        3.00, max=       6, maxTarget=root permute
+        IntegerEqualsNode       : count=   2, sum=         6, min=       1, average=        3.00, max=       5, maxTarget=root permute
+        ReadRegisterNode        : count=   2, sum=         6, min=       0, average=        3.00, max=       6, maxTarget=root permute
+        ForeignCallNode         : count=   2, sum=         6, min=       1, average=        3.00, max=       5, maxTarget=root permute
+        DeoptimizeNode          : count=   2, sum=         5, min=       0, average=        2.50, max=       5, maxTarget=root permute
+        VirtualInstanceNode     : count=   2, sum=         5, min=       2, average=        2.50, max=       3, maxTarget=root permute
+        FixedValueAnchorNode    : count=   2, sum=         4, min=       0, average=        2.00, max=       4, maxTarget=root permute
+        NullCheckNode           : count=   2, sum=         4, min=       0, average=        2.00, max=       4, maxTarget=root permute
+        MembarNode              : count=   2, sum=         4, min=       0, average=        2.00, max=       4, maxTarget=root permute
+        G1PreWriteBarrierNode   : count=   2, sum=         3, min=       1, average=        1.50, max=       2, maxTarget=root swap
+        AArch64PointerAddNode   : count=   2, sum=         3, min=       0, average=        1.50, max=       3, maxTarget=root swap
+        ConditionalNode         : count=   2, sum=         3, min=       0, average=        1.50, max=       3, maxTarget=root permute
+        DynamicDeoptimizeNode   : count=   2, sum=         3, min=       1, average=        1.50, max=       2, maxTarget=root swap
+        G1PostWriteBarrierNode  : count=   2, sum=         3, min=       1, average=        1.50, max=       2, maxTarget=root swap
+        ZeroExtendNode          : count=   2, sum=         3, min=       1, average=        1.50, max=       2, maxTarget=root swap
+        IntegerLessThanNode     : count=   2, sum=         3, min=       0, average=        1.50, max=       3, maxTarget=root swap
+        FloatEqualsNode         : count=   2, sum=         2, min=       0, average=        1.00, max=       2, maxTarget=root permute
+        CurrentJavaThreadNode   : count=   2, sum=         2, min=       1, average=        1.00, max=       1, maxTarget=root swap
+        ParameterNode           : count=   2, sum=         2, min=       1, average=        1.00, max=       1, maxTarget=root swap
+        StartNode               : count=   2, sum=         2, min=       1, average=        1.00, max=       1, maxTarget=root swap
+        ReinterpretNode         : count=   2, sum=         2, min=       0, average=        1.00, max=       2, maxTarget=root permute
+        LeftShiftNode           : count=   2, sum=         2, min=       0, average=        1.00, max=       2, maxTarget=root swap
+        ReturnNode              : count=   2, sum=         2, min=       1, average=        1.00, max=       1, maxTarget=root swap
+        FloatConvertNode        : count=   2, sum=         2, min=       0, average=        1.00, max=       2, maxTarget=root swap
+        IsNullNode              : count=   2, sum=         2, min=       0, average=        1.00, max=       2, maxTarget=root permute
+        MaterializedObjectState : count=   2, sum=         2, min=       0, average=        1.00, max=       2, maxTarget=root permute
+        FloatLessThanNode       : count=   2, sum=         1, min=       0, average=        0.50, max=       1, maxTarget=root permute
+        HotSpotDirectCallTargetNode: count=   2, sum=         1, min=       0, average=        0.50, max=       1, maxTarget=root permute
+        InvokeWithExceptionNode : count=   2, sum=         1, min=       0, average=        0.50, max=       1, maxTarget=root permute

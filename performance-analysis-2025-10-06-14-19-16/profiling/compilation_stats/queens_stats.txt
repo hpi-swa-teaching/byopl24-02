@@ -1,0 +1,322 @@
+load benchmark: queens.lox
+Starting queens benchmark ...
+queens: innerIterations=10 runtime: 321972us
+queens: innerIterations=10 runtime: 114456us
+queens: innerIterations=10 runtime: 29291us
+queens: innerIterations=10 runtime: 21075us
+queens: innerIterations=10 runtime: 18423us
+queens: innerIterations=10 runtime: 19561us
+queens: innerIterations=10 runtime: 22679us
+queens: innerIterations=10 runtime: 18146us
+queens: iterations=8 average: 70700.375us total: 565603us
+
+Total Runtime: 565603us
+[To redirect Truffle log output to a file use one of the following options:
+* '--log.file=<path>' if the option is passed using a guest language launcher.
+* '-Dpolyglot.log.file=<path>' if the option is passed using the host Java launcher.
+* Configure logging using the polyglot embedding API.]
+[engine] Truffle runtime statistics for engine 2
+    Compilations                : 51
+      Success                   : 49
+      Temporary Bailouts        : 0
+      Permanent Bailouts        : 0
+      Failed                    : 0
+      Interrupted               : 2
+    Invalidated                 : 0
+    Queues                      : 51
+    Dequeues                    : 0
+    Splits                      : 0
+    Compilation Accuracy        : 1.000000
+    Queue Accuracy              : 1.000000
+    Compilation Utilization     : 1.292061
+    Remaining Compilation Queue : 0
+    Time to queue               : count=  51, sum=  14152658, min=    2890, average=   277503.11, max=  549612, maxTarget=root getRowColumn
+    Time waiting in queue       : count=  47, sum=    191319, min=       1, average=     4070.63, max=   32827, maxTarget=root benchmark
+  ---------------------------   :
+  AST node statistics           :
+    Truffle node count          : count=  51, sum=       196, min=       2, average=        3.84, max=      50, maxTarget=root queens
+    Truffle call count          : count=  51, sum=        57, min=       0, average=        1.12, max=      25, maxTarget=root queens
+      Indirect                  : count=  51, sum=         0, min=       0, average=        0.00, max=       0, maxTarget=root setRowColumn
+      Direct                    : count=  51, sum=        57, min=       0, average=        1.12, max=      25, maxTarget=root queens
+        Dispatched              : count=  51, sum=        10, min=       0, average=        0.20, max=       4, maxTarget=root placeQueen
+        Inlined                 : count=  51, sum=        47, min=       0, average=        0.92, max=      24, maxTarget=root queens
+        ----------              :
+        Cloned                  : count=  51, sum=         0, min=       0, average=        0.00, max=       0, maxTarget=root setRowColumn
+        Not Cloned              : count=  51, sum=         0, min=       0, average=        0.00, max=       0, maxTarget=root setRowColumn
+    Truffle loops               : count=  51, sum=         0, min=       0, average=        0.00, max=       0, maxTarget=root setRowColumn
+  Truffle nodes                 :
+        LoxBytecodeRootNodeGen  : count=  51, sum=        98, min=       1, average=        1.92, max=      25, maxTarget=root queens
+        CachedBytecodeNode      : count=  51, sum=        98, min=       1, average=        1.92, max=      25, maxTarget=root queens
+  ---------------------------   :
+  Compilation Tier 1            :
+    Compilation Rate            :    338437.43 bytes/second
+      Truffle Tier Rate         :    474593.61 bytes/second
+      Graal Tier Rate           :   1502468.30 bytes/second
+      Installation Rate         :   5490928.10 bytes/second
+    Time for compilation (us)   : count=  47, sum=    707971, min=    2343, average=    15063.22, max=   76463, maxTarget=root placeQueen
+      Truffle Tier (us)         : count=  47, sum=    504861, min=    1792, average=    10741.73, max=   65632, maxTarget=root placeQueen
+      Graal Tier (us)           : count=  47, sum=    159473, min=     417, average=     3393.05, max=   13109, maxTarget=root queens
+      Code Installation (us)    : count=  47, sum=     43636, min=     133, average=      928.43, max=    6336, maxTarget=root getRowColumn
+    Graal node count            :
+      After Truffle Tier        : count=  47, sum=     24961, min=      94, average=      531.09, max=     933, maxTarget=root queens
+      After Graal Tier          : count=  47, sum=     50479, min=     119, average=     1074.02, max=    2682, maxTarget=root queens
+    Graal compilation result    :
+      Code size                 : count=  47, sum=    239604, min=     560, average=     5097.96, max=   14540, maxTarget=root queens
+      Total frame size          : count=  47, sum=      8752, min=      48, average=      186.21, max=     448, maxTarget=root queens
+      Exception handlers        : count=  47, sum=       436, min=       1, average=        9.28, max=      10, maxTarget=root getRowColumn
+      Infopoints                : count=  47, sum=      3520, min=       8, average=       74.89, max=     192, maxTarget=root queens
+        CALL                    : count=  47, sum=      2896, min=       8, average=       61.62, max=     146, maxTarget=root queens
+        IMPLICIT_EXCEPTION      : count=  47, sum=       614, min=       0, average=       13.06, max=      42, maxTarget=root queens
+        SAFEPOINT               : count=  47, sum=        10, min=       0, average=        0.21, max=       4, maxTarget=root queens
+    Marks                       : count=  47, sum=       779, min=       8, average=       16.57, max=      22, maxTarget=root queens
+    Data references             : count=  47, sum=      2668, min=       6, average=       56.77, max=     211, maxTarget=root placeQueen
+    Graal nodes after Truffle tier:
+        FrameState              : count=  47, sum=      4179, min=      12, average=       88.91, max=     194, maxTarget=root queens
+        ConstantNode            : count=  47, sum=      2308, min=       9, average=       49.11, max=      88, maxTarget=root queens
+        BeginNode               : count=  47, sum=      1987, min=      13, average=       42.28, max=      65, maxTarget=root queens
+        FixedGuardNode          : count=  47, sum=      1845, min=       0, average=       39.26, max=      59, maxTarget=root placeQueen
+        PiNode                  : count=  47, sum=      1445, min=       2, average=       30.74, max=      44, maxTarget=root placeQueen
+        EndNode                 : count=  47, sum=      1390, min=       9, average=       29.57, max=      43, maxTarget=root queens
+        LoadFieldNode           : count=  47, sum=      1218, min=       5, average=       25.91, max=      44, maxTarget=root placeQueen
+        InstanceOfNode          : count=  47, sum=      1057, min=       0, average=       22.49, max=      25, maxTarget=root getRowColumn
+        VirtualObjectState      : count=  47, sum=      1044, min=       0, average=       22.21, max=      64, maxTarget=root placeQueen
+        ValuePhiNode            : count=  47, sum=       847, min=       3, average=       18.02, max=      24, maxTarget=root placeQueen
+        IfNode                  : count=  47, sum=       777, min=       6, average=       16.53, max=      28, maxTarget=root queens
+        UnboxNode               : count=  47, sum=       731, min=       1, average=       15.55, max=      17, maxTarget=root getRowColumn
+        MergeNode               : count=  47, sum=       618, min=       3, average=       13.15, max=      17, maxTarget=root queens
+        ExceptionObjectNode     : count=  47, sum=       436, min=       1, average=        9.28, max=      10, maxTarget=root getRowColumn
+        DeoptimizeNode          : count=  47, sum=       436, min=       1, average=        9.28, max=      10, maxTarget=root getRowColumn
+        InvokeWithExceptionNode : count=  47, sum=       436, min=       1, average=        9.28, max=      10, maxTarget=root getRowColumn
+        MethodCallTargetNode    : count=  47, sum=       436, min=       1, average=        9.28, max=      10, maxTarget=root getRowColumn
+        LoadIndexedNode         : count=  47, sum=       408, min=       2, average=        8.68, max=      16, maxTarget=root placeQueen
+        IsNullNode              : count=  47, sum=       345, min=       1, average=        7.34, max=      22, maxTarget=root placeQueen
+        IntegerEqualsNode       : count=  47, sum=       305, min=       4, average=        6.49, max=      21, maxTarget=root placeQueen
+        ObjectEqualsNode        : count=  47, sum=       277, min=       0, average=        5.89, max=      12, maxTarget=root placeQueen
+        IntegerLessThanNode     : count=  47, sum=       263, min=       2, average=        5.60, max=      28, maxTarget=root queens
+        AddNode                 : count=  47, sum=       216, min=       2, average=        4.60, max=      18, maxTarget=root queens
+        VirtualArrayNode        : count=  47, sum=       190, min=       0, average=        4.04, max=       8, maxTarget=root placeQueen
+        NarrowNode              : count=  47, sum=       186, min=       2, average=        3.96, max=       7, maxTarget=root placeQueen
+        FloatConvertNode        : count=  47, sum=       173, min=       0, average=        3.68, max=       4, maxTarget=root setRowColumn
+        ZeroExtendNode          : count=  47, sum=       136, min=       1, average=        2.89, max=       4, maxTarget=root placeQueen
+        PureBoxNode             : count=  47, sum=       135, min=       1, average=        2.87, max=       3, maxTarget=root setRowColumn
+        StoreFieldNode          : count=  47, sum=       133, min=       2, average=        2.83, max=      22, maxTarget=root queens
+        IntegerBelowNode        : count=  47, sum=       131, min=       0, average=        2.79, max=       4, maxTarget=root queens
+        VirtualInstanceNode     : count=  47, sum=       113, min=       0, average=        2.40, max=      10, maxTarget=root queens
+        StateSplitProxyNode     : count=  47, sum=       110, min=       2, average=        2.34, max=      10, maxTarget=root placeQueen
+        ConditionalNode         : count=  47, sum=        70, min=       1, average=        1.49, max=       9, maxTarget=root placeQueen
+        MulNode                 : count=  47, sum=        48, min=       1, average=        1.02, max=       2, maxTarget=root queens
+        RightShiftNode          : count=  47, sum=        47, min=       1, average=        1.00, max=       1, maxTarget=root setRowColumn
+        ParameterNode           : count=  47, sum=        47, min=       1, average=        1.00, max=       1, maxTarget=root setRowColumn
+        StartNode               : count=  47, sum=        47, min=       1, average=        1.00, max=       1, maxTarget=root setRowColumn
+        ReturnNode              : count=  47, sum=        47, min=       1, average=        1.00, max=       1, maxTarget=root setRowColumn
+        PiArrayNode             : count=  47, sum=        47, min=       1, average=        1.00, max=       1, maxTarget=root setRowColumn
+        SubNode                 : count=  47, sum=        42, min=       0, average=        0.89, max=       1, maxTarget=root setRowColumn
+        MaterializedObjectState : count=  47, sum=        41, min=       0, average=        0.87, max=      16, maxTarget=root placeQueen
+        ValueProxyNode          : count=  47, sum=        33, min=       0, average=        0.70, max=      13, maxTarget=root placeQueen
+        VirtualBoxingNode       : count=  47, sum=        31, min=       0, average=        0.66, max=      11, maxTarget=root queens
+        AllocatedObjectNode     : count=  47, sum=        29, min=       0, average=        0.62, max=      11, maxTarget=root queens
+        CommitAllocationNode    : count=  47, sum=        26, min=       0, average=        0.55, max=      10, maxTarget=root queens
+        StoreIndexedNode        : count=  47, sum=        12, min=       0, average=        0.26, max=       8, maxTarget=root queens
+        AllocatingBoxNode       : count=  47, sum=        12, min=       0, average=        0.26, max=       5, maxTarget=root queens
+        ArrayLengthNode         : count=  47, sum=        12, min=       0, average=        0.26, max=       5, maxTarget=root queens
+        LoopEndNode             : count=  47, sum=        10, min=       0, average=        0.21, max=       4, maxTarget=root queens
+        TrustedBoxedValue       : count=  47, sum=         8, min=       0, average=        0.17, max=       2, maxTarget=root placeQueen
+        LoopExitNode            : count=  47, sum=         7, min=       0, average=        0.15, max=       3, maxTarget=root placeQueen
+        FloatLessThanNode       : count=  47, sum=         5, min=       0, average=        0.11, max=       2, maxTarget=root queens
+        LoopBeginNode           : count=  47, sum=         5, min=       0, average=        0.11, max=       2, maxTarget=root queens
+        UnsignedRightShiftNode  : count=  47, sum=         4, min=       0, average=        0.09, max=       4, maxTarget=root queens
+        UnreachableControlSinkNode: count=  47, sum=         4, min=       0, average=        0.09, max=       4, maxTarget=root queens
+        GetClassNode            : count=  47, sum=         4, min=       0, average=        0.09, max=       4, maxTarget=root queens
+        UnreachableBeginNode    : count=  47, sum=         4, min=       0, average=        0.09, max=       4, maxTarget=root queens
+        a                       : count=  47, sum=         4, min=       0, average=        0.09, max=       4, maxTarget=root queens
+        FloatEqualsNode         : count=  47, sum=         2, min=       0, average=        0.04, max=       2, maxTarget=root placeQueen
+        ReinterpretNode         : count=  47, sum=         2, min=       0, average=        0.04, max=       2, maxTarget=root placeQueen
+    Graal nodes after Graal tier:
+        BeginNode               : count=  47, sum=      7515, min=      18, average=      159.89, max=     298, maxTarget=root queens
+        AArch64AddressNode      : count=  47, sum=      4929, min=      10, average=      104.87, max=     317, maxTarget=root queens
+        FrameState              : count=  47, sum=      3927, min=       4, average=       83.55, max=     297, maxTarget=root queens
+        IfNode                  : count=  47, sum=      3325, min=       8, average=       70.74, max=     143, maxTarget=root queens
+        EndNode                 : count=  47, sum=      3157, min=      13, average=       67.17, max=     159, maxTarget=root queens
+        ConstantNode            : count=  47, sum=      2764, min=      14, average=       58.81, max=     117, maxTarget=root queens
+        ReadNode                : count=  47, sum=      2535, min=       8, average=       53.94, max=     134, maxTarget=root queens
+        PiNode                  : count=  47, sum=      2465, min=       2, average=       52.45, max=      81, maxTarget=root queens
+        DeoptimizeNode          : count=  47, sum=      2015, min=       1, average=       42.87, max=      62, maxTarget=root placeQueen
+        HotSpotCompressionNode  : count=  47, sum=      1881, min=       1, average=       40.02, max=      79, maxTarget=root queens
+        ValuePhiNode            : count=  47, sum=      1560, min=       4, average=       33.19, max=      43, maxTarget=root queens
+        FloatingReadNode        : count=  47, sum=      1467, min=       1, average=       31.21, max=      52, maxTarget=root queens
+        MergeNode               : count=  47, sum=      1416, min=       5, average=       30.13, max=      59, maxTarget=root queens
+        WriteNode               : count=  47, sum=      1300, min=       4, average=       27.66, max=     143, maxTarget=root queens
+        MemoryAnchorNode        : count=  47, sum=      1266, min=       3, average=       26.94, max=      37, maxTarget=root queens
+        PointerEqualsNode       : count=  47, sum=      1227, min=       0, average=       26.11, max=      32, maxTarget=root queens
+        VirtualObjectState      : count=  47, sum=      1006, min=       0, average=       21.40, max=      48, maxTarget=root queens
+        IsNullNode              : count=  47, sum=       717, min=       1, average=       15.26, max=      17, maxTarget=root getRowColumn
+        ZeroExtendNode          : count=  47, sum=       703, min=       2, average=       14.96, max=      16, maxTarget=root getRowColumn
+        NullCheckNode           : count=  47, sum=       614, min=       0, average=       13.06, max=      42, maxTarget=root queens
+        ReadRegisterNode        : count=  47, sum=       478, min=       1, average=       10.17, max=      23, maxTarget=root placeQueen
+        IntegerEqualsNode       : count=  47, sum=       471, min=       5, average=       10.02, max=      30, maxTarget=root queens
+        HotSpotDirectCallTargetNode: count=  47, sum=       440, min=       1, average=        9.36, max=      11, maxTarget=root queens
+        InvokeWithExceptionNode : count=  47, sum=       436, min=       1, average=        9.28, max=      10, maxTarget=root getRowColumn
+        IntegerBelowNode        : count=  47, sum=       406, min=       0, average=        8.64, max=      31, maxTarget=root queens
+        AddNode                 : count=  47, sum=       294, min=       2, average=        6.26, max=      58, maxTarget=root queens
+        IntegerLessThanNode     : count=  47, sum=       273, min=       2, average=        5.81, max=      36, maxTarget=root queens
+        VirtualArrayNode        : count=  47, sum=       190, min=       0, average=        4.04, max=       8, maxTarget=root placeQueen
+        LeftShiftNode           : count=  47, sum=       179, min=       0, average=        3.81, max=      36, maxTarget=root queens
+        FloatConvertNode        : count=  47, sum=       173, min=       0, average=        3.68, max=       4, maxTarget=root setRowColumn
+        ObjectEqualsNode        : count=  47, sum=       143, min=       0, average=        3.04, max=       8, maxTarget=root placeQueen
+        AArch64PointerAddNode   : count=  47, sum=       131, min=       0, average=        2.79, max=       4, maxTarget=root queens
+        VirtualInstanceNode     : count=  47, sum=       113, min=       0, average=        2.40, max=      10, maxTarget=root queens
+        ForeignCallNode         : count=  47, sum=       111, min=       1, average=        2.36, max=      29, maxTarget=root queens
+        SubNode                 : count=  47, sum=        54, min=       0, average=        1.15, max=       8, maxTarget=root queens
+        PrefetchAllocateNode    : count=  47, sum=        54, min=       0, average=        1.15, max=      22, maxTarget=root placeQueen
+        PiArrayNode             : count=  47, sum=        53, min=       1, average=        1.13, max=       5, maxTarget=root placeQueen
+        MulNode                 : count=  47, sum=        48, min=       1, average=        1.02, max=       2, maxTarget=root queens
+        RightShiftNode          : count=  47, sum=        47, min=       1, average=        1.00, max=       1, maxTarget=root setRowColumn
+        CurrentJavaThreadNode   : count=  47, sum=        47, min=       1, average=        1.00, max=       1, maxTarget=root setRowColumn
+        ParameterNode           : count=  47, sum=        47, min=       1, average=        1.00, max=       1, maxTarget=root setRowColumn
+        StartNode               : count=  47, sum=        47, min=       1, average=        1.00, max=       1, maxTarget=root setRowColumn
+        ReturnNode              : count=  47, sum=        47, min=       1, average=        1.00, max=       1, maxTarget=root setRowColumn
+        WordCastNode            : count=  47, sum=        42, min=       0, average=        0.89, max=      16, maxTarget=root queens
+        FixedValueAnchorNode    : count=  47, sum=        41, min=       0, average=        0.87, max=      16, maxTarget=root queens
+        MaterializedObjectState : count=  47, sum=        41, min=       0, average=        0.87, max=      16, maxTarget=root placeQueen
+        MembarNode              : count=  47, sum=        38, min=       0, average=        0.81, max=      15, maxTarget=root queens
+        SignExtendNode          : count=  47, sum=        24, min=       0, average=        0.51, max=      16, maxTarget=root queens
+        VirtualBoxingNode       : count=  47, sum=        24, min=       0, average=        0.51, max=      10, maxTarget=root queens
+        ConditionalNode         : count=  47, sum=        23, min=       0, average=        0.49, max=       9, maxTarget=root queens
+        G1PostWriteBarrierNode  : count=  47, sum=        21, min=       0, average=        0.45, max=      16, maxTarget=root queens
+        G1PreWriteBarrierNode   : count=  47, sum=        20, min=       0, average=        0.43, max=      16, maxTarget=root queens
+        UnsignedRightShiftNode  : count=  47, sum=        16, min=       0, average=        0.34, max=      12, maxTarget=root queens
+        AndNode                 : count=  47, sum=        12, min=       0, average=        0.26, max=       8, maxTarget=root queens
+        NegateNode              : count=  47, sum=        12, min=       0, average=        0.26, max=       8, maxTarget=root queens
+        OrNode                  : count=  47, sum=        12, min=       0, average=        0.26, max=       8, maxTarget=root queens
+        BitCountNode            : count=  47, sum=        12, min=       0, average=        0.26, max=       8, maxTarget=root queens
+        IntegerTestNode         : count=  47, sum=        12, min=       0, average=        0.26, max=       8, maxTarget=root queens
+        PointerCastNode         : count=  47, sum=        12, min=       0, average=        0.26, max=       8, maxTarget=root queens
+        SafepointNode           : count=  47, sum=        10, min=       0, average=        0.21, max=       4, maxTarget=root queens
+        LoopEndNode             : count=  47, sum=        10, min=       0, average=        0.21, max=       4, maxTarget=root queens
+        LoopExitNode            : count=  47, sum=         7, min=       0, average=        0.15, max=       3, maxTarget=root placeQueen
+        FloatLessThanNode       : count=  47, sum=         5, min=       0, average=        0.11, max=       2, maxTarget=root queens
+        LoopBeginNode           : count=  47, sum=         5, min=       0, average=        0.11, max=       2, maxTarget=root queens
+        InvokeNode              : count=  47, sum=         4, min=       0, average=        0.09, max=       4, maxTarget=root queens
+        FloatEqualsNode         : count=  47, sum=         2, min=       0, average=        0.04, max=       2, maxTarget=root placeQueen
+        ReinterpretNode         : count=  47, sum=         2, min=       0, average=        0.04, max=       2, maxTarget=root placeQueen
+        NarrowNode              : count=  47, sum=         1, min=       0, average=        0.02, max=       1, maxTarget=root benchmark
+  ---------------------------   :
+  Compilation Tier 2            :
+    Compilation Rate            :    154314.66 bytes/second
+      Truffle Tier Rate         :    200971.42 bytes/second
+      Graal Tier Rate           :    775265.10 bytes/second
+      Installation Rate         :   4660869.11 bytes/second
+    Time for compilation (us)   : count=   2, sum=     13764, min=    2031, average=     6882.04, max=   11732, maxTarget=root setRowColumn
+      Truffle Tier (us)         : count=   2, sum=     10568, min=    1520, average=     5284.33, max=    9048, maxTarget=root setRowColumn
+      Graal Tier (us)           : count=   2, sum=      2739, min=     401, average=     1369.85, max=    2338, maxTarget=root setRowColumn
+      Code Installation (us)    : count=   2, sum=       455, min=     110, average=      227.85, max=     345, maxTarget=root setRowColumn
+    Graal node count            :
+      After Truffle Tier        : count=   4, sum=     14732, min=      10, average=     3683.00, max=    7613, maxTarget=root queens
+      After Graal Tier          : count=   2, sum=       348, min=       5, average=      174.00, max=     343, maxTarget=root setRowColumn
+    Graal compilation result    :
+      Code size                 : count=   2, sum=      2124, min=     176, average=     1062.00, max=    1948, maxTarget=root setRowColumn
+      Total frame size          : count=   2, sum=       112, min=      48, average=       56.00, max=      64, maxTarget=root setRowColumn
+      Exception handlers        : count=   2, sum=         0, min=       0, average=        0.00, max=       0, maxTarget=root setRowColumn
+      Infopoints                : count=   2, sum=        44, min=       5, average=       22.00, max=      39, maxTarget=root setRowColumn
+        CALL                    : count=   2, sum=        33, min=       5, average=       16.50, max=      28, maxTarget=root setRowColumn
+        IMPLICIT_EXCEPTION      : count=   2, sum=        11, min=       0, average=        5.50, max=      11, maxTarget=root setRowColumn
+    Marks                       : count=   2, sum=        13, min=       6, average=        6.50, max=       7, maxTarget=root setRowColumn
+    Data references             : count=   2, sum=        13, min=       1, average=        6.50, max=      12, maxTarget=root setRowColumn
+    Graal nodes after Truffle tier:
+        FrameState              : count=   4, sum=      2607, min=       1, average=      651.75, max=    1373, maxTarget=root queens
+        FixedGuardNode          : count=   4, sum=      1465, min=       0, average=      366.25, max=     739, maxTarget=root queens
+        PiNode                  : count=   4, sum=      1139, min=       1, average=      284.75, max=     574, maxTarget=root queens
+        VirtualObjectState      : count=   4, sum=      1027, min=       0, average=      256.75, max=     526, maxTarget=root queens
+        LoadFieldNode           : count=   4, sum=       976, min=       0, average=      244.00, max=     493, maxTarget=root queens
+        InstanceOfNode          : count=   4, sum=       587, min=       0, average=      146.75, max=     295, maxTarget=root queens
+        BeginNode               : count=   4, sum=       525, min=       0, average=      131.25, max=     284, maxTarget=root queens
+        UnboxNode               : count=   4, sum=       437, min=       0, average=      109.25, max=     220, maxTarget=root queens
+        EndNode                 : count=   4, sum=       366, min=       0, average=       91.50, max=     198, maxTarget=root queens
+        MaterializedObjectState : count=   4, sum=       354, min=       0, average=       88.50, max=     183, maxTarget=root queens
+        LoadIndexedNode         : count=   4, sum=       329, min=       1, average=       82.25, max=     163, maxTarget=root queens
+        ConstantNode            : count=   4, sum=       305, min=       3, average=       76.25, max=     166, maxTarget=root queens
+        VirtualBoxingNode       : count=   4, sum=       278, min=       0, average=       69.50, max=     141, maxTarget=root queens
+        IsNullNode              : count=   4, sum=       261, min=       0, average=       65.25, max=     133, maxTarget=root queens
+        ValuePhiNode            : count=   4, sum=       250, min=       0, average=       62.50, max=     130, maxTarget=root queens
+        VirtualInstanceNode     : count=   4, sum=       230, min=       0, average=       57.50, max=     118, maxTarget=root queens
+        ObjectEqualsNode        : count=   4, sum=       216, min=       0, average=       54.00, max=     108, maxTarget=root queens
+        VirtualArrayNode        : count=   4, sum=       202, min=       0, average=       50.50, max=     101, maxTarget=root queens
+        IfNode                  : count=   4, sum=       198, min=       0, average=       49.50, max=     108, maxTarget=root queens
+        IntegerEqualsNode       : count=   4, sum=       185, min=       0, average=       46.25, max=      94, maxTarget=root queens
+        MergeNode               : count=   4, sum=       168, min=       0, average=       42.00, max=      90, maxTarget=root queens
+        DeoptimizeNode          : count=   4, sum=       164, min=       0, average=       41.00, max=      84, maxTarget=root queens
+        ExceptionObjectNode     : count=   4, sum=       163, min=       0, average=       40.75, max=      84, maxTarget=root queens
+        InvokeWithExceptionNode : count=   4, sum=       163, min=       0, average=       40.75, max=      84, maxTarget=root queens
+        IntegerBelowNode        : count=   4, sum=       163, min=       0, average=       40.75, max=      82, maxTarget=root queens
+        MethodCallTargetNode    : count=   4, sum=       163, min=       0, average=       40.75, max=      84, maxTarget=root queens
+        NarrowNode              : count=   4, sum=       162, min=       0, average=       40.50, max=      81, maxTarget=root queens
+        IntegerLessThanNode     : count=   4, sum=       143, min=       0, average=       35.75, max=      80, maxTarget=root queens
+        ValueProxyNode          : count=   4, sum=       139, min=       0, average=       34.75, max=      74, maxTarget=root queens
+        FloatConvertNode        : count=   4, sum=       128, min=       0, average=       32.00, max=      64, maxTarget=root queens
+        AllocatedObjectNode     : count=   4, sum=       117, min=       0, average=       29.25, max=      63, maxTarget=root queens
+        PureBoxNode             : count=   4, sum=       116, min=       0, average=       29.00, max=      58, maxTarget=root queens
+        ZeroExtendNode          : count=   4, sum=       111, min=       0, average=       27.75, max=      56, maxTarget=root queens
+        AddNode                 : count=   4, sum=       108, min=       0, average=       27.00, max=      58, maxTarget=root queens
+        CommitAllocationNode    : count=   4, sum=       104, min=       0, average=       26.00, max=      56, maxTarget=root queens
+        ConditionalNode         : count=   4, sum=       103, min=       0, average=       25.75, max=      54, maxTarget=root queens
+        StoreFieldNode          : count=   4, sum=       103, min=       0, average=       25.75, max=      58, maxTarget=root queens
+        StateSplitProxyNode     : count=   4, sum=        98, min=       0, average=       24.50, max=      50, maxTarget=root queens
+        StoreIndexedNode        : count=   4, sum=        95, min=       0, average=       23.75, max=      50, maxTarget=root queens
+        ArrayLengthNode         : count=   4, sum=        53, min=       0, average=       13.25, max=      29, maxTarget=root queens
+        LoopExitNode            : count=   4, sum=        38, min=       0, average=        9.50, max=      20, maxTarget=root queens
+        SubNode                 : count=   4, sum=        37, min=       0, average=        9.25, max=      18, maxTarget=root placeQueen
+        AllocatingBoxNode       : count=   4, sum=        27, min=       0, average=        6.75, max=      15, maxTarget=root queens
+        FloatEqualsNode         : count=   4, sum=        24, min=       0, average=        6.00, max=      12, maxTarget=root placeQueen
+        ReinterpretNode         : count=   4, sum=        24, min=       0, average=        6.00, max=      12, maxTarget=root placeQueen
+        FloatLessThanNode       : count=   4, sum=        14, min=       0, average=        3.50, max=       8, maxTarget=root queens
+        LoopEndNode             : count=   4, sum=        14, min=       0, average=        3.50, max=       8, maxTarget=root queens
+        LoopBeginNode           : count=   4, sum=        14, min=       0, average=        3.50, max=       8, maxTarget=root queens
+        UnsignedRightShiftNode  : count=   4, sum=         4, min=       0, average=        1.00, max=       4, maxTarget=root queens
+        UnreachableControlSinkNode: count=   4, sum=         4, min=       0, average=        1.00, max=       4, maxTarget=root queens
+        GetClassNode            : count=   4, sum=         4, min=       0, average=        1.00, max=       4, maxTarget=root queens
+        UnreachableBeginNode    : count=   4, sum=         4, min=       0, average=        1.00, max=       4, maxTarget=root queens
+        ParameterNode           : count=   4, sum=         4, min=       1, average=        1.00, max=       1, maxTarget=root setRowColumn
+        a                       : count=   4, sum=         4, min=       0, average=        1.00, max=       4, maxTarget=root queens
+        StartNode               : count=   4, sum=         4, min=       1, average=        1.00, max=       1, maxTarget=root setRowColumn
+        PiArrayNode             : count=   4, sum=         4, min=       1, average=        1.00, max=       1, maxTarget=root setRowColumn
+        TrustedBoxedValue       : count=   4, sum=         3, min=       0, average=        0.75, max=       1, maxTarget=root setRowColumn
+        ReturnNode              : count=   4, sum=         3, min=       0, average=        0.75, max=       1, maxTarget=root setRowColumn
+        MulNode                 : count=   4, sum=         1, min=       0, average=        0.25, max=       1, maxTarget=root queens
+    Graal nodes after Graal tier:
+        AArch64AddressNode      : count=   2, sum=        44, min=       0, average=       22.00, max=      44, maxTarget=root setRowColumn
+        BeginNode               : count=   2, sum=        40, min=       0, average=       20.00, max=      40, maxTarget=root setRowColumn
+        ConstantNode            : count=   2, sum=        39, min=       1, average=       19.50, max=      38, maxTarget=root setRowColumn
+        ReadNode                : count=   2, sum=        35, min=       0, average=       17.50, max=      35, maxTarget=root setRowColumn
+        FrameState              : count=   2, sum=        23, min=       1, average=       11.50, max=      22, maxTarget=root setRowColumn
+        EndNode                 : count=   2, sum=        22, min=       0, average=       11.00, max=      22, maxTarget=root setRowColumn
+        IfNode                  : count=   2, sum=        20, min=       0, average=       10.00, max=      20, maxTarget=root setRowColumn
+        HotSpotCompressionNode  : count=   2, sum=        16, min=       0, average=        8.00, max=      16, maxTarget=root setRowColumn
+        VirtualObjectState      : count=   2, sum=        12, min=       0, average=        6.00, max=      12, maxTarget=root setRowColumn
+        ValuePhiNode            : count=   2, sum=        10, min=       0, average=        5.00, max=      10, maxTarget=root setRowColumn
+        PointerEqualsNode       : count=   2, sum=         8, min=       0, average=        4.00, max=       8, maxTarget=root setRowColumn
+        MergeNode               : count=   2, sum=         7, min=       0, average=        3.50, max=       7, maxTarget=root setRowColumn
+        IntegerBelowNode        : count=   2, sum=         7, min=       0, average=        3.50, max=       7, maxTarget=root setRowColumn
+        VirtualBoxingNode       : count=   2, sum=         6, min=       0, average=        3.00, max=       6, maxTarget=root setRowColumn
+        WriteNode               : count=   2, sum=         6, min=       0, average=        3.00, max=       6, maxTarget=root setRowColumn
+        DynamicDeoptimizeNode   : count=   2, sum=         5, min=       0, average=        2.50, max=       5, maxTarget=root setRowColumn
+        VirtualArrayNode        : count=   2, sum=         4, min=       0, average=        2.00, max=       4, maxTarget=root setRowColumn
+        MaterializedObjectState : count=   2, sum=         4, min=       0, average=        2.00, max=       4, maxTarget=root setRowColumn
+        VirtualInstanceNode     : count=   2, sum=         4, min=       0, average=        2.00, max=       4, maxTarget=root setRowColumn
+        G1PreWriteBarrierNode   : count=   2, sum=         3, min=       0, average=        1.50, max=       3, maxTarget=root setRowColumn
+        AArch64PointerAddNode   : count=   2, sum=         3, min=       0, average=        1.50, max=       3, maxTarget=root setRowColumn
+        G1PostWriteBarrierNode  : count=   2, sum=         3, min=       0, average=        1.50, max=       3, maxTarget=root setRowColumn
+        LeftShiftNode           : count=   2, sum=         3, min=       0, average=        1.50, max=       3, maxTarget=root setRowColumn
+        ZeroExtendNode          : count=   2, sum=         3, min=       0, average=        1.50, max=       3, maxTarget=root setRowColumn
+        FloatConvertNode        : count=   2, sum=         3, min=       0, average=        1.50, max=       3, maxTarget=root setRowColumn
+        IntegerLessThanNode     : count=   2, sum=         3, min=       0, average=        1.50, max=       3, maxTarget=root setRowColumn
+        IntegerEqualsNode       : count=   2, sum=         2, min=       0, average=        1.00, max=       2, maxTarget=root setRowColumn
+        ParameterNode           : count=   2, sum=         2, min=       1, average=        1.00, max=       1, maxTarget=root setRowColumn
+        AddNode                 : count=   2, sum=         2, min=       0, average=        1.00, max=       2, maxTarget=root setRowColumn
+        StartNode               : count=   2, sum=         2, min=       1, average=        1.00, max=       1, maxTarget=root setRowColumn
+        CurrentJavaThreadNode   : count=   2, sum=         1, min=       0, average=        0.50, max=       1, maxTarget=root setRowColumn
+        SubNode                 : count=   2, sum=         1, min=       0, average=        0.50, max=       1, maxTarget=root setRowColumn
+        DeoptimizeNode          : count=   2, sum=         1, min=       0, average=        0.50, max=       1, maxTarget=root benchmark
+        NarrowNode              : count=   2, sum=         1, min=       0, average=        0.50, max=       1, maxTarget=root setRowColumn
+        ReturnNode              : count=   2, sum=         1, min=       0, average=        0.50, max=       1, maxTarget=root setRowColumn
+        ForeignCallNode         : count=   2, sum=         1, min=       0, average=        0.50, max=       1, maxTarget=root setRowColumn
+        MemoryAnchorNode        : count=   2, sum=         1, min=       0, average=        0.50, max=       1, maxTarget=root setRowColumn

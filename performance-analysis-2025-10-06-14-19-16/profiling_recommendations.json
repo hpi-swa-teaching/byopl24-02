@@ -1,0 +1,283 @@
+{
+  "analysis_date": "2025-10-06",
+  "analysis_time": "14:30:00",
+  "baseline_summary": {
+    "total_benchmarks": 5,
+    "total_runs": 50,
+    "key_findings": [
+      "All benchmarks show extreme warmup effects (2-117x slower first run)",
+      "Permute has most extreme warmup (117x)",
+      "Sieve shows deoptimization event at run 6 (40% slowdown)",
+      "Post-warmup stability is good (5-12% variance)",
+      "Two-phase warmup pattern in queens, towers, list suggests tiered compilation"
+    ]
+  },
+  "hypotheses": [
+    {
+      "id": 1,
+      "title": "Delayed Compilation Threshold Causes Extreme Warmup in Permute",
+      "description": "The permute benchmark shows a 117x warmup penalty (120ms first run vs 1ms stable). This extreme effect suggests the JIT compiler is not triggering compilation early enough, forcing the first iteration to run in interpreter mode or low-tier compilation.",
+      "evidence": [
+        "Permute first run: 120,692 us",
+        "Permute runs 2-10: 1,028-3,048 us (avg ~1,600 us)",
+        "Dramatic drop after first iteration suggests tier transition",
+        "Pattern indicates interpreter → compiled transition rather than gradual optimization"
+      ],
+      "expected_root_causes": [
+        "Compilation threshold too high for short-running code",
+        "Method call frequency not reaching threshold in single iteration",
+        "Possible OSR (On-Stack Replacement) not triggering for loops",
+        "Small code size may delay profiling data collection"
+      ],
+      "priority": "HIGH",
+      "impact": "117x performance penalty on first run"
+    },
+    {
+      "id": 2,
+      "title": "Multi-Phase Warmup Indicates Tiered Compilation Progression",
+      "description": "Queens, towers, and list show two-phase warmup patterns (run 1 very slow, run 2 moderately slow, run 3+ stable), suggesting progression through GraalVM's compilation tiers.",
+      "evidence": [
+        "Queens: Run 1 (287ms) → Run 2 (27ms) → Runs 3+ (15-19ms)",
+        "Towers: Run 1 (611ms) → Run 2 (401ms) → Runs 3+ (135-146ms)",
+        "List: Run 1 (331ms) → Run 2 (193ms) → Runs 3+ (99-103ms)"
+      ],
+      "expected_root_causes": [
+        "Run 1: Interpreted or minimal profiling",
+        "Run 2: Tier 1 compilation (low optimization)",
+        "Run 3+: Tier 2 compilation (full optimization with inlining)",
+        "Profiling overhead in early runs collecting data for optimization"
+      ],
+      "priority": "MEDIUM",
+      "impact": "3-18x performance penalty during warmup phase"
+    },
+    {
+      "id": 3,
+      "title": "Deoptimization Event in Sieve Run 6 Due to Type Profiling Change",
+      "description": "Sieve shows an outlier at run 6 (346ms vs 240-255ms typical), suggesting a deoptimization event where optimized code was invalidated and recompiled.",
+      "evidence": [
+        "Runs 2-5: 203-247ms (relatively stable)",
+        "Run 6: 346ms (40% slower)",
+        "Runs 7-10: 242-255ms (back to normal)",
+        "Pattern suggests: optimize → deopt → reoptimize"
+      ],
+      "expected_root_causes": [
+        "Type speculation failure (e.g., integer overflow to double)",
+        "Array bounds check assumption violation",
+        "Loop unrolling or vectorization assumption invalidated",
+        "Hidden class/shape change in object property access"
+      ],
+      "priority": "HIGH",
+      "impact": "40% performance degradation when deoptimization occurs"
+    },
+    {
+      "id": 4,
+      "title": "Missing Inlining Opportunities Limit Peak Performance",
+      "description": "After warmup, benchmarks may still have performance headroom if critical functions are not being inlined. The stabilized performance might be suboptimal due to virtual call overhead.",
+      "evidence": [
+        "Post-warmup performance is stable but unknown if optimal",
+        "Truffle DSL specialization may not cover all type combinations",
+        "Function call overhead in tight loops (especially permute, queens)"
+      ],
+      "expected_root_causes": [
+        "Polymorphic call sites preventing inlining",
+        "Method size exceeding inlining threshold",
+        "Recursive calls not optimized",
+        "Insufficient call frequency for inlining decisions"
+      ],
+      "priority": "MEDIUM",
+      "impact": "Unknown - requires profiling to quantify"
+    },
+    {
+      "id": 5,
+      "title": "Bytecode Interpreter Overhead Dominates First Run Performance",
+      "description": "The universal warmup penalty across all benchmarks suggests the Truffle bytecode interpreter has significant overhead before compilation, with profiling instrumentation adding additional cost.",
+      "evidence": [
+        "ALL benchmarks show first-run penalties (no exceptions)",
+        "Warmup factor correlates inversely with benchmark complexity",
+        "Simple permute: 117x (heavy interpreter overhead)",
+        "Complex sieve: 2.4x (more computation, less overhead ratio)"
+      ],
+      "expected_root_causes": [
+        "Bytecode dispatch overhead in interpreter",
+        "Profiling instrumentation collecting type/branch data",
+        "Frame materialization for closures/variables",
+        "Lack of specialized nodes before profiling feedback"
+      ],
+      "priority": "MEDIUM",
+      "impact": "Universal warmup penalty across all benchmarks"
+    }
+  ],
+  "profiling_plan": [
+    {
+      "phase": 1,
+      "name": "Compilation Statistics Analysis",
+      "benchmarks": ["queens", "sieve", "towers", "permute", "list"],
+      "tool": "mcp__benchmark__run_benchmark_with_compilation_statistics",
+      "parameters": {
+        "benchmark": "{each}",
+        "harness_script": "harness.lox",
+        "num_runs": 10,
+        "size": "{benchmark_specific}"
+      },
+      "goal": "Understand compilation timeline, tier transitions, and invalidation patterns",
+      "validates_hypotheses": [1, 2, 3],
+      "expected_output": [
+        "Compilation count and timing per tier",
+        "Invalidation reasons and counts",
+        "Queue behavior (queued, dequeued)",
+        "AST and Graal node statistics"
+      ],
+      "duration_estimate_minutes": 10,
+      "output_files": [
+        "{benchmark}_compilation_stats.txt"
+      ]
+    },
+    {
+      "phase": 2,
+      "name": "CPU Sampling with Tier Distribution",
+      "benchmarks": ["permute", "queens", "sieve"],
+      "tool": "mcp__benchmark__run_benchmark_with_cpu_sampler",
+      "parameters": {
+        "benchmark": "{each}",
+        "harness_script": "harness.lox",
+        "num_runs": 10,
+        "size": "{benchmark_specific}",
+        "tiers": "0,1,2",
+        "flamegraph": false
+      },
+      "goal": "Identify hot methods and time distribution across compilation tiers",
+      "validates_hypotheses": [4, 5],
+      "expected_output": [
+        "Histogram of hot methods with self-time",
+        "Time spent in tier 0 (interpreted), tier 1, tier 2",
+        "Call frequency and depth analysis"
+      ],
+      "duration_estimate_minutes": 15,
+      "output_files": [
+        "{benchmark}_cpu_histogram.txt"
+      ]
+    },
+    {
+      "phase": 3,
+      "name": "Flamegraph Visual Analysis",
+      "benchmarks": ["sieve", "towers", "list"],
+      "tool": "mcp__benchmark__run_benchmark_with_cpu_sampler",
+      "parameters": {
+        "benchmark": "{each}",
+        "harness_script": "harness.lox",
+        "num_runs": 10,
+        "size": "{benchmark_specific}",
+        "flamegraph": true
+      },
+      "goal": "Visualize call stacks and identify bottlenecks graphically",
+      "validates_hypotheses": [3, 4],
+      "expected_output": [
+        "SVG flamegraph showing call stack hierarchy",
+        "Visual identification of hot paths",
+        "Polymorphic call site detection"
+      ],
+      "duration_estimate_minutes": 10,
+      "output_files": [
+        "{benchmark}_flamegraph.svg"
+      ]
+    },
+    {
+      "phase": 4,
+      "name": "Detailed Compilation Tracing",
+      "benchmarks": ["permute", "sieve"],
+      "tool": "mcp__benchmark__build_with_trace_compilation",
+      "parameters": {
+        "what_to_run": "harness.lox {benchmark} 10 {size}"
+      },
+      "goal": "Capture detailed compilation events, deoptimization reasons, and optimization decisions",
+      "validates_hypotheses": [1, 3],
+      "expected_output": [
+        "Detailed compilation event timeline",
+        "Deoptimization events with reasons",
+        "Performance warnings",
+        "Inlining decisions"
+      ],
+      "duration_estimate_minutes": 15,
+      "output_files": [
+        "{benchmark}_trace_compilation.log"
+      ]
+    }
+  ],
+  "benchmark_configurations": {
+    "queens": {
+      "size": 8,
+      "num_runs": 10,
+      "focus_areas": ["multi-phase warmup", "recursion optimization"]
+    },
+    "sieve": {
+      "size": 5000,
+      "num_runs": 10,
+      "focus_areas": ["deoptimization at run 6", "array operations", "loop optimization"]
+    },
+    "towers": {
+      "size": 13,
+      "num_runs": 10,
+      "focus_areas": ["recursion depth", "two-phase warmup"]
+    },
+    "permute": {
+      "size": 6,
+      "num_runs": 10,
+      "focus_areas": ["extreme warmup (117x)", "compilation threshold", "short runtime optimization"]
+    },
+    "list": {
+      "size": 18,
+      "num_runs": 10,
+      "focus_areas": ["object allocation", "linked list traversal", "best post-warmup stability"]
+    }
+  },
+  "execution_order": [
+    {
+      "step": 1,
+      "action": "Run compilation statistics on all benchmarks",
+      "rationale": "Establish baseline understanding of compilation behavior"
+    },
+    {
+      "step": 2,
+      "action": "Run CPU sampler on permute, queens, sieve",
+      "rationale": "Identify hot paths in most interesting benchmarks"
+    },
+    {
+      "step": 3,
+      "action": "Generate flamegraphs for sieve, towers, list",
+      "rationale": "Visual analysis of longer-running benchmarks"
+    },
+    {
+      "step": 4,
+      "action": "Run trace compilation on permute and sieve",
+      "rationale": "Deep dive into extreme warmup and deoptimization cases"
+    }
+  ],
+  "expected_deliverables": {
+    "hypothesis_validation": {
+      "format": "markdown report",
+      "content": "Validation status (confirmed/rejected) for each hypothesis with supporting evidence from profiling data"
+    },
+    "bottleneck_list": {
+      "format": "prioritized list",
+      "content": "Top performance bottlenecks with source locations, time spent, and category (compilation/inlining/deopt/interpreter)"
+    },
+    "optimization_recommendations": {
+      "format": "actionable items",
+      "content": "Top 5 improvements with expected performance gain and implementation complexity"
+    },
+    "profiling_data_archive": {
+      "format": "structured directory",
+      "content": "All raw profiling outputs, processed metrics, and visualization artifacts"
+    }
+  },
+  "success_criteria": [
+    "All 5 hypotheses validated or rejected with evidence",
+    "Top 5 performance bottlenecks identified with source locations",
+    "Optimization recommendations prioritized by impact",
+    "All profiling data saved and documented",
+    "Findings reproducible and verifiable"
+  ],
+  "output_directory": "/Users/antonykamp/Projects/hpi-ma/byopl24-02/performance-analysis-2025-10-06-14-19-16/profiling/",
+  "next_agent": "benchmark-execution-agent or cpu-sampler-agent",
+  "estimated_total_time_minutes": 50
+}
