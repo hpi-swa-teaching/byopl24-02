@@ -1,6 +1,6 @@
 <?xml version="1.0" standalone="no"?>
 <!DOCTYPE svg PUBLIC "-//W3C//DTD SVG 1.1//EN" "http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd">
-<svg version="1.1" width="1200.000000" height="476.000000" onload="init(evt)" viewBox="0 0 1200.000000 476.000000" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
+<svg version="1.1" width="1200.000000" height="524.000000" onload="init(evt)" viewBox="0 0 1200.000000 524.000000" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
 <defs>
     <linearGradient id="background" y1="0" y2="1" x1="0" x2="0" >
         <stop stop-color="#eeeeee" offset="5%" />
@@ -470,11 +470,11 @@ function graph_ensure_space() {
 'use strict';
 var fontSize = 12.0;
 var fontWidth = 0.5;
-var profileNames = ["Thread: <top>","main","program","runBenchmark","processArguments","doRuns","init","measure","loadBenchmark","innerBenchmarkLoop","benchmark","moveDisks","buildTowerAt","pushDisk","moveTopDisk","popDiskFrom"];
+var profileNames = ["Thread: <top>","main","program","runBenchmark","processArguments","doRuns","init","measure","loadBenchmark","printResult","innerBenchmarkLoop","benchmark","moveDisks","buildTowerAt","moveTopDisk","popDiskFrom","pushDisk"];
 var sourceNames = ["<none>","harness.lox","/Users/antonykamp/Projects/hpi-ma/byopl24-02/run.lox","/Users/antonykamp/Projects/hpi-ma/byopl24-02/harness.lox","/Users/antonykamp/Projects/hpi-ma/byopl24-02/benchmark.lox","/Users/antonykamp/Projects/hpi-ma/byopl24-02/towers.lox"];
-var sampleKeys = [[0,0,0],[1,0,0],[2,1,1],[3,2,46],[4,3,2],[2,2,1],[5,2,36],[6,2,2],[7,2,1],[8,2,1],[9,4,1],[6,5,9],[2,4,1],[10,5,1],[11,5,51],[12,5,46],[13,5,1],[6,5,3],[14,5,42],[15,5,1]];
-var profileData = [{"rs":[1],"c":0,"rx":0,"h":458,"i":0,"k":0,"l":8,"rc":0,"s":[1],"rh":458,"ri":0,"x":0,"id":0},{"rs":[2],"c":0,"rx":0,"h":458,"i":0,"k":1,"l":8,"p":0,"rc":0,"s":[2],"rh":458,"ri":0,"x":0,"id":1,"rp":0},{"rs":[3,4,5],"c":0,"rx":0,"h":458,"i":0,"k":2,"l":1,"p":1,"rc":0,"s":[3,4,5],"rh":458,"ri":0,"x":0,"id":2,"rp":1},{"rs":[6],"c":0,"rx":0,"h":455,"i":1,"k":3,"l":1,"p":2,"rc":0,"s":[6],"rh":455,"ri":1,"x":0,"id":3,"rp":2},{"rs":[7],"c":0,"rx":455,"h":2,"i":0,"k":4,"l":1,"p":2,"rc":0,"s":[7],"rh":2,"ri":0,"x":455,"id":4,"rp":2},{"c":0,"rx":457,"h":1,"i":1,"k":5,"l":1,"p":2,"rc":0,"rh":1,"ri":1,"x":457,"id":5,"rp":2},{"rs":[8],"c":0,"rx":1,"h":454,"i":0,"k":6,"l":1,"p":3,"rc":0,"s":[8],"rh":454,"ri":0,"x":1,"id":6,"rp":3},{"rs":[9],"c":0,"rx":455,"h":2,"i":0,"k":7,"l":1,"p":4,"rc":0,"s":[9],"rh":2,"ri":0,"x":455,"id":7,"rp":4},{"rs":[10],"c":0,"rx":1,"h":454,"i":1,"k":8,"l":1,"p":6,"rc":0,"s":[10],"rh":454,"ri":1,"x":1,"id":8,"rp":6},{"rs":[11,12],"c":0,"rx":455,"h":2,"i":0,"k":9,"l":1,"p":7,"rc":0,"s":[11,12],"rh":2,"ri":0,"x":455,"id":9,"rp":7},{"rs":[13],"c":0,"rx":2,"h":453,"i":0,"k":10,"l":1,"p":8,"rc":0,"s":[13],"rh":453,"ri":0,"x":2,"id":10,"rp":8},{"c":0,"rx":455,"h":1,"i":1,"k":11,"l":1,"p":9,"rc":0,"rh":1,"ri":1,"x":455,"id":11,"rp":9},{"c":0,"rx":456,"h":1,"i":1,"k":12,"l":1,"p":9,"rc":0,"rh":1,"ri":1,"x":456,"id":12,"rp":9},{"rs":[14,15],"c":0,"rx":2,"h":453,"i":0,"k":13,"l":1,"p":10,"rc":0,"s":[14,15],"rh":453,"ri":0,"x":2,"id":13,"rp":10},{"rs":[21],"c":0,"rx":2,"h":450,"i":0,"k":14,"l":1,"p":13,"rc":0,"s":[16],"rh":450,"ri":36,"x":2,"id":14,"rp":13},{"rs":[17,18],"c":0,"rx":452,"h":3,"i":0,"k":15,"l":1,"p":13,"rc":0,"s":[17,18],"rh":3,"ri":0,"x":452,"id":15,"rp":13},{"p":14,"c":0,"s":[19],"h":450,"x":2,"i":0,"k":14,"id":16,"l":1,"ro":14},{"c":1,"rx":452,"h":1,"i":0,"k":16,"l":1,"p":15,"rc":1,"rh":1,"ri":0,"x":452,"id":17,"rp":15},{"c":2,"rx":453,"h":2,"i":0,"k":17,"l":1,"p":15,"rc":2,"rh":2,"ri":0,"x":453,"id":18,"rp":15},{"p":16,"c":0,"s":[20,21],"h":450,"x":2,"i":0,"k":14,"id":19,"l":1,"ro":14},{"p":19,"c":0,"s":[22],"h":449,"x":2,"i":0,"k":14,"id":20,"l":1,"ro":14},{"rs":[23,33],"c":0,"rx":38,"h":1,"i":0,"k":18,"l":1,"p":19,"rc":7,"s":[23],"rh":414,"ri":10,"x":451,"id":21,"rp":14},{"p":20,"c":0,"s":[24],"h":449,"x":2,"i":0,"k":14,"id":22,"l":1,"ro":14},{"c":0,"rx":55,"h":1,"i":1,"k":16,"l":1,"p":21,"rc":8,"rh":253,"ri":245,"x":451,"id":23,"rp":21},{"p":22,"c":0,"s":[25,26],"h":449,"x":2,"i":0,"k":14,"id":24,"l":1,"ro":14},{"p":24,"c":0,"s":[27,28],"h":447,"x":2,"i":0,"k":14,"id":25,"l":1,"ro":14},{"p":24,"c":0,"s":[29],"h":2,"x":449,"i":0,"k":18,"id":26,"l":1,"ro":21,"rp":14},{"p":25,"c":0,"s":[30,31],"h":445,"x":2,"i":1,"k":14,"id":27,"l":1,"ro":14},{"p":25,"c":0,"s":[32,33],"h":2,"x":447,"i":0,"k":18,"id":28,"l":1,"ro":21,"rp":14},{"p":26,"c":0,"h":2,"x":449,"i":2,"k":16,"id":29,"l":1,"ro":23,"rp":21},{"p":27,"c":0,"s":[34,35],"h":432,"x":3,"i":2,"k":14,"id":30,"l":1,"ro":14},{"p":27,"c":0,"s":[36,37],"h":12,"x":435,"i":0,"k":18,"id":31,"l":1,"ro":21,"rp":14},{"p":28,"c":0,"h":1,"x":447,"i":1,"k":16,"id":32,"l":1,"ro":23,"rp":21},{"c":1,"rx":308,"h":1,"i":0,"k":19,"l":1,"p":28,"rc":139,"rh":144,"ri":5,"x":448,"id":33,"rp":21},{"p":30,"c":0,"s":[38,39],"h":420,"x":5,"i":3,"k":14,"id":34,"l":1,"ro":14},{"p":30,"c":1,"s":[40,41],"h":10,"x":425,"i":0,"k":18,"id":35,"l":1,"ro":21,"rp":14},{"p":31,"c":0,"h":8,"x":435,"i":8,"k":16,"id":36,"l":1,"ro":23,"rp":21},{"p":31,"c":3,"h":4,"x":443,"i":1,"k":19,"id":37,"l":1,"ro":33,"rp":21},{"p":34,"c":0,"s":[42,43],"h":386,"x":8,"i":4,"k":14,"id":38,"l":1,"ro":14},{"p":34,"c":0,"s":[44,45],"h":31,"x":394,"i":0,"k":18,"id":39,"l":1,"ro":21,"rp":14},{"p":35,"c":1,"h":7,"x":426,"i":6,"k":16,"id":40,"l":1,"ro":23,"rp":21},{"p":35,"c":2,"h":2,"x":433,"i":0,"k":19,"id":41,"l":1,"ro":33,"rp":21},{"p":38,"c":0,"s":[46,47],"h":345,"x":12,"i":8,"k":14,"id":42,"l":1,"ro":14},{"p":38,"c":1,"s":[48,49],"h":37,"x":357,"i":0,"k":18,"id":43,"l":1,"ro":21,"rp":14},{"p":39,"c":0,"h":25,"x":394,"i":25,"k":16,"id":44,"l":1,"ro":23,"rp":21},{"p":39,"c":5,"h":6,"x":419,"i":1,"k":19,"id":45,"l":1,"ro":33,"rp":21},{"p":42,"c":0,"s":[50],"h":256,"x":20,"i":18,"k":14,"id":46,"l":1,"ro":14},{"p":42,"c":2,"s":[51,52],"h":81,"x":276,"i":2,"k":18,"id":47,"l":1,"ro":21,"rp":14},{"p":43,"c":2,"h":24,"x":358,"i":22,"k":16,"id":48,"l":1,"ro":23,"rp":21},{"p":43,"c":12,"h":12,"x":382,"i":0,"k":19,"id":49,"l":1,"ro":33,"rp":21},{"p":46,"c":3,"s":[53,54],"h":238,"x":38,"i":8,"k":18,"id":50,"l":1,"ro":21,"rp":14},{"p":47,"c":1,"h":53,"x":280,"i":52,"k":16,"id":51,"l":1,"ro":23,"rp":21},{"p":47,"c":23,"h":24,"x":333,"i":1,"k":19,"id":52,"l":1,"ro":33,"rp":21},{"p":50,"c":4,"h":132,"x":49,"i":128,"k":16,"id":53,"l":1,"ro":23,"rp":21},{"p":50,"c":93,"h":95,"x":181,"i":2,"k":19,"id":54,"l":1,"ro":33,"rp":21}];
-var colorData = [{"11":"rgb(217, 169, 61)","12":"rgb(212, 118, 53)","13":"rgb(203, 126, 66)","14":"rgb(208, 168, 73)","15":"rgb(228, 172, 57)","16":"rgb(234, 161, 58)","17":"rgb(201, 161, 68)","18":"rgb(231, 153, 68)","19":"rgb(227, 142, 51)","0":"rgb(218, 177, 61)","1":"rgb(221, 140, 66)","2":"rgb(224, 142, 43)","3":"rgb(203, 172, 47)","4":"rgb(221, 199, 61)","5":"rgb(228, 160, 31)","6":"rgb(215, 171, 51)","7":"rgb(221, 119, 68)","8":"rgb(216, 169, 55)","9":"rgb(233, 101, 38)","10":"rgb(219, 182, 40)"},{"11":"rgb(61, 175, 175)","12":"rgb(91, 202, 202)","13":"rgb(54, 168, 168)","14":"rgb(60, 174, 174)","15":"rgb(83, 195, 195)","16":"rgb(72, 185, 185)","17":"rgb(73, 186, 186)","18":"rgb(92, 203, 203)","19":"rgb(88, 199, 199)","2":"rgb(57, 172, 172)","3":"rgb(96, 207, 207)","4":"rgb(82, 195, 195)","5":"rgb(82, 194, 194)","6":"rgb(94, 206, 206)","7":"rgb(105, 216, 216)","8":"rgb(70, 184, 184)","9":"rgb(53, 167, 167)","10":"rgb(51, 166, 166)"},{},{},{},{},{},{},{"0":"rgb(188, 188, 188)","1":"rgb(196, 196, 196)"}];
+var sampleKeys = [[0,0,0],[1,0,0],[2,1,1],[3,2,46],[4,3,2],[2,2,1],[5,2,36],[6,2,2],[7,2,1],[8,2,1],[9,2,21],[10,4,1],[6,5,9],[2,4,1],[11,5,1],[12,5,51],[13,5,46],[6,5,3],[14,5,42],[15,5,1],[16,5,1]];
+var profileData = [{"rs":[1],"c":0,"rx":0,"h":221,"i":0,"k":0,"l":8,"rc":0,"s":[1],"rh":221,"ri":0,"x":0,"id":0},{"rs":[2],"c":0,"rx":0,"h":221,"i":0,"k":1,"l":8,"p":0,"rc":0,"s":[2],"rh":221,"ri":0,"x":0,"id":1,"rp":0},{"rs":[3,4,5],"c":0,"rx":0,"h":221,"i":0,"k":2,"l":1,"p":1,"rc":0,"s":[3,4,5],"rh":221,"ri":0,"x":0,"id":2,"rp":1},{"rs":[6],"c":0,"rx":0,"h":216,"i":0,"k":3,"l":1,"p":2,"rc":0,"s":[6],"rh":216,"ri":0,"x":0,"id":3,"rp":2},{"rs":[7],"c":0,"rx":216,"h":4,"i":1,"k":4,"l":1,"p":2,"rc":0,"s":[7],"rh":4,"ri":1,"x":216,"id":4,"rp":2},{"c":0,"rx":220,"h":1,"i":1,"k":5,"l":1,"p":2,"rc":0,"rh":1,"ri":1,"x":220,"id":5,"rp":2},{"rs":[8],"c":0,"rx":0,"h":216,"i":0,"k":6,"l":1,"p":3,"rc":0,"s":[8],"rh":216,"ri":0,"x":0,"id":6,"rp":3},{"rs":[9],"c":0,"rx":217,"h":3,"i":1,"k":7,"l":1,"p":4,"rc":0,"s":[9],"rh":3,"ri":1,"x":217,"id":7,"rp":4},{"rs":[10,11],"c":1,"rx":0,"h":216,"i":1,"k":8,"l":1,"p":6,"rc":1,"s":[10,11],"rh":216,"ri":1,"x":0,"id":8,"rp":6},{"rs":[12,13],"c":0,"rx":218,"h":2,"i":0,"k":9,"l":1,"p":7,"rc":0,"s":[12,13],"rh":2,"ri":0,"x":218,"id":9,"rp":7},{"c":1,"rx":2,"h":1,"i":0,"k":10,"l":1,"p":8,"rc":1,"rh":1,"ri":0,"x":2,"id":10,"rp":8},{"rs":[14],"c":0,"rx":3,"h":213,"i":1,"k":11,"l":1,"p":8,"rc":0,"s":[14],"rh":213,"ri":1,"x":3,"id":11,"rp":8},{"c":0,"rx":218,"h":1,"i":1,"k":12,"l":1,"p":9,"rc":0,"rh":1,"ri":1,"x":218,"id":12,"rp":9},{"c":0,"rx":219,"h":1,"i":1,"k":13,"l":1,"p":9,"rc":0,"rh":1,"ri":1,"x":219,"id":13,"rp":9},{"rs":[15,16],"c":0,"rx":4,"h":212,"i":0,"k":14,"l":1,"p":11,"rc":0,"s":[15,16],"rh":212,"ri":0,"x":4,"id":14,"rp":11},{"rs":[24],"c":0,"rx":4,"h":211,"i":0,"k":15,"l":1,"p":14,"rc":0,"s":[17],"rh":211,"ri":7,"x":4,"id":15,"rp":14},{"rs":[18],"c":0,"rx":215,"h":1,"i":0,"k":16,"l":1,"p":14,"rc":0,"s":[18],"rh":1,"ri":0,"x":215,"id":16,"rp":14},{"p":15,"c":0,"s":[19],"h":211,"x":4,"i":0,"k":15,"id":17,"l":1,"ro":15},{"c":0,"rx":215,"h":1,"i":1,"k":17,"l":1,"p":16,"rc":0,"rh":1,"ri":1,"x":215,"id":18,"rp":16},{"p":17,"c":0,"s":[20],"h":211,"x":4,"i":0,"k":15,"id":19,"l":1,"ro":15},{"p":19,"c":0,"s":[21],"h":211,"x":4,"i":0,"k":15,"id":20,"l":1,"ro":15},{"p":20,"c":0,"s":[22],"h":211,"x":4,"i":0,"k":15,"id":21,"l":1,"ro":15},{"p":21,"c":0,"s":[23,24],"h":211,"x":4,"i":0,"k":15,"id":22,"l":1,"ro":15},{"p":22,"c":0,"s":[25,26],"h":208,"x":4,"i":0,"k":15,"id":23,"l":1,"ro":15},{"rs":[27,30],"c":0,"rx":11,"h":3,"i":0,"k":18,"l":1,"p":22,"rc":4,"s":[27],"rh":204,"ri":5,"x":212,"id":24,"rp":15},{"p":23,"c":0,"s":[28,29],"h":206,"x":4,"i":0,"k":15,"id":25,"l":1,"ro":15},{"p":23,"c":0,"s":[30,31],"h":2,"x":210,"i":0,"k":18,"id":26,"l":1,"ro":24,"rp":15},{"c":3,"rx":20,"h":3,"i":0,"k":19,"l":1,"p":24,"rc":71,"rh":78,"ri":7,"x":212,"id":27,"rp":24},{"p":25,"c":0,"s":[32,33],"h":205,"x":4,"i":1,"k":15,"id":28,"l":1,"ro":15},{"p":25,"c":0,"s":[34],"h":1,"x":209,"i":0,"k":18,"id":29,"l":1,"ro":24,"rp":15},{"c":0,"rx":98,"h":1,"i":1,"k":20,"l":1,"p":26,"rc":3,"rh":117,"ri":114,"x":210,"id":30,"rp":24},{"p":26,"c":0,"h":1,"x":211,"i":1,"k":19,"id":31,"l":1,"ro":27,"rp":24},{"p":28,"c":0,"s":[35,36],"h":201,"x":5,"i":1,"k":15,"id":32,"l":1,"ro":15},{"p":28,"c":0,"s":[37,38],"h":3,"x":206,"i":1,"k":18,"id":33,"l":1,"ro":24,"rp":15},{"p":29,"c":0,"h":1,"x":209,"i":1,"k":20,"id":34,"l":1,"ro":30,"rp":24},{"p":32,"c":0,"s":[39,40],"h":191,"x":6,"i":0,"k":15,"id":35,"l":1,"ro":15},{"p":32,"c":0,"s":[41],"h":9,"x":197,"i":1,"k":18,"id":36,"l":1,"ro":24,"rp":15},{"p":33,"c":0,"h":1,"x":207,"i":1,"k":20,"id":37,"l":1,"ro":30,"rp":24},{"p":33,"c":1,"h":1,"x":208,"i":0,"k":19,"id":38,"l":1,"ro":27,"rp":24},{"p":35,"c":0,"s":[42,43],"h":174,"x":6,"i":3,"k":15,"id":39,"l":1,"ro":15},{"p":35,"c":0,"s":[44,45],"h":17,"x":180,"i":0,"k":18,"id":40,"l":1,"ro":24,"rp":15},{"p":36,"c":0,"h":8,"x":198,"i":8,"k":20,"id":41,"l":1,"ro":30,"rp":24},{"p":39,"c":0,"s":[46],"h":131,"x":9,"i":2,"k":15,"id":42,"l":1,"ro":15},{"p":39,"c":0,"s":[47,48],"h":40,"x":140,"i":1,"k":18,"id":43,"l":1,"ro":24,"rp":15},{"p":40,"c":0,"h":12,"x":180,"i":12,"k":20,"id":44,"l":1,"ro":30,"rp":24},{"p":40,"c":3,"h":5,"x":192,"i":2,"k":19,"id":45,"l":1,"ro":27,"rp":24},{"p":42,"c":4,"s":[49,50],"h":129,"x":11,"i":2,"k":18,"id":46,"l":1,"ro":24,"rp":15},{"p":43,"c":1,"h":29,"x":141,"i":28,"k":20,"id":47,"l":1,"ro":30,"rp":24},{"p":43,"c":9,"h":10,"x":170,"i":1,"k":19,"id":48,"l":1,"ro":27,"rp":24},{"p":46,"c":2,"h":65,"x":17,"i":63,"k":20,"id":49,"l":1,"ro":30,"rp":24},{"p":46,"c":55,"h":58,"x":82,"i":3,"k":19,"id":50,"l":1,"ro":27,"rp":24}];
+var colorData = [{"11":"rgb(201, 143, 43)","12":"rgb(229, 193, 68)","13":"rgb(227, 148, 57)","14":"rgb(200, 155, 31)","15":"rgb(200, 175, 59)","16":"rgb(225, 103, 36)","17":"rgb(202, 162, 44)","18":"rgb(201, 192, 70)","19":"rgb(234, 117, 70)","0":"rgb(216, 195, 42)","1":"rgb(227, 152, 69)","2":"rgb(206, 108, 60)","3":"rgb(213, 111, 37)","4":"rgb(211, 197, 31)","5":"rgb(205, 161, 45)","6":"rgb(226, 106, 78)","7":"rgb(212, 182, 34)","8":"rgb(231, 189, 60)","9":"rgb(225, 175, 53)","20":"rgb(221, 108, 48)","10":"rgb(223, 151, 68)"},{"11":"rgb(93, 204, 204)","12":"rgb(50, 165, 165)","13":"rgb(83, 195, 195)","14":"rgb(88, 200, 200)","15":"rgb(81, 193, 193)","16":"rgb(55, 169, 169)","17":"rgb(104, 215, 215)","18":"rgb(104, 215, 215)","19":"rgb(101, 212, 212)","2":"rgb(75, 188, 188)","3":"rgb(85, 197, 197)","4":"rgb(99, 210, 210)","5":"rgb(73, 186, 186)","6":"rgb(106, 216, 216)","7":"rgb(100, 211, 211)","8":"rgb(88, 200, 200)","9":"rgb(109, 219, 219)","20":"rgb(95, 206, 206)","10":"rgb(104, 215, 215)"},{},{},{},{},{},{},{"0":"rgb(227, 227, 227)","1":"rgb(214, 214, 214)"}];
 var languageNames = ["","lox","","","","","","","<none>"];
 function resize() {
 owner_resize(document.firstElementChild.clientWidth);
@@ -1265,7 +1265,7 @@ var h_minwidth = 3.0;
 var h_top_padding = 36.0;
 var h_bottom_padding = 34.0;
 var h_frameheight = 16.0;
-var histogramData = [{"c":9,"i":245,"id":17,"k":16,"l":1},{"c":139,"i":5,"id":33,"k":19,"l":1},{"c":0,"i":36,"id":14,"k":14,"l":1},{"c":7,"i":10,"id":21,"k":18,"l":1},{"c":2,"i":0,"id":18,"k":17,"l":1},{"c":0,"i":1,"id":5,"k":5,"l":1},{"c":0,"i":1,"id":8,"k":8,"l":1},{"c":0,"i":1,"id":11,"k":11,"l":1},{"c":0,"i":1,"id":3,"k":3,"l":1},{"c":0,"i":1,"id":12,"k":12,"l":1}];
+var histogramData = [{"c":3,"i":114,"id":30,"k":20,"l":1},{"c":71,"i":7,"id":27,"k":19,"l":1},{"c":4,"i":5,"id":24,"k":18,"l":1},{"c":0,"i":7,"id":15,"k":15,"l":1},{"c":1,"i":1,"id":8,"k":8,"l":1},{"c":0,"i":1,"id":5,"k":5,"l":1},{"c":0,"i":1,"id":4,"k":4,"l":1},{"c":0,"i":1,"id":18,"k":17,"l":1},{"c":0,"i":1,"id":7,"k":7,"l":1},{"c":0,"i":1,"id":11,"k":11,"l":1},{"c":0,"i":1,"id":12,"k":12,"l":1},{"c":1,"i":0,"id":10,"k":10,"l":1},{"c":0,"i":1,"id":13,"k":13,"l":1}];
 /*
  * Copyright (c) 2021, Oracle and/or its affiliates. All rights reserved.
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
@@ -1602,138 +1602,170 @@ function h_resize(new_width) {
 <g class="func_g" onmouseover="s(this)" onmouseout="c(this)" onclick="unzoom()" id="f_0" >
 <title>Thread: &lt;top&gt;
 Self samples: 0 (0.00%)
-total samples:  458 (100.00%)
+total samples:  221 (100.00%)
 Source location: &lt;none&gt;:0
-</title><rect x="10.000000" y="-50.000000" width="1180.000000" height="16.000000" fill="rgb(218, 177, 61)" rx="2" ry="2"/>
+</title><rect x="10.000000" y="-50.000000" width="1180.000000" height="16.000000" fill="rgb(216, 195, 42)" rx="2" ry="2"/>
 <text text-anchor="left" x="13.000000" y="-39.000000" font-size="12.000000" font-family="Verdana" fill="rgb(0, 0, 0)"  >Thread: &lt;top&gt;</text>
 </g>
 <g class="func_g" onmouseover="s(this)" onmouseout="c(this)" onclick="zoom(this)" id="f_1" >
 <title>main
 Self samples: 0 (0.00%)
-total samples:  458 (100.00%)
+total samples:  221 (100.00%)
 Source location: &lt;none&gt;:0
-</title><rect x="10.000000" y="-66.000000" width="1180.000000" height="16.000000" fill="rgb(221, 140, 66)" rx="2" ry="2"/>
+</title><rect x="10.000000" y="-66.000000" width="1180.000000" height="16.000000" fill="rgb(227, 152, 69)" rx="2" ry="2"/>
 <text text-anchor="left" x="13.000000" y="-55.000000" font-size="12.000000" font-family="Verdana" fill="rgb(0, 0, 0)"  >main</text>
 </g>
 <g class="func_g" onmouseover="s(this)" onmouseout="c(this)" onclick="zoom(this)" id="f_2" >
 <title>program
 Self samples: 0 (0.00%)
-total samples:  458 (100.00%)
+total samples:  221 (100.00%)
 Source location: harness.lox:1
-</title><rect x="10.000000" y="-82.000000" width="1180.000000" height="16.000000" fill="rgb(224, 142, 43)" rx="2" ry="2"/>
+</title><rect x="10.000000" y="-82.000000" width="1180.000000" height="16.000000" fill="rgb(206, 108, 60)" rx="2" ry="2"/>
 <text text-anchor="left" x="13.000000" y="-71.000000" font-size="12.000000" font-family="Verdana" fill="rgb(0, 0, 0)"  >program</text>
 </g>
 <g class="func_g" onmouseover="s(this)" onmouseout="c(this)" onclick="zoom(this)" id="f_3" >
 <title>runBenchmark
-Self samples: 1 (0.22%)
-total samples:  455 (99.34%)
+Self samples: 0 (0.00%)
+total samples:  216 (97.74%)
 Source location: /Users/antonykamp/Projects/hpi-ma/byopl24-02/run.lox:46
-</title><rect x="10.000000" y="-98.000000" width="1172.270742" height="16.000000" fill="rgb(203, 172, 47)" rx="2" ry="2"/>
+</title><rect x="10.000000" y="-98.000000" width="1153.303167" height="16.000000" fill="rgb(213, 111, 37)" rx="2" ry="2"/>
 <text text-anchor="left" x="13.000000" y="-87.000000" font-size="12.000000" font-family="Verdana" fill="rgb(0, 0, 0)"  >runBenchmark</text>
 </g>
 <g class="func_g" onmouseover="s(this)" onmouseout="c(this)" onclick="zoom(this)" id="f_4" >
 <title>processArguments
-Self samples: 0 (0.00%)
-total samples:  2 (0.44%)
+Self samples: 1 (0.45%)
+total samples:  4 (1.81%)
 Source location: /Users/antonykamp/Projects/hpi-ma/byopl24-02/harness.lox:2
-</title><rect x="1182.270742" y="-98.000000" width="5.152838" height="16.000000" fill="rgb(221, 199, 61)" rx="2" ry="2"/>
-<text text-anchor="left" x="1185.270742" y="-87.000000" font-size="12.000000" font-family="Verdana" fill="rgb(0, 0, 0)"  ></text>
+</title><rect x="1163.303167" y="-98.000000" width="21.357466" height="16.000000" fill="rgb(211, 197, 31)" rx="2" ry="2"/>
+<text text-anchor="left" x="1166.303167" y="-87.000000" font-size="12.000000" font-family="Verdana" fill="rgb(0, 0, 0)"  >p...</text>
+</g>
+<g class="func_g" onmouseover="s(this)" onmouseout="c(this)" onclick="zoom(this)" id="f_5" >
+<title>program
+Self samples: 1 (0.45%)
+total samples:  1 (0.45%)
+Source location: /Users/antonykamp/Projects/hpi-ma/byopl24-02/run.lox:1
+</title><rect x="1184.660633" y="-98.000000" width="5.339367" height="16.000000" fill="rgb(205, 161, 45)" rx="2" ry="2"/>
+<text text-anchor="left" x="1187.660633" y="-87.000000" font-size="12.000000" font-family="Verdana" fill="rgb(0, 0, 0)"  ></text>
 </g>
 <g class="func_g" onmouseover="s(this)" onmouseout="c(this)" onclick="zoom(this)" id="f_6" >
 <title>doRuns
 Self samples: 0 (0.00%)
-total samples:  454 (99.13%)
+total samples:  216 (97.74%)
 Source location: /Users/antonykamp/Projects/hpi-ma/byopl24-02/run.lox:36
-</title><rect x="12.576419" y="-114.000000" width="1169.694323" height="16.000000" fill="rgb(215, 171, 51)" rx="2" ry="2"/>
-<text text-anchor="left" x="15.576419" y="-103.000000" font-size="12.000000" font-family="Verdana" fill="rgb(0, 0, 0)"  >doRuns</text>
+</title><rect x="10.000000" y="-114.000000" width="1153.303167" height="16.000000" fill="rgb(226, 106, 78)" rx="2" ry="2"/>
+<text text-anchor="left" x="13.000000" y="-103.000000" font-size="12.000000" font-family="Verdana" fill="rgb(0, 0, 0)"  >doRuns</text>
 </g>
 <g class="func_g" onmouseover="s(this)" onmouseout="c(this)" onclick="zoom(this)" id="f_7" >
 <title>init
-Self samples: 0 (0.00%)
-total samples:  2 (0.44%)
+Self samples: 1 (0.45%)
+total samples:  3 (1.36%)
 Source location: /Users/antonykamp/Projects/hpi-ma/byopl24-02/run.lox:2
-</title><rect x="1182.270742" y="-114.000000" width="5.152838" height="16.000000" fill="rgb(221, 119, 68)" rx="2" ry="2"/>
-<text text-anchor="left" x="1185.270742" y="-103.000000" font-size="12.000000" font-family="Verdana" fill="rgb(0, 0, 0)"  ></text>
+</title><rect x="1168.642534" y="-114.000000" width="16.018100" height="16.000000" fill="rgb(212, 182, 34)" rx="2" ry="2"/>
+<text text-anchor="left" x="1171.642534" y="-103.000000" font-size="12.000000" font-family="Verdana" fill="rgb(0, 0, 0)"  ></text>
 </g>
 <g class="func_g" onmouseover="s(this)" onmouseout="c(this)" onclick="zoom(this)" id="f_8" >
 <title>measure
-Self samples: 1 (0.22%)
-total samples:  454 (99.13%)
+Self samples: 2 (0.90%)
+total samples:  216 (97.74%)
 Source location: /Users/antonykamp/Projects/hpi-ma/byopl24-02/run.lox:1
-</title><rect x="12.576419" y="-130.000000" width="1169.694323" height="16.000000" fill="rgb(216, 169, 55)" rx="2" ry="2"/>
-<text text-anchor="left" x="15.576419" y="-119.000000" font-size="12.000000" font-family="Verdana" fill="rgb(0, 0, 0)"  >measure</text>
+</title><rect x="10.000000" y="-130.000000" width="1153.303167" height="16.000000" fill="rgb(231, 189, 60)" rx="2" ry="2"/>
+<text text-anchor="left" x="13.000000" y="-119.000000" font-size="12.000000" font-family="Verdana" fill="rgb(0, 0, 0)"  >measure</text>
 </g>
 <g class="func_g" onmouseover="s(this)" onmouseout="c(this)" onclick="zoom(this)" id="f_9" >
 <title>loadBenchmark
 Self samples: 0 (0.00%)
-total samples:  2 (0.44%)
+total samples:  2 (0.90%)
 Source location: /Users/antonykamp/Projects/hpi-ma/byopl24-02/run.lox:1
-</title><rect x="1182.270742" y="-130.000000" width="5.152838" height="16.000000" fill="rgb(233, 101, 38)" rx="2" ry="2"/>
-<text text-anchor="left" x="1185.270742" y="-119.000000" font-size="12.000000" font-family="Verdana" fill="rgb(0, 0, 0)"  ></text>
+</title><rect x="1173.981900" y="-130.000000" width="10.678733" height="16.000000" fill="rgb(225, 175, 53)" rx="2" ry="2"/>
+<text text-anchor="left" x="1176.981900" y="-119.000000" font-size="12.000000" font-family="Verdana" fill="rgb(0, 0, 0)"  ></text>
 </g>
 <g class="func_g" onmouseover="s(this)" onmouseout="c(this)" onclick="zoom(this)" id="f_10" >
+<title>printResult
+Self samples: 1 (0.45%)
+total samples:  1 (0.45%)
+Source location: /Users/antonykamp/Projects/hpi-ma/byopl24-02/run.lox:21
+</title><rect x="20.678733" y="-146.000000" width="5.339367" height="16.000000" fill="rgb(223, 151, 68)" rx="2" ry="2"/>
+<text text-anchor="left" x="23.678733" y="-135.000000" font-size="12.000000" font-family="Verdana" fill="rgb(0, 0, 0)"  ></text>
+</g>
+<g class="func_g" onmouseover="s(this)" onmouseout="c(this)" onclick="zoom(this)" id="f_11" >
 <title>innerBenchmarkLoop
-Self samples: 0 (0.00%)
-total samples:  453 (98.91%)
+Self samples: 1 (0.45%)
+total samples:  213 (96.38%)
 Source location: /Users/antonykamp/Projects/hpi-ma/byopl24-02/benchmark.lox:1
-</title><rect x="15.152838" y="-146.000000" width="1167.117904" height="16.000000" fill="rgb(219, 182, 40)" rx="2" ry="2"/>
-<text text-anchor="left" x="18.152838" y="-135.000000" font-size="12.000000" font-family="Verdana" fill="rgb(0, 0, 0)"  >innerBenchmarkLoop</text>
+</title><rect x="26.018100" y="-146.000000" width="1137.285068" height="16.000000" fill="rgb(201, 143, 43)" rx="2" ry="2"/>
+<text text-anchor="left" x="29.018100" y="-135.000000" font-size="12.000000" font-family="Verdana" fill="rgb(0, 0, 0)"  >innerBenchmarkLoop</text>
+</g>
+<g class="func_g" onmouseover="s(this)" onmouseout="c(this)" onclick="zoom(this)" id="f_12" >
+<title>init
+Self samples: 1 (0.45%)
+total samples:  1 (0.45%)
+Source location: /Users/antonykamp/Projects/hpi-ma/byopl24-02/towers.lox:9
+</title><rect x="1173.981900" y="-146.000000" width="5.339367" height="16.000000" fill="rgb(229, 193, 68)" rx="2" ry="2"/>
+<text text-anchor="left" x="1176.981900" y="-135.000000" font-size="12.000000" font-family="Verdana" fill="rgb(0, 0, 0)"  ></text>
 </g>
 <g class="func_g" onmouseover="s(this)" onmouseout="c(this)" onclick="zoom(this)" id="f_13" >
-<title>benchmark
-Self samples: 0 (0.00%)
-total samples:  453 (98.91%)
-Source location: /Users/antonykamp/Projects/hpi-ma/byopl24-02/towers.lox:1
-</title><rect x="15.152838" y="-162.000000" width="1167.117904" height="16.000000" fill="rgb(203, 126, 66)" rx="2" ry="2"/>
-<text text-anchor="left" x="18.152838" y="-151.000000" font-size="12.000000" font-family="Verdana" fill="rgb(0, 0, 0)"  >benchmark</text>
+<title>program
+Self samples: 1 (0.45%)
+total samples:  1 (0.45%)
+Source location: /Users/antonykamp/Projects/hpi-ma/byopl24-02/benchmark.lox:1
+</title><rect x="1179.321267" y="-146.000000" width="5.339367" height="16.000000" fill="rgb(227, 148, 57)" rx="2" ry="2"/>
+<text text-anchor="left" x="1182.321267" y="-135.000000" font-size="12.000000" font-family="Verdana" fill="rgb(0, 0, 0)"  ></text>
 </g>
 <g class="func_g" onmouseover="s(this)" onmouseout="c(this)" onclick="zoom(this)" id="f_14" >
-<title>moveDisks
+<title>benchmark
 Self samples: 0 (0.00%)
-total samples:  450 (98.25%)
-Source location: /Users/antonykamp/Projects/hpi-ma/byopl24-02/towers.lox:51
-</title><rect x="15.152838" y="-178.000000" width="1159.388646" height="16.000000" fill="rgb(208, 168, 73)" rx="2" ry="2"/>
-<text text-anchor="left" x="18.152838" y="-167.000000" font-size="12.000000" font-family="Verdana" fill="rgb(0, 0, 0)"  >moveDisks</text>
+total samples:  212 (95.93%)
+Source location: /Users/antonykamp/Projects/hpi-ma/byopl24-02/towers.lox:1
+</title><rect x="31.357466" y="-162.000000" width="1131.945701" height="16.000000" fill="rgb(200, 155, 31)" rx="2" ry="2"/>
+<text text-anchor="left" x="34.357466" y="-151.000000" font-size="12.000000" font-family="Verdana" fill="rgb(0, 0, 0)"  >benchmark</text>
 </g>
 <g class="func_g" onmouseover="s(this)" onmouseout="c(this)" onclick="zoom(this)" id="f_15" >
+<title>moveDisks
+Self samples: 0 (0.00%)
+total samples:  211 (95.48%)
+Source location: /Users/antonykamp/Projects/hpi-ma/byopl24-02/towers.lox:51
+</title><rect x="31.357466" y="-178.000000" width="1126.606335" height="16.000000" fill="rgb(200, 175, 59)" rx="2" ry="2"/>
+<text text-anchor="left" x="34.357466" y="-167.000000" font-size="12.000000" font-family="Verdana" fill="rgb(0, 0, 0)"  >moveDisks</text>
+</g>
+<g class="func_g" onmouseover="s(this)" onmouseout="c(this)" onclick="zoom(this)" id="f_16" >
 <title>buildTowerAt
 Self samples: 0 (0.00%)
-total samples:  3 (0.66%)
+total samples:  1 (0.45%)
 Source location: /Users/antonykamp/Projects/hpi-ma/byopl24-02/towers.lox:46
-</title><rect x="1174.541485" y="-178.000000" width="7.729258" height="16.000000" fill="rgb(228, 172, 57)" rx="2" ry="2"/>
-<text text-anchor="left" x="1177.541485" y="-167.000000" font-size="12.000000" font-family="Verdana" fill="rgb(0, 0, 0)"  ></text>
+</title><rect x="1157.963801" y="-178.000000" width="5.339367" height="16.000000" fill="rgb(225, 103, 36)" rx="2" ry="2"/>
+<text text-anchor="left" x="1160.963801" y="-167.000000" font-size="12.000000" font-family="Verdana" fill="rgb(0, 0, 0)"  ></text>
 </g>
-<g class="func_g" onmouseover="s(this)" onmouseout="c(this)" onclick="zoom(this)" id="f_21" >
+<g class="func_g" onmouseover="s(this)" onmouseout="c(this)" onclick="zoom(this)" id="f_24" >
 <title>moveTopDisk
 Self samples: 0 (0.00%)
-total samples:  1 (0.22%)
+total samples:  3 (1.36%)
 Source location: /Users/antonykamp/Projects/hpi-ma/byopl24-02/towers.lox:42
-</title><rect x="107.903930" y="-194.000000" width="1066.637555" height="16.000000" fill="rgb(231, 153, 68)" rx="2" ry="2"/>
-<text text-anchor="left" x="110.903930" y="-183.000000" font-size="12.000000" font-family="Verdana" fill="rgb(0, 0, 0)"  >moveTopDisk</text>
+</title><rect x="68.733032" y="-194.000000" width="1089.230769" height="16.000000" fill="rgb(201, 192, 70)" rx="2" ry="2"/>
+<text text-anchor="left" x="71.733032" y="-183.000000" font-size="12.000000" font-family="Verdana" fill="rgb(0, 0, 0)"  >moveTopDisk</text>
 </g>
 <g class="func_g" onmouseover="s(this)" onmouseout="c(this)" onclick="zoom(this)" id="f_18" >
 <title>init
-Self samples: 2 (0.44%)
-total samples:  2 (0.44%)
+Self samples: 1 (0.45%)
+total samples:  1 (0.45%)
 Source location: /Users/antonykamp/Projects/hpi-ma/byopl24-02/towers.lox:3
-</title><rect x="1177.117904" y="-194.000000" width="5.152838" height="16.000000" fill="rgb(201, 161, 68)" rx="2" ry="2"/>
-<text text-anchor="left" x="1180.117904" y="-183.000000" font-size="12.000000" font-family="Verdana" fill="rgb(0, 0, 0)"  ></text>
+</title><rect x="1157.963801" y="-194.000000" width="5.339367" height="16.000000" fill="rgb(202, 162, 44)" rx="2" ry="2"/>
+<text text-anchor="left" x="1160.963801" y="-183.000000" font-size="12.000000" font-family="Verdana" fill="rgb(0, 0, 0)"  ></text>
 </g>
-<g class="func_g" onmouseover="s(this)" onmouseout="c(this)" onclick="zoom(this)" id="f_23" >
-<title>pushDisk
-Self samples: 1 (0.22%)
-total samples:  1 (0.22%)
-Source location: /Users/antonykamp/Projects/hpi-ma/byopl24-02/towers.lox:1
-</title><rect x="151.703057" y="-210.000000" width="651.834061" height="16.000000" fill="rgb(234, 161, 58)" rx="2" ry="2"/>
-<text text-anchor="left" x="154.703057" y="-199.000000" font-size="12.000000" font-family="Verdana" fill="rgb(0, 0, 0)"  >pushDisk</text>
-</g>
-<g class="func_g" onmouseover="s(this)" onmouseout="c(this)" onclick="zoom(this)" id="f_33" >
+<g class="func_g" onmouseover="s(this)" onmouseout="c(this)" onclick="zoom(this)" id="f_27" >
 <title>popDiskFrom
-Self samples: 1 (0.22%)
-total samples:  1 (0.22%)
+Self samples: 3 (1.36%)
+total samples:  3 (1.36%)
 Source location: /Users/antonykamp/Projects/hpi-ma/byopl24-02/towers.lox:1
-</title><rect x="803.537118" y="-210.000000" width="371.004367" height="16.000000" fill="rgb(227, 142, 51)" rx="2" ry="2"/>
-<text text-anchor="left" x="806.537118" y="-199.000000" font-size="12.000000" font-family="Verdana" fill="rgb(0, 0, 0)"  >popDiskFrom</text>
+</title><rect x="116.787330" y="-210.000000" width="416.470588" height="16.000000" fill="rgb(234, 117, 70)" rx="2" ry="2"/>
+<text text-anchor="left" x="119.787330" y="-199.000000" font-size="12.000000" font-family="Verdana" fill="rgb(0, 0, 0)"  >popDiskFrom</text>
+</g>
+<g class="func_g" onmouseover="s(this)" onmouseout="c(this)" onclick="zoom(this)" id="f_30" >
+<title>pushDisk
+Self samples: 1 (0.45%)
+total samples:  1 (0.45%)
+Source location: /Users/antonykamp/Projects/hpi-ma/byopl24-02/towers.lox:1
+</title><rect x="533.257919" y="-210.000000" width="624.705882" height="16.000000" fill="rgb(221, 108, 48)" rx="2" ry="2"/>
+<text text-anchor="left" x="536.257919" y="-199.000000" font-size="12.000000" font-family="Verdana" fill="rgb(0, 0, 0)"  >pushDisk</text>
 </g>
 <text text-anchor="" x="10.000000" y="-17.000000" font-size="12.000000" font-family="Verdana" fill="rgb(0, 0, 0)" id="details" > </text>
 <text text-anchor="" x="1090.000000" y="-17.000000" font-size="12.000000" font-family="Verdana" fill="rgb(0, 0, 0)" id="matched" onclick="search_prompt()" > </text>
@@ -1743,79 +1775,100 @@ Source location: /Users/antonykamp/Projects/hpi-ma/byopl24-02/towers.lox:1
 <text text-anchor="middle" x="600.000000" y="36.000000" font-size="12.000000" font-family="Verdana" fill="rgb(0, 0, 0)" id="fg_help" >Press "?" for legend and help.</text>
 <text text-anchor="" x="10.000000" y="24.000000" font-size="12.000000" font-family="Verdana" fill="rgb(0, 0, 0)" id="unzoom" onclick="unzoom()" style="opacity:0.1;cursor:pointer" >Reset zoom</text>
 <text text-anchor="end" x="1190.000000" y="24.000000" font-size="12.000000" font-family="Verdana" fill="rgb(0, 0, 0)" id="search"  onclick="search_prompt()" onmouseover="fg_searchover()" onmouseout="fg_searchout()" >Search</text>
-<svg viewBox="0.0 0.0 1200.000000 230.000000" x="0.0" y="246.0" wdith="1200.0" height="230.0" >
+<svg viewBox="0.0 0.0 1200.000000 278.000000" x="0.0" y="246.0" wdith="1200.0" height="278.0" >
 <g id="histogram" >
-<rect x="0.000000" y="0.000000" width="1200.000000" height="230.000000" fill="url(#background)"  id="h_canvas"/>
+<rect x="0.000000" y="0.000000" width="1200.000000" height="278.000000" fill="url(#background)"  id="h_canvas"/>
 <text text-anchor="middle" x="600.000000" y="24.000000" font-size="17.000000" font-family="Verdana" fill="rgb(0, 0, 0)" id="h_title" >Histogram</text>
 <g class="func_h" onmouseover="s(this)" onmouseout="c(this)" onclick="h_highlight(this)" id="h_0" >
 <title>Function: pushDisk
-254 samples (245 interpreted, 9 compiled).
-55.46% of displayed samples.
-</title><rect x="10.000000" y="36.000000" width="1180.000000" height="16.000000" fill="rgb(234, 161, 58)" rx="2" ry="2"/>
+117 samples (114 interpreted, 3 compiled).
+52.94% of displayed samples.
+</title><rect x="10.000000" y="36.000000" width="1180.000000" height="16.000000" fill="rgb(221, 108, 48)" rx="2" ry="2"/>
 <text text-anchor="left" x="13.000000" y="47.000000" font-size="12.000000" font-family="Verdana" fill="rgb(0, 0, 0)"  >pushDisk</text>
 </g>
 <g class="func_h" onmouseover="s(this)" onmouseout="c(this)" onclick="h_highlight(this)" id="h_1" >
 <title>Function: popDiskFrom
-144 samples (5 interpreted, 139 compiled).
-31.44% of displayed samples.
-</title><rect x="10.000000" y="52.000000" width="668.976378" height="16.000000" fill="rgb(227, 142, 51)" rx="2" ry="2"/>
+78 samples (7 interpreted, 71 compiled).
+35.29% of displayed samples.
+</title><rect x="10.000000" y="52.000000" width="786.666667" height="16.000000" fill="rgb(234, 117, 70)" rx="2" ry="2"/>
 <text text-anchor="left" x="13.000000" y="63.000000" font-size="12.000000" font-family="Verdana" fill="rgb(0, 0, 0)"  >popDiskFrom</text>
 </g>
 <g class="func_h" onmouseover="s(this)" onmouseout="c(this)" onclick="h_highlight(this)" id="h_2" >
-<title>Function: moveDisks
-36 samples (36 interpreted, 0 compiled).
-7.86% of displayed samples.
-</title><rect x="10.000000" y="68.000000" width="167.244094" height="16.000000" fill="rgb(208, 168, 73)" rx="2" ry="2"/>
-<text text-anchor="left" x="180.244094" y="79.000000" font-size="12.000000" font-family="Verdana" fill="rgb(0, 0, 0)"  >moveDisks</text>
+<title>Function: moveTopDisk
+9 samples (5 interpreted, 4 compiled).
+4.07% of displayed samples.
+</title><rect x="10.000000" y="68.000000" width="90.769231" height="16.000000" fill="rgb(201, 192, 70)" rx="2" ry="2"/>
+<text text-anchor="left" x="103.769231" y="79.000000" font-size="12.000000" font-family="Verdana" fill="rgb(0, 0, 0)"  >moveTopDisk</text>
 </g>
 <g class="func_h" onmouseover="s(this)" onmouseout="c(this)" onclick="h_highlight(this)" id="h_3" >
-<title>Function: moveTopDisk
-17 samples (10 interpreted, 7 compiled).
-3.71% of displayed samples.
-</title><rect x="10.000000" y="84.000000" width="78.976378" height="16.000000" fill="rgb(231, 153, 68)" rx="2" ry="2"/>
-<text text-anchor="left" x="91.976378" y="95.000000" font-size="12.000000" font-family="Verdana" fill="rgb(0, 0, 0)"  >moveTopDisk</text>
+<title>Function: moveDisks
+7 samples (7 interpreted, 0 compiled).
+3.17% of displayed samples.
+</title><rect x="10.000000" y="84.000000" width="70.598291" height="16.000000" fill="rgb(200, 175, 59)" rx="2" ry="2"/>
+<text text-anchor="left" x="83.598291" y="95.000000" font-size="12.000000" font-family="Verdana" fill="rgb(0, 0, 0)"  >moveDisks</text>
 </g>
 <g class="func_h" onmouseover="s(this)" onmouseout="c(this)" onclick="h_highlight(this)" id="h_4" >
-<title>Function: init
-2 samples (0 interpreted, 2 compiled).
-0.44% of displayed samples.
-</title><rect x="10.000000" y="100.000000" width="9.291339" height="16.000000" fill="rgb(201, 161, 68)" rx="2" ry="2"/>
-<text text-anchor="left" x="22.291339" y="111.000000" font-size="12.000000" font-family="Verdana" fill="rgb(0, 0, 0)"  >init</text>
+<title>Function: measure
+2 samples (1 interpreted, 1 compiled).
+0.90% of displayed samples.
+</title><rect x="10.000000" y="100.000000" width="20.170940" height="16.000000" fill="rgb(231, 189, 60)" rx="2" ry="2"/>
+<text text-anchor="left" x="33.170940" y="111.000000" font-size="12.000000" font-family="Verdana" fill="rgb(0, 0, 0)"  >measure</text>
 </g>
 <g class="func_h" onmouseover="s(this)" onmouseout="c(this)" onclick="h_highlight(this)" id="h_5" >
 <title>Function: program
 1 samples (1 interpreted, 0 compiled).
-0.22% of displayed samples.
-</title><rect x="10.000000" y="116.000000" width="4.645669" height="16.000000" fill="rgb(228, 160, 31)" rx="2" ry="2"/>
-<text text-anchor="left" x="17.645669" y="127.000000" font-size="12.000000" font-family="Verdana" fill="rgb(0, 0, 0)"  >program</text>
+0.45% of displayed samples.
+</title><rect x="10.000000" y="116.000000" width="10.085470" height="16.000000" fill="rgb(205, 161, 45)" rx="2" ry="2"/>
+<text text-anchor="left" x="23.085470" y="127.000000" font-size="12.000000" font-family="Verdana" fill="rgb(0, 0, 0)"  >program</text>
 </g>
 <g class="func_h" onmouseover="s(this)" onmouseout="c(this)" onclick="h_highlight(this)" id="h_6" >
-<title>Function: measure
+<title>Function: processArguments
 1 samples (1 interpreted, 0 compiled).
-0.22% of displayed samples.
-</title><rect x="10.000000" y="132.000000" width="4.645669" height="16.000000" fill="rgb(216, 169, 55)" rx="2" ry="2"/>
-<text text-anchor="left" x="17.645669" y="143.000000" font-size="12.000000" font-family="Verdana" fill="rgb(0, 0, 0)"  >measure</text>
+0.45% of displayed samples.
+</title><rect x="10.000000" y="132.000000" width="10.085470" height="16.000000" fill="rgb(211, 197, 31)" rx="2" ry="2"/>
+<text text-anchor="left" x="23.085470" y="143.000000" font-size="12.000000" font-family="Verdana" fill="rgb(0, 0, 0)"  >processArguments</text>
 </g>
 <g class="func_h" onmouseover="s(this)" onmouseout="c(this)" onclick="h_highlight(this)" id="h_7" >
 <title>Function: init
 1 samples (1 interpreted, 0 compiled).
-0.22% of displayed samples.
-</title><rect x="10.000000" y="148.000000" width="4.645669" height="16.000000" fill="rgb(217, 169, 61)" rx="2" ry="2"/>
-<text text-anchor="left" x="17.645669" y="159.000000" font-size="12.000000" font-family="Verdana" fill="rgb(0, 0, 0)"  >init</text>
+0.45% of displayed samples.
+</title><rect x="10.000000" y="148.000000" width="10.085470" height="16.000000" fill="rgb(202, 162, 44)" rx="2" ry="2"/>
+<text text-anchor="left" x="23.085470" y="159.000000" font-size="12.000000" font-family="Verdana" fill="rgb(0, 0, 0)"  >init</text>
 </g>
 <g class="func_h" onmouseover="s(this)" onmouseout="c(this)" onclick="h_highlight(this)" id="h_8" >
-<title>Function: runBenchmark
+<title>Function: init
 1 samples (1 interpreted, 0 compiled).
-0.22% of displayed samples.
-</title><rect x="10.000000" y="164.000000" width="4.645669" height="16.000000" fill="rgb(203, 172, 47)" rx="2" ry="2"/>
-<text text-anchor="left" x="17.645669" y="175.000000" font-size="12.000000" font-family="Verdana" fill="rgb(0, 0, 0)"  >runBenchmark</text>
+0.45% of displayed samples.
+</title><rect x="10.000000" y="164.000000" width="10.085470" height="16.000000" fill="rgb(212, 182, 34)" rx="2" ry="2"/>
+<text text-anchor="left" x="23.085470" y="175.000000" font-size="12.000000" font-family="Verdana" fill="rgb(0, 0, 0)"  >init</text>
 </g>
 <g class="func_h" onmouseover="s(this)" onmouseout="c(this)" onclick="h_highlight(this)" id="h_9" >
+<title>Function: innerBenchmarkLoop
+1 samples (1 interpreted, 0 compiled).
+0.45% of displayed samples.
+</title><rect x="10.000000" y="180.000000" width="10.085470" height="16.000000" fill="rgb(201, 143, 43)" rx="2" ry="2"/>
+<text text-anchor="left" x="23.085470" y="191.000000" font-size="12.000000" font-family="Verdana" fill="rgb(0, 0, 0)"  >innerBenchmarkLoop</text>
+</g>
+<g class="func_h" onmouseover="s(this)" onmouseout="c(this)" onclick="h_highlight(this)" id="h_10" >
+<title>Function: init
+1 samples (1 interpreted, 0 compiled).
+0.45% of displayed samples.
+</title><rect x="10.000000" y="196.000000" width="10.085470" height="16.000000" fill="rgb(229, 193, 68)" rx="2" ry="2"/>
+<text text-anchor="left" x="23.085470" y="207.000000" font-size="12.000000" font-family="Verdana" fill="rgb(0, 0, 0)"  >init</text>
+</g>
+<g class="func_h" onmouseover="s(this)" onmouseout="c(this)" onclick="h_highlight(this)" id="h_11" >
+<title>Function: printResult
+1 samples (0 interpreted, 1 compiled).
+0.45% of displayed samples.
+</title><rect x="10.000000" y="212.000000" width="10.085470" height="16.000000" fill="rgb(223, 151, 68)" rx="2" ry="2"/>
+<text text-anchor="left" x="23.085470" y="223.000000" font-size="12.000000" font-family="Verdana" fill="rgb(0, 0, 0)"  >printResult</text>
+</g>
+<g class="func_h" onmouseover="s(this)" onmouseout="c(this)" onclick="h_highlight(this)" id="h_12" >
 <title>Function: program
 1 samples (1 interpreted, 0 compiled).
-0.22% of displayed samples.
-</title><rect x="10.000000" y="180.000000" width="4.645669" height="16.000000" fill="rgb(212, 118, 53)" rx="2" ry="2"/>
-<text text-anchor="left" x="17.645669" y="191.000000" font-size="12.000000" font-family="Verdana" fill="rgb(0, 0, 0)"  >program</text>
+0.45% of displayed samples.
+</title><rect x="10.000000" y="228.000000" width="10.085470" height="16.000000" fill="rgb(227, 148, 57)" rx="2" ry="2"/>
+<text text-anchor="left" x="23.085470" y="239.000000" font-size="12.000000" font-family="Verdana" fill="rgb(0, 0, 0)"  >program</text>
 </g>
 </g>
 </svg>

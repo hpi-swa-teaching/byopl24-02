@@ -1,0 +1,95 @@
+{
+  "execution_metadata": {
+    "date": "2025-10-06",
+    "platform": "darwin",
+    "os_version": "Darwin 25.0.0",
+    "graalvm_version": "24.2.0-SNAPSHOT",
+    "java_version": "21",
+    "iterations_per_benchmark": 100
+  },
+  "benchmarks": [
+    {
+      "name": "sieve",
+      "description": "Sieve of Eratosthenes - Prime number calculation",
+      "iterations": 100,
+      "total_runtime_us": 219162,
+      "average_runtime_us": 2191.62,
+      "expected_result": 669,
+      "verification_passed": true,
+      "notes": "Shows significant warmup effect in first few iterations (86989us -> ~50-200us)"
+    },
+    {
+      "name": "queens",
+      "description": "N-Queens problem - Backtracking algorithm",
+      "iterations": 100,
+      "total_runtime_us": 986835,
+      "average_runtime_us": 9868.35,
+      "expected_result": true,
+      "verification_passed": true,
+      "notes": "Solves 8-Queens problem 10 times per iteration, shows warmup from 114895us to ~2000us"
+    },
+    {
+      "name": "towers",
+      "description": "Towers of Hanoi - Recursive algorithm with 13 disks",
+      "iterations": 100,
+      "total_runtime_us": 2025420,
+      "average_runtime_us": 20254.2,
+      "expected_result": 8191,
+      "verification_passed": true,
+      "notes": "Most consistent performance after warmup (~10000-13000us range)"
+    },
+    {
+      "name": "permute",
+      "description": "Permutation generator - Recursive permutation of 6 elements",
+      "iterations": 100,
+      "total_runtime_us": 146279,
+      "average_runtime_us": 1462.79,
+      "expected_result": 720,
+      "verification_passed": true,
+      "notes": "Fastest benchmark, generates all 720 permutations of 6 elements"
+    },
+    {
+      "name": "list",
+      "description": "TAKL benchmark - Recursive list manipulation",
+      "iterations": 100,
+      "total_runtime_us": 893385,
+      "average_runtime_us": 8933.85,
+      "expected_result": 10,
+      "verification_passed": true,
+      "notes": "Heavy recursion benchmark with linked list structures"
+    },
+    {
+      "name": "arrayLiterals",
+      "description": "Array literal construction - Tests array allocation performance",
+      "iterations": 100,
+      "total_runtime_us": 91095,
+      "average_runtime_us": 910.95,
+      "expected_result": true,
+      "verification_passed": true,
+      "notes": "Constructs 1000 array literals per iteration, very fast after warmup (~50-200us)"
+    }
+  ],
+  "summary": {
+    "total_benchmarks": 6,
+    "all_verifications_passed": true,
+    "total_execution_time_us": 4362176,
+    "total_execution_time_ms": 4362.176,
+    "total_execution_time_seconds": 4.362,
+    "benchmark_ranking_by_speed": [
+      {"rank": 1, "name": "arrayLiterals", "avg_us": 910.95},
+      {"rank": 2, "name": "permute", "avg_us": 1462.79},
+      {"rank": 3, "name": "sieve", "avg_us": 2191.62},
+      {"rank": 4, "name": "list", "avg_us": 8933.85},
+      {"rank": 5, "name": "queens", "avg_us": 9868.35},
+      {"rank": 6, "name": "towers", "avg_us": 20254.2}
+    ]
+  },
+  "observations": [
+    "All benchmarks show significant JIT warmup effect in the first 1-10 iterations",
+    "After warmup, performance stabilizes with low variance",
+    "Array literal construction is the fastest benchmark after warmup",
+    "Towers of Hanoi is the slowest benchmark due to deep recursion with 13 disks",
+    "All verification tests passed, confirming correct implementation",
+    "Performance characteristics suggest successful Truffle compilation and optimization"
+  ]
+}

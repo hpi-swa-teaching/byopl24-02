@@ -1,0 +1,26 @@
+
+------------------------------------------------------------------------------------------------------
+Sampling Histogram. Recorded 100 samples with period 10ms. Missed 8 samples.
+  Self Time: Time spent on the top of the stack.
+  Total Time: Time spent somewhere on the stack.
+------------------------------------------------------------------------------------------------------
+Thread[#1,main,5,main]
+ Name               ||             Total Time    ||              Self Time    || Location             
+------------------------------------------------------------------------------------------------------
+ isShorterThan      ||              910ms  91.0% ||              910ms  91.0% || list.lox~1-57:0-1250
+ printResult        ||               20ms   2.0% ||               20ms   2.0% || run.lox~21-23:559-705
+ takl               ||              930ms  93.0% ||               20ms   2.0% || list.lox~1-57:0-1250
+ init               ||               10ms   1.0% ||               10ms   1.0% || list.lox~3-6:43-104
+ program            ||               10ms   1.0% ||               10ms   1.0% || run.lox~1-52:0-1471
+ makeList           ||               20ms   2.0% ||               10ms   1.0% || list.lox~1-57:0-1250
+ program            ||               10ms   1.0% ||               10ms   1.0% || benchmark.lox~1-16:0-313
+ measure            ||              980ms  98.0% ||               10ms   1.0% || run.lox~1-52:0-1471
+ runBenchmark       ||              980ms  98.0% ||                0ms   0.0% || run.lox~46-51:1298-1469
+ benchmark          ||              950ms  95.0% ||                0ms   0.0% || list.lox~1-57:0-1250
+ doRuns             ||              980ms  98.0% ||                0ms   0.0% || run.lox~36-40:1080-1204
+ innerBenchmarkLoop ||              950ms  95.0% ||                0ms   0.0% || benchmark.lox~1-16:0-313
+ init               ||               10ms   1.0% ||                0ms   0.0% || run.lox~2-8:16-201
+ processArguments   ||               10ms   1.0% ||                0ms   0.0% || harness.lox~2-10:17-260
+ program            ||             1000ms 100.0% ||                0ms   0.0% || harness.lox~1:0-23
+ loadBenchmark      ||               10ms   1.0% ||                0ms   0.0% || run.lox~1-52:0-1471
+------------------------------------------------------------------------------------------------------

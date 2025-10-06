@@ -1,0 +1,27 @@
+------------------------------------------------------------------------------------------------------
+Sampling Histogram. Recorded 88 samples with period 10ms. Missed 8 samples.
+  Self Time: Time spent on the top of the stack.
+  Total Time: Time spent somewhere on the stack.
+------------------------------------------------------------------------------------------------------
+Thread[#1,main,5,main]
+ Name               ||             Total Time    ||              Self Time    || Location             
+------------------------------------------------------------------------------------------------------
+ getRowColumn       ||              730ms  83.0% ||              730ms  83.0% || queens.lox~1-57:0-1607
+ placeQueen         ||              790ms  89.8% ||               40ms   4.5% || queens.lox~1-57:0-1607
+ printResult        ||               30ms   3.4% ||               30ms   3.4% || run.lox~21-23:559-705
+ setRowColumn       ||               20ms   2.3% ||               20ms   2.3% || queens.lox~52-57:1458-1588
+ queens             ||              810ms  92.0% ||               20ms   2.3% || queens.lox~1-57:0-1607
+ program            ||               10ms   1.1% ||               10ms   1.1% || run.lox~1-52:0-1471
+ init               ||               20ms   2.3% ||               10ms   1.1% || queens.lox~3-9:54-206
+ program            ||               10ms   1.1% ||               10ms   1.1% || benchmark.lox~1-16:0-313
+ init               ||               10ms   1.1% ||               10ms   1.1% || benchmark.lox~11:260-268
+ runBenchmark       ||              840ms  95.5% ||                0ms   0.0% || run.lox~46-51:1298-1469
+ doRuns             ||              840ms  95.5% ||                0ms   0.0% || run.lox~36-40:1080-1204
+ innerBenchmarkLoop ||              810ms  92.0% ||                0ms   0.0% || benchmark.lox~1-16:0-313
+ init               ||               30ms   3.4% ||                0ms   0.0% || run.lox~2-8:16-201
+ processArguments   ||               30ms   3.4% ||                0ms   0.0% || harness.lox~2-10:17-260
+ program            ||              880ms 100.0% ||                0ms   0.0% || harness.lox~1:0-23
+ loadBenchmark      ||               30ms   3.4% ||                0ms   0.0% || run.lox~1-52:0-1471
+ benchmark          ||              810ms  92.0% ||                0ms   0.0% || queens.lox~1-57:0-1607
+ measure            ||              840ms  95.5% ||                0ms   0.0% || run.lox~1-52:0-1471
+------------------------------------------------------------------------------------------------------
