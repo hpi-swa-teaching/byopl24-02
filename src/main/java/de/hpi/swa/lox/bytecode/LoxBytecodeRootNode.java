@@ -49,7 +49,7 @@ import de.hpi.swa.lox.runtime.data.LoxObject;
 import de.hpi.swa.lox.runtime.data.Nil;
 
 @GenerateBytecode(languageClass = LoxLanguage.class, enableMaterializedLocalAccesses = true, //
-        boxingEliminationTypes = { long.class }, // BUG? boolean.class
+        boxingEliminationTypes = { long.class, double.class }, // Enable boxing elimination for primitive doubles
         enableUncachedInterpreter = true, //
         enableSerialization = true, enableRootTagging = true, enableRootBodyTagging = false, enableTagInstrumentation = true)
 @ShortCircuitOperation(name = "LoxAnd", booleanConverter = LoxBytecodeRootNode.LoxIsTruthy.class, operator = Operator.AND_RETURN_CONVERTED)
@@ -87,6 +87,12 @@ public abstract class LoxBytecodeRootNode extends LoxRootNode implements Bytecod
     @Operation
     public static final class LoxNegate {
         @Specialization
+        static double doDouble(double value) {
+            // Fast path: direct primitive negation
+            return -value;
+        }
+
+        @Specialization
         static LoxNumber doNumber(LoxNumber loxNumber) {
             // Unwrap LoxNumber value, calculate result, rewrap.
             Double result = -1 * loxNumber.getValue();
@@ -95,13 +101,19 @@ public abstract class LoxBytecodeRootNode extends LoxRootNode implements Bytecod
 
         @Fallback
         @TruffleBoundary
-        static LoxNumber doOtherTypes(Object value, @Bind Node node) {
+        static Object doOtherTypes(Object value, @Bind Node node) {
             throw new LoxRuntimeError(String.format("Cannot negate %s", value), node);
         }
     }
 
     @Operation
     public static final class LoxAdd {
+        @Specialization
+        static double doDoubles(double left, double right) {
+            // Fast path: direct primitive addition
+            return left + right;
+        }
+
         @Specialization
         static LoxNumber doNumbers(LoxNumber left, LoxNumber right) {
             // Unwrap LoxNumber values, calculate result, rewrap.
@@ -114,15 +126,21 @@ public abstract class LoxBytecodeRootNode extends LoxRootNode implements Bytecod
             return left.concatUncached(right, TruffleString.Encoding.UTF_8, false);
         }
 
-        @Specialization
+        @Fallback
         @TruffleBoundary
-        static LoxNumber doOtherTypes(Object left, Object right, @Bind Node node) {
+        static Object doOtherTypes(Object left, Object right, @Bind Node node) {
             throw new LoxRuntimeError(String.format("Cannot add %s and %s", left.toString(), right.toString()), node);
         }
     }
 
     @Operation
     public static final class LoxSubtract {
+        @Specialization
+        static double doDoubles(double left, double right) {
+            // Fast path: direct primitive subtraction
+            return left - right;
+        }
+
         @Specialization
         static LoxNumber doNumber(LoxNumber left, LoxNumber right) {
             // Unwrap LoxNumber values, calculate result, rewrap.
@@ -132,7 +150,7 @@ public abstract class LoxBytecodeRootNode extends LoxRootNode implements Bytecod
 
         @Fallback
         @TruffleBoundary
-        static LoxNumber doOtherTypes(Object left, Object right, @Bind Node node) {
+        static Object doOtherTypes(Object left, Object right, @Bind Node node) {
             throw new LoxRuntimeError(String.format("Cannot subtract %s and %s", left.toString(), right.toString()),
                     node);
         }
@@ -140,6 +158,12 @@ public abstract class LoxBytecodeRootNode extends LoxRootNode implements Bytecod
 
     @Operation
     public static final class LoxMultiply {
+        @Specialization
+        static double doDoubles(double left, double right) {
+            // Fast path: direct primitive multiplication
+            return left * right;
+        }
+
         @Specialization
         static LoxNumber doNumbers(LoxNumber left, LoxNumber right) {
             // Unwrap LoxNumber values, calculate result, rewrap.
@@ -149,7 +173,7 @@ public abstract class LoxBytecodeRootNode extends LoxRootNode implements Bytecod
 
         @Fallback
         @TruffleBoundary
-        static LoxNumber doOtherTypes(Object left, Object right, @Bind Node node) {
+        static Object doOtherTypes(Object left, Object right, @Bind Node node) {
             throw new LoxRuntimeError(String.format("Cannot multiply %s and %s", left.toString(), right.toString()),
                     node);
         }
@@ -157,6 +181,15 @@ public abstract class LoxBytecodeRootNode extends LoxRootNode implements Bytecod
 
     @Operation
     public static final class LoxDivide {
+        @Specialization
+        static double doDoubles(double left, double right, @Bind Node node) {
+            // Fast path: direct primitive division
+            if (right == 0) {
+                throw new LoxRuntimeError("Division by zero", node);
+            }
+            return left / right;
+        }
+
         @Specialization
         static LoxNumber doNumbers(LoxNumber left, LoxNumber right, @Bind Node node) {
             if (right.getValue() == 0) {
@@ -170,7 +203,7 @@ public abstract class LoxBytecodeRootNode extends LoxRootNode implements Bytecod
 
         @Fallback
         @TruffleBoundary
-        static LoxNumber doOtherTypes(Object left, Object right, @Bind Node node) {
+        static Object doOtherTypes(Object left, Object right, @Bind Node node) {
             throw new LoxRuntimeError(String.format("Cannot divide %s and %s", left.toString(), right.toString()),
                     node);
         }
@@ -191,6 +224,12 @@ public abstract class LoxBytecodeRootNode extends LoxRootNode implements Bytecod
 
     @Operation
     public static final class LoxEqual {
+        @Specialization
+        static boolean doDoubles(double left, double right) {
+            // Fast path: direct primitive comparison
+            return left == right;
+        }
+
         @Specialization // LoxNumbers need no TruffleBoundary here.
         static boolean doLoxNumbers(LoxNumber left, LoxNumber right) {
             return left.equals(right);
@@ -206,12 +245,14 @@ public abstract class LoxBytecodeRootNode extends LoxRootNode implements Bytecod
     @Operation
     public static final class LoxLess {
         @Specialization
+        static boolean doDoubles(double left, double right) {
+            // Fast path: direct primitive comparison
+            return left < right;
+        }
+
+        @Specialization
         static boolean doLoxNumbers(LoxNumber left, LoxNumber right) {
-            if (left.equals(right)) {
-                // Remember: we internally deal with doubles, that might be unequal only a
-                // little bit.
-                return false;
-            }
+            // Single comparison - no redundant equals() check needed
             return left.getValue() < right.getValue();
         }
 
@@ -226,18 +267,20 @@ public abstract class LoxBytecodeRootNode extends LoxRootNode implements Bytecod
     @Operation
     public static final class LoxLessOrEqual {
         @Specialization
+        static boolean doDoubles(double left, double right) {
+            // Fast path: direct primitive comparison
+            return left <= right;
+        }
+
+        @Specialization
         static boolean doLoxNumbers(LoxNumber left, LoxNumber right) {
-            if (left.equals(right)) {
-                // Remember: we internally deal with doubles, that might be unequal only a
-                // little bit.
-                return true;
-            }
+            // Single comparison - no redundant equals() check needed
             return left.getValue() <= right.getValue();
         }
 
         @Fallback
         @TruffleBoundary
-        static Object doOtherTypes(Object left, Object right, @Bind Node node) {
+        static boolean doOtherTypes(Object left, Object right, @Bind Node node) {
             throw new LoxRuntimeError(String.format("Cannot apply <= on %s and %s", left.toString(), right.toString()),
                     node);
         }
@@ -246,12 +289,14 @@ public abstract class LoxBytecodeRootNode extends LoxRootNode implements Bytecod
     @Operation
     public static final class LoxGreater {
         @Specialization
+        static boolean doDoubles(double left, double right) {
+            // Fast path: direct primitive comparison
+            return left > right;
+        }
+
+        @Specialization
         static boolean doLoxNumbers(LoxNumber left, LoxNumber right) {
-            if (left.equals(right)) {
-                // Remember: we internally deal with doubles, that might be unequal only a
-                // little bit.
-                return false;
-            }
+            // Single comparison - no redundant equals() check needed
             return left.getValue() > right.getValue();
         }
 
@@ -266,12 +311,14 @@ public abstract class LoxBytecodeRootNode extends LoxRootNode implements Bytecod
     @Operation
     public static final class LoxGreaterOrEqual {
         @Specialization
+        static boolean doDoubles(double left, double right) {
+            // Fast path: direct primitive comparison
+            return left >= right;
+        }
+
+        @Specialization
         static boolean doLoxNumbers(LoxNumber left, LoxNumber right) {
-            if (left.equals(right)) {
-                // Remember: we internally deal with doubles, that might be unequal only a
-                // little bit.
-                return true;
-            }
+            // Single comparison - no redundant equals() check needed
             return left.getValue() >= right.getValue();
         }
 
@@ -389,6 +436,12 @@ public abstract class LoxBytecodeRootNode extends LoxRootNode implements Bytecod
 
     @Operation
     public static final class LoxIsTruthy {
+
+        @Specialization
+        public static boolean fromDouble(double x) {
+            // Fast path: direct primitive check
+            return x != 0;
+        }
 
         @Specialization
         public static boolean fromLoxNumber(LoxNumber x) {
