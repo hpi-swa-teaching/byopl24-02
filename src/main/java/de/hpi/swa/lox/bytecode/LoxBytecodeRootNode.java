@@ -102,6 +102,13 @@ public abstract class LoxBytecodeRootNode extends LoxRootNode implements Bytecod
 
     @Operation
     public static final class LoxAdd {
+        // Fast path: primitive double addition (no boxing) - enabled by boxingEliminationTypes
+        @Specialization
+        static double doDoublesNoBox(double left, double right) {
+            return left + right;
+        }
+
+        // Standard path: LoxNumber addition
         @Specialization
         static LoxNumber doNumbers(LoxNumber left, LoxNumber right) {
             // Unwrap LoxNumber values, calculate result, rewrap.
@@ -116,13 +123,20 @@ public abstract class LoxBytecodeRootNode extends LoxRootNode implements Bytecod
 
         @Specialization
         @TruffleBoundary
-        static LoxNumber doOtherTypes(Object left, Object right, @Bind Node node) {
+        static Object doOtherTypes(Object left, Object right, @Bind Node node) {
             throw new LoxRuntimeError(String.format("Cannot add %s and %s", left.toString(), right.toString()), node);
         }
     }
 
     @Operation
     public static final class LoxSubtract {
+        // Fast path: primitive double subtraction (no boxing)
+        @Specialization
+        static double doDoublesNoBox(double left, double right) {
+            return left - right;
+        }
+
+        // Standard path: LoxNumber subtraction
         @Specialization
         static LoxNumber doNumber(LoxNumber left, LoxNumber right) {
             // Unwrap LoxNumber values, calculate result, rewrap.
@@ -132,7 +146,7 @@ public abstract class LoxBytecodeRootNode extends LoxRootNode implements Bytecod
 
         @Fallback
         @TruffleBoundary
-        static LoxNumber doOtherTypes(Object left, Object right, @Bind Node node) {
+        static Object doOtherTypes(Object left, Object right, @Bind Node node) {
             throw new LoxRuntimeError(String.format("Cannot subtract %s and %s", left.toString(), right.toString()),
                     node);
         }
@@ -140,6 +154,13 @@ public abstract class LoxBytecodeRootNode extends LoxRootNode implements Bytecod
 
     @Operation
     public static final class LoxMultiply {
+        // Fast path: primitive double multiplication (no boxing)
+        @Specialization
+        static double doDoublesNoBox(double left, double right) {
+            return left * right;
+        }
+
+        // Standard path: LoxNumber multiplication
         @Specialization
         static LoxNumber doNumbers(LoxNumber left, LoxNumber right) {
             // Unwrap LoxNumber values, calculate result, rewrap.
@@ -149,7 +170,7 @@ public abstract class LoxBytecodeRootNode extends LoxRootNode implements Bytecod
 
         @Fallback
         @TruffleBoundary
-        static LoxNumber doOtherTypes(Object left, Object right, @Bind Node node) {
+        static Object doOtherTypes(Object left, Object right, @Bind Node node) {
             throw new LoxRuntimeError(String.format("Cannot multiply %s and %s", left.toString(), right.toString()),
                     node);
         }
@@ -157,6 +178,17 @@ public abstract class LoxBytecodeRootNode extends LoxRootNode implements Bytecod
 
     @Operation
     public static final class LoxDivide {
+        // Fast path: primitive double division (no boxing)
+        // Note: division by zero in double arithmetic returns Infinity, not exception
+        @Specialization
+        static double doDoublesNoBox(double left, double right, @Bind Node node) {
+            if (right == 0.0) {
+                throw new LoxRuntimeError("Division by zero", node);
+            }
+            return left / right;
+        }
+
+        // Standard path: LoxNumber division
         @Specialization
         static LoxNumber doNumbers(LoxNumber left, LoxNumber right, @Bind Node node) {
             if (right.getValue() == 0) {
@@ -170,7 +202,7 @@ public abstract class LoxBytecodeRootNode extends LoxRootNode implements Bytecod
 
         @Fallback
         @TruffleBoundary
-        static LoxNumber doOtherTypes(Object left, Object right, @Bind Node node) {
+        static Object doOtherTypes(Object left, Object right, @Bind Node node) {
             throw new LoxRuntimeError(String.format("Cannot divide %s and %s", left.toString(), right.toString()),
                     node);
         }
@@ -205,6 +237,13 @@ public abstract class LoxBytecodeRootNode extends LoxRootNode implements Bytecod
 
     @Operation
     public static final class LoxLess {
+        // Fast path: primitive double comparison (no boxing)
+        @Specialization
+        static boolean doDoublesNoBox(double left, double right) {
+            return left < right;
+        }
+
+        // Standard path: LoxNumber comparison
         @Specialization
         static boolean doLoxNumbers(LoxNumber left, LoxNumber right) {
             if (left.equals(right)) {
@@ -408,7 +447,16 @@ public abstract class LoxBytecodeRootNode extends LoxRootNode implements Bytecod
 
     @Operation
     public static final class LoxReadArray {
-        @Specialization(guards = "index.getValue().intValue() >= 0")
+        // Fast path: when index is within bounds, avoid redundant checks
+        @Specialization(guards = {"index.getValue().intValue() >= 0",
+                                   "index.getValue().intValue() < array.getSize()"})
+        static Object readArrayFast(LoxArray array, LoxNumber index) {
+            return array.getUnchecked(index.getValue().intValue());
+        }
+
+        // Fallback to regular bounds-checking path
+        @Specialization(guards = "index.getValue().intValue() >= 0",
+                       replaces = "readArrayFast")
         static Object readArray(LoxArray array, LoxNumber index) {
             return array.get(index.getValue().intValue());
         }
@@ -430,21 +478,23 @@ public abstract class LoxBytecodeRootNode extends LoxRootNode implements Bytecod
 
     @Operation
     public static final class LoxWriteArray {
+        // Fast path: when index is within size, use unchecked write
         @Specialization(guards = { "index.getValue().intValue() >= 0",
                 "array.getSize() > index.getValue().intValue()" })
-        static Void writeArrayInSize(LoxArray array, LoxNumber index, Object value) {
-            array.setInSize(index.getValue().intValue(), value);
+        static Void writeArrayFast(LoxArray array, LoxNumber index, Object value) {
+            array.setUnchecked(index.getValue().intValue(), value);
             return null;
         }
 
+        // Write within capacity but may need to update size
         @Specialization(guards = { "index.getValue().intValue() >= 0",
-                "array.getCapacity() > index.getValue().intValue()" }, replaces = "writeArrayInSize")
+                "array.getCapacity() > index.getValue().intValue()" }, replaces = "writeArrayFast")
         static Void writeArrayInCapacity(LoxArray array, LoxNumber index, Object value) {
             array.setInCapacity(index.getValue().intValue(), value);
             return null;
         }
 
-        // Lox number wraps a double, so we need to cast it to int
+        // General case: may need to grow array
         @Specialization(guards = "index.getValue().intValue() >= 0", replaces = "writeArrayInCapacity")
         static Void writeArray(LoxArray array, LoxNumber index, Object value) {
             array.set(index.getValue().intValue(), value);

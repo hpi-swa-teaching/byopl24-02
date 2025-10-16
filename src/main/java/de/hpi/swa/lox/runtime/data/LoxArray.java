@@ -70,6 +70,16 @@ public class LoxArray implements TruffleObject {
         }
     }
 
+    /**
+     * Fast-path array access without bounds checking.
+     * Caller must ensure index is valid.
+     * Used by optimized bytecode operations.
+     */
+    public Object getUnchecked(int index) {
+        var result = innerArray[index];
+        return result != null ? result : Nil.INSTANCE;
+    }
+
     public void set(int index, Object value) {
         if (index >= size) {
             size = index + 1;
@@ -95,6 +105,16 @@ public class LoxArray implements TruffleObject {
     public void setInSize(int index, Object value) {
         innerArray[index] = value;
         // Set flag for iterator update
+        iteratorNeedsUpdate = true;
+    }
+
+    /**
+     * Fast-path array write without size/capacity checking.
+     * Caller must ensure index is valid and within current array capacity.
+     * Used by optimized bytecode operations.
+     */
+    public void setUnchecked(int index, Object value) {
+        innerArray[index] = value;
         iteratorNeedsUpdate = true;
     }
 
