@@ -95,6 +95,7 @@
           <configuration>
             <source>21</source>
             <target>21</target>
+            <forceJavacCompilerUse>true</forceJavacCompilerUse>
             <annotationProcessorPaths>
               <path>
                 <groupId>org.graalvm.truffle</groupId>
