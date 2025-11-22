@@ -259,6 +259,23 @@ The `LoxNumber` class (src/main/java/de/hpi/swa/lox/runtime/data/LoxNumber.java)
    bgv2json "compiler_graphs/TruffleHotSpotCompilation-*[root_sieve].bgv" 2>&1 | grep -i "double.value"
    ```
    Multiple `Double.value` field accesses confirm boxing/unboxing overhead
+4. **Graal Profiling & Optimization Commands**:
+   ```bash
+   # Trace compilation with detailed inlining info
+   ./lox --engine.TraceCompilation --engine.TraceInlining harness.lox sieve 5 1000
+
+   # CPU sampling to identify hot allocation sites
+   ./lox --cpusampler --cpusampler.SampleInternal harness.lox sieve 5 1000
+
+   # Compilation statistics to see allocation counts
+   EXTRA_JAVA_ARGS="-Djdk.graal.PrintCompilation=true" ./lox harness.lox sieve 5 1000
+
+   # Dump final compilation tier graphs for escape analysis inspection
+   EXTRA_JAVA_ARGS="-Djdk.graal.Dump=Truffle:2 -Djdk.graal.PrintGraph=File -Djdk.graal.DumpPath=compiler_graphs" ./lox harness.lox sieve 5 1000
+
+   # Search for boxing-related nodes in IR
+   bgv2json "compiler_graphs/TruffleHotSpotCompilation-*[root_sieve].bgv" 2>&1 | grep -E "(Double.value|valueOf|newInstance)"
+   ```
 
 **Example from code**:
 ```java
@@ -279,6 +296,23 @@ static LoxNumber doNumbers(LoxNumber left, LoxNumber right) {
 1. **Code Review**: Check `@GenerateBytecode` annotation - `boxingEliminationTypes = { long.class }` is incomplete
 2. **IR Analysis**: Look for boxing/unboxing operations on doubles in compiler graphs that should be eliminated
 3. **Benchmark Comparison**: Compare performance before/after adding `double.class` to boxing elimination types
+4. **Graal Profiling & Optimization Commands**:
+   ```bash
+   # Trace compilation to see if double boxing elimination is active
+   ./lox --engine.TraceCompilation --engine.TraceCompilationDetails harness.lox sieve 5 1000
+
+   # Check for deoptimization related to type mismatches
+   ./lox --engine.TraceTransferToInterpreter harness.lox sieve 5 1000
+
+   # Dump IR to inspect boxing elimination passes
+   EXTRA_JAVA_ARGS="-Djdk.graal.Dump=Truffle:1 -Djdk.graal.PrintGraph=File -Djdk.graal.DumpPath=compiler_graphs" ./lox harness.lox sieve 5 1000
+
+   # Search for Double boxing in After PartialEscape phase
+   bgv2json "compiler_graphs/TruffleHotSpotCompilation-*After*PartialEscape*[root_sieve].bgv" 2>&1 | grep -i "double"
+
+   # Compare bytecode with/without double boxing elimination
+   EXTRA_JAVA_ARGS="-XX:+UnlockDiagnosticVMOptions -XX:+PrintAssembly" ./lox harness.lox sieve 5 1000 2>&1 | grep -A5 "doNumbers"
+   ```
 
 **Current code**:
 ```java
@@ -297,6 +331,26 @@ static LoxNumber doNumbers(LoxNumber left, LoxNumber right) {
 1. **Code Review**: Check if @Operation specializations accept primitive types (double, long) or only wrapper types (LoxNumber)
 2. **Compilation Size**: Large compiled code indicates wrapper overhead
 3. **IR Complexity**: Complex IR with allocation nodes instead of simple arithmetic nodes
+4. **Graal Profiling & Optimization Commands**:
+   ```bash
+   # Trace inlining to see if wrapper methods prevent optimization
+   ./lox --engine.TraceInlining harness.lox sieve 5 1000 2>&1 | grep -E "(doNumbers|getValue)"
+
+   # Compilation details show specialization overhead
+   ./lox --engine.TraceCompilationDetails harness.lox sieve 5 1000
+
+   # CPU tracer to identify hot wrapper operations
+   ./lox --cputracer harness.lox sieve 5 1000 | grep -E "(doNumbers|getValue)"
+
+   # Dump IR and look for allocation sites in arithmetic
+   EXTRA_JAVA_ARGS="-Djdk.graal.Dump=Truffle:1 -Djdk.graal.PrintGraph=File -Djdk.graal.DumpPath=compiler_graphs" ./lox harness.lox sieve 5 1000
+
+   # Search for allocation nodes in arithmetic operations
+   bgv2json "compiler_graphs/TruffleHotSpotCompilation-*[root_sieve].bgv" 2>&1 | grep -E "(NewInstance.*LoxNumber|Allocate.*LoxNumber)"
+
+   # Check if primitives are used or wrapped
+   bgv2json "compiler_graphs/TruffleHotSpotCompilation-*After*Lowering*[root_sieve].bgv" 2>&1 | grep -C3 "Add\|Sub\|Mul\|Div"
+   ```
 
 **Example**:
 ```java
@@ -324,6 +378,20 @@ static double doDouble(double left, double right) {
 1. **Code Review**: Look for `new LoxNumber()` calls without any pooling/caching mechanism
 2. **Allocation Profiling**: Use `--cpusampler` to identify hot allocation sites
 3. **Heap Analysis**: Monitor object allocation rates during benchmark runs
+4. **Graal Profiling & Optimization Commands**:
+   ```bash
+   # CPU sampler with internal sampling to see allocation hotspots
+   ./lox --cpusampler --cpusampler.SampleInternal harness.lox sieve 5 1000
+
+   # Trace compilation to see escape analysis results
+   ./lox --engine.TraceCompilation harness.lox sieve 5 1000 2>&1 | grep -i "escape"
+
+   # Dump IR after escape analysis to see if allocations are eliminated
+   EXTRA_JAVA_ARGS="-Djdk.graal.Dump=Truffle:1 -Djdk.graal.PrintGraph=File -Djdk.graal.DumpPath=compiler_graphs" ./lox harness.lox sieve 5 1000
+
+   # Check for remaining allocations after PartialEscape phase
+   bgv2json "compiler_graphs/TruffleHotSpotCompilation-*After*PartialEscape*[root_sieve].bgv" 2>&1 | grep -E "(NewInstance.*LoxNumber|CommitAllocation)"
+   ```
 
 **Impact**: Lower priority - mostly mitigated by escape analysis, but reduces compiler optimization burden.
 
@@ -337,6 +405,23 @@ static double doDouble(double left, double right) {
 1. **Code Review**: Look for `if (left.equals(right))` guards before comparison operations
 2. **Compilation Analysis**: `--traceCompilation` shows larger compiled code size
 3. **IR Analysis**: Extra branch nodes in IR for equality check
+4. **Graal Profiling & Optimization Commands**:
+   ```bash
+   # Trace compilation to see code size impact
+   ./lox --engine.TraceCompilation harness.lox sieve 5 1000 2>&1 | grep "CodeSize"
+
+   # Trace inlining to see if equals() calls are inlined
+   ./lox --engine.TraceInlining harness.lox sieve 5 1000 2>&1 | grep -E "(equals|LoxNumber)"
+
+   # CPU tracer to identify hot comparison operations
+   ./lox --cputracer harness.lox sieve 5 1000 | grep -E "(doLoxNumbers|equals)"
+
+   # Dump IR to inspect branch overhead
+   EXTRA_JAVA_ARGS="-Djdk.graal.Dump=Truffle:1 -Djdk.graal.PrintGraph=File -Djdk.graal.DumpPath=compiler_graphs" ./lox harness.lox sieve 5 1000
+
+   # Search for If nodes in comparison operations
+   bgv2json "compiler_graphs/TruffleHotSpotCompilation-*[root_sieve].bgv" 2>&1 | grep -B5 -A5 "equals"
+   ```
 
 **Example**:
 ```java
@@ -367,6 +452,23 @@ The `LoxArray` class (src/main/java/de/hpi/swa/lox/runtime/data/LoxArray.java) h
    bgv2json "compiler_graphs/TruffleHotSpotCompilation-*[root_sieve].bgv" 2>&1 | grep -E "(intValue|getValue)" | wc -l
    ```
    High count indicates redundant index extraction
+4. **Graal Profiling & Optimization Commands**:
+   ```bash
+   # Trace compilation for array operations
+   ./lox --engine.TraceCompilation harness.lox sieve 5 1000 2>&1 | grep -E "(LoxReadArray|LoxWriteArray)"
+
+   # Trace inlining to see guard complexity
+   ./lox --engine.TraceInlining harness.lox sieve 5 1000 2>&1 | grep -E "(getValue|intValue)"
+
+   # CPU sampler to identify array access hotspots
+   ./lox --cpusampler harness.lox sieve 5 1000
+
+   # Dump IR to inspect guard and index extraction overhead
+   EXTRA_JAVA_ARGS="-Djdk.graal.Dump=Truffle:1 -Djdk.graal.PrintGraph=File -Djdk.graal.DumpPath=compiler_graphs" ./lox harness.lox sieve 5 1000
+
+   # Count redundant getValue/intValue calls
+   bgv2json "compiler_graphs/TruffleHotSpotCompilation-*[root_sieve].bgv" 2>&1 | grep -E "(intValue|getValue)" | wc -l
+   ```
 
 **Example**:
 ```java
@@ -389,6 +491,23 @@ static Void writeArrayInSize(LoxArray array, LoxNumber index, Object value) {
 1. **Code Review**: Check for `@TruffleBoundary` on `buildListIterator()` method in LoxArray.java:43
 2. **Profiling**: Iterator methods cannot be compiled due to boundary annotation
 3. **Code Analysis**: Look for multiple array copies in iterator creation (Arrays.asList → stream → filter → toList)
+4. **Graal Profiling & Optimization Commands**:
+   ```bash
+   # CPU sampler to identify iterator overhead (use list benchmark with for-of)
+   ./lox --cpusampler harness.lox list 5 10
+
+   # Trace compilation to see if iterator code compiles
+   ./lox --engine.TraceCompilation harness.lox list 5 10 2>&1 | grep -i "iterator"
+
+   # Trace boundaries to identify TruffleBoundary exits
+   ./lox --engine.TraceTransferToInterpreter harness.lox list 5 10
+
+   # Dump IR to verify iterator methods are not inlined
+   EXTRA_JAVA_ARGS="-Djdk.graal.Dump=Truffle:1 -Djdk.graal.PrintGraph=File -Djdk.graal.DumpPath=compiler_graphs" ./lox harness.lox list 5 10
+
+   # Search for boundary nodes
+   bgv2json "compiler_graphs/TruffleHotSpotCompilation-*[root_list].bgv" 2>&1 | grep -i "boundary"
+   ```
 
 **Example**:
 ```java
@@ -412,6 +531,20 @@ private ListIterator<Object> buildListIterator() {
 1. **Code Review**: Check if `ensureCapacity()` has `@TruffleBoundary` annotation - it's missing at LoxArray.java:101
 2. **Compilation Analysis**: `--engine.TraceCompilation` shows very large compiled code for array operations
 3. **IR Analysis**: Arrays.copyOf inlined into compiled code causing bloat
+4. **Graal Profiling & Optimization Commands**:
+   ```bash
+   # Trace compilation to see code size bloat
+   ./lox --engine.TraceCompilation harness.lox sieve 5 1000 2>&1 | grep "CodeSize"
+
+   # Trace inlining to see if Arrays.copyOf is inlined
+   ./lox --engine.TraceInlining harness.lox sieve 5 1000 2>&1 | grep -E "(ensureCapacity|copyOf)"
+
+   # Dump IR to inspect Arrays.copyOf complexity
+   EXTRA_JAVA_ARGS="-Djdk.graal.Dump=Truffle:1 -Djdk.graal.PrintGraph=File -Djdk.graal.DumpPath=compiler_graphs" ./lox harness.lox sieve 5 1000
+
+   # Search for copyOf in compiled code
+   bgv2json "compiler_graphs/TruffleHotSpotCompilation-*[root_sieve].bgv" 2>&1 | grep -i "copyof"
+   ```
 
 **Example**:
 ```java
@@ -431,6 +564,23 @@ private void ensureCapacity() {  // Missing @TruffleBoundary
 1. **Code Review**: Look for string `.equals()` calls in property access code paths
 2. **Profiling**: High time spent in property access methods when using `.length` frequently
 3. **IR Analysis**: String comparison nodes appear in hot paths
+4. **Graal Profiling & Optimization Commands**:
+   ```bash
+   # CPU sampler to identify property access overhead
+   ./lox --cpusampler harness.lox sieve 5 1000
+
+   # Trace compilation for property access
+   ./lox --engine.TraceCompilation harness.lox sieve 5 1000 2>&1 | grep -i "property"
+
+   # Trace inlining to see string equals inlining
+   ./lox --engine.TraceInlining harness.lox sieve 5 1000 2>&1 | grep -E "(equals|LoxReadProperty)"
+
+   # Dump IR to inspect string comparison overhead
+   EXTRA_JAVA_ARGS="-Djdk.graal.Dump=Truffle:1 -Djdk.graal.PrintGraph=File -Djdk.graal.DumpPath=compiler_graphs" ./lox harness.lox sieve 5 1000
+
+   # Search for string equals in property access
+   bgv2json "compiler_graphs/TruffleHotSpotCompilation-*[root_sieve].bgv" 2>&1 | grep -B3 -A3 "equals"
+   ```
 
 **Example**:
 ```java
@@ -461,6 +611,26 @@ public static Object read(String name, LoxArray array) {
    ```
    Look for high self-time in recursive functions despite compilation
 3. **Compilation Analysis**: Large compiled code size due to DirectCallNode calling boundary method
+4. **Graal Profiling & Optimization Commands**:
+   ```bash
+   # CPU sampler to identify createArguments overhead in recursive calls
+   ./lox --cpusampler harness.lox list 5 10
+
+   # Trace compilation for function calls
+   ./lox --engine.TraceCompilation harness.lox list 5 10 2>&1 | grep -E "(list|createArguments)"
+
+   # Trace boundary crossings
+   ./lox --engine.TraceTransferToInterpreter harness.lox list 5 10
+
+   # Trace inlining to see if DirectCallNode is inlined
+   ./lox --engine.TraceInlining harness.lox list 5 10 2>&1 | grep -E "(DirectCall|createArguments)"
+
+   # Dump IR to inspect call node structure
+   EXTRA_JAVA_ARGS="-Djdk.graal.Dump=Truffle:1 -Djdk.graal.PrintGraph=File -Djdk.graal.DumpPath=compiler_graphs" ./lox harness.lox list 5 10
+
+   # Search for boundary calls in recursive functions
+   bgv2json "compiler_graphs/TruffleHotSpotCompilation-*[root_list].bgv" 2>&1 | grep -E "(boundary|createArguments)"
+   ```
 
 **Example**:
 ```java
@@ -492,6 +662,26 @@ return directCallNode.call(function.createArguments(arguments));
    - Recursion + loops: Shows 100% T0 (interpreted), 0% T2
 2. **Compilation Trace**: `--traceCompilation` won't show compilation events for combined recursion+loops
 3. **Benchmark Comparison**: Significant performance difference between separated vs combined recursion/loops
+4. **Graal Profiling & Optimization Commands**:
+   ```bash
+   # CPU sampler to check T0/T1/T2 tier execution percentages
+   ./lox --cpusampler harness.lox list 5 10
+
+   # Trace compilation to verify if recursion+loops compile
+   ./lox --engine.TraceCompilation harness.lox list 5 10
+
+   # Trace compilation details for recursion analysis
+   ./lox --engine.TraceCompilationDetails harness.lox list 5 10
+
+   # Trace deoptimizations
+   ./lox --engine.TraceTransferToInterpreter harness.lox list 5 10
+
+   # Dump IR to inspect recursion structure (if compilation happens)
+   EXTRA_JAVA_ARGS="-Djdk.graal.Dump=Truffle:1 -Djdk.graal.PrintGraph=File -Djdk.graal.DumpPath=compiler_graphs" ./lox harness.lox list 5 10
+
+   # Check for recursive call patterns
+   bgv2json "compiler_graphs/TruffleHotSpotCompilation-*[root_list].bgv" 2>&1 | grep -i "invoke"
+   ```
 
 **Note**: This may be a fundamental Truffle limitation requiring deeper compiler hints or restructuring.
 
@@ -509,6 +699,23 @@ return directCallNode.call(function.createArguments(arguments));
    Found: LoxAdd.doOtherTypes (line 119) incorrectly uses @Specialization
 2. **Comparison**: Check that other operations (LoxSubtract, LoxMultiply, etc.) correctly use @Fallback
 3. **Expected Pattern**: Error-throwing methods should use @Fallback, not @Specialization
+4. **Graal Profiling & Optimization Commands**:
+   ```bash
+   # Trace compilation to see specialization complexity
+   ./lox --engine.TraceCompilation harness.lox sieve 5 1000
+
+   # Trace compilation details to inspect specialization profile
+   ./lox --engine.TraceCompilationDetails harness.lox sieve 5 1000
+
+   # Trace inlining to see if error paths are inlined
+   ./lox --engine.TraceInlining harness.lox sieve 5 1000 2>&1 | grep -E "(doOtherTypes|LoxAdd)"
+
+   # Dump IR to inspect specialization guards
+   EXTRA_JAVA_ARGS="-Djdk.graal.Dump=Truffle:1 -Djdk.graal.PrintGraph=File -Djdk.graal.DumpPath=compiler_graphs" ./lox harness.lox sieve 5 1000
+
+   # Search for guard nodes in operations
+   bgv2json "compiler_graphs/TruffleHotSpotCompilation-*[root_sieve].bgv" 2>&1 | grep -E "(Guard|Specialization)"
+   ```
 
 **Example**:
 ```java
@@ -537,6 +744,23 @@ static LoxNumber doOtherTypes(Object left, Object right, @Bind Node node) {
 1. **Code Review**: Search for `concatUncached()` calls
 2. **IR Analysis**: Uncached nodes appear in compiler graphs instead of inline cache nodes
 3. **Profiling**: String-heavy benchmarks show poor performance
+4. **Graal Profiling & Optimization Commands**:
+   ```bash
+   # CPU sampler to identify string concatenation overhead (use string-heavy benchmark)
+   ./lox --cpusampler harness.lox sieve 5 1000
+
+   # Trace compilation for string operations
+   ./lox --engine.TraceCompilation harness.lox sieve 5 1000 2>&1 | grep -i "string"
+
+   # Trace inlining to see if concatUncached is inlined
+   ./lox --engine.TraceInlining harness.lox sieve 5 1000 2>&1 | grep -E "(concat|TruffleString)"
+
+   # Dump IR to inspect string operation nodes
+   EXTRA_JAVA_ARGS="-Djdk.graal.Dump=Truffle:1 -Djdk.graal.PrintGraph=File -Djdk.graal.DumpPath=compiler_graphs" ./lox harness.lox sieve 5 1000
+
+   # Search for uncached string operations
+   bgv2json "compiler_graphs/TruffleHotSpotCompilation-*[root_sieve].bgv" 2>&1 | grep -i "concat"
+   ```
 
 **Example**:
 ```java
