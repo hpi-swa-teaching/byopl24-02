@@ -39,7 +39,7 @@ The `./lox` script is the primary way to run Lox programs:
 
 The script automatically builds the classpath using Maven and caches it in `.script-classpath`. Set `EXTRA_JAVA_ARGS` environment variable to pass JVM options:
 ```bash
-EXTRA_JAVA_ARGS="-Djdk.graal.TraceTruffleCompilation=true" ./lox harness.lox sieve 10 5000
+./lox --traceCompilation harness.lox sieve 10 5000
 ```
 
 ### Using Maven Directly
@@ -78,10 +78,10 @@ Available benchmark programs: `sieve.lox`, `towers.lox`, `permute.lox`, `list.lo
 
 ### Tracing Compilation
 ```bash
-EXTRA_JAVA_ARGS="-Djdk.graal.TraceTruffleCompilation=true" ./lox <program>
-EXTRA_JAVA_ARGS="-Djdk.graal.TraceTruffleInlining=true" ./lox <program>
-EXTRA_JAVA_ARGS="-Djdk.graal.TraceTruffleTransferToInterpreter=true" ./lox <program>
-EXTRA_JAVA_ARGS="-Djdk.graal.TraceTrufflePerformanceWarnings=true" ./lox <program>
+./lox --traceCompilation <program>
+./lox --traceInlining <program>
+./lox --traceTransferToInterpreter <program>
+./lox --tracePerformanceWarnings <program>
 ```
 
 ### Compiler Graph Analysis
