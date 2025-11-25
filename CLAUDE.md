@@ -64,13 +64,13 @@ The repository includes comprehensive Graal/Truffle tracing capabilities. Use `E
 EXTRA_JAVA_ARGS="-Djdk.graal.Dump=Truffle:1 -Djdk.graal.PrintGraph=File -Djdk.graal.DumpPath=compiler_graphs" ./lox <program.lox>
 
 # Trace inlining decisions
-EXTRA_JAVA_ARGS="-Djdk.graal.TraceTruffleInlining=true" ./lox <program.lox>
+./lox --experimental-options --traceInlining <program.lox>
 
 # Trace compilation
-EXTRA_JAVA_ARGS="-Djdk.graal.TraceTruffleCompilation=true" ./lox <program.lox>
+./lox --experimental-options --traceCompilation <program.lox>
 
 # Performance warnings
-EXTRA_JAVA_ARGS="-Djdk.graal.TraceTrufflePerformanceWarnings=true" ./lox <program.lox>
+./lox --experimental-options --tracePerformanceWarnings=all <program.lox>
 ```
 
 See `docs/commands/` for detailed documentation on CPU sampler, tracer, compiler graph analysis, and other Truffle profiling tools.
