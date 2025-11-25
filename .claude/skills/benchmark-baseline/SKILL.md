@@ -357,6 +357,7 @@ Aspirational (if applicable):
    - Document the command to run the benchmark
    - Specify appropriate iteration counts
    - Note the expected N parameter to match Benchmarks Game tests
+   - Differentiate N for a `DEV_N` (smaller for quick tests) vs. full N for performance runs
 
 **Example Output for fannkuch-redux:**
 

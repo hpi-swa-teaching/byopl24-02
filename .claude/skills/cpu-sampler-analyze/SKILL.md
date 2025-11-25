@@ -166,7 +166,7 @@ For complex call patterns:
 ./lox --cpusampler=flamegraph \
   --cpusampler.OutputFile=profile.svg \
   --cpusampler.Delay=2000 \
-  program.lox
+  program.lox [script args]
 ```
 
 ### Call Tree Mode
@@ -174,7 +174,7 @@ To understand call hierarchies:
 ```bash
 ./lox --cpusampler --cpusampler.Output=calltree \
   --cpusampler.Delay=2000 \
-  program.lox
+  program.lox [script args]
 ```
 
 ### Include Inlined Functions
@@ -183,7 +183,7 @@ For complete call picture:
 ./lox --cpusampler --cpusampler.Mode=roots \
   --cpusampler.ShowTiers=true \
   --cpusampler.Delay=2000 \
-  program.lox
+  program.lox [script args]
 ```
 
 ### Sample Internal Sources
@@ -192,7 +192,7 @@ When application code looks clean:
 ./lox --cpusampler --cpusampler.SampleInternal=true \
   --cpusampler.ShowTiers=true \
   --cpusampler.Delay=2000 \
-  program.lox
+  program.lox [script args]
 ```
 
 ## Complementary Tools
@@ -201,17 +201,17 @@ The skill may recommend using these tools for deeper analysis:
 
 - **CPU Tracer**: Count execution frequencies (not time)
   ```bash
-  ./lox --cputracer --cputracer.TraceStatements program.lox
+  ./lox --cputracer --cputracer.TraceStatements program.lox [script args]
   ```
 
 - **Trace Compilation**: Understand compilation/deoptimization
   ```bash
-  ./lox --engine.TraceCompilation program.lox
+  ./lox --engine.TraceCompilation program.lox [script args]
   ```
 
 - **Trace Inlining**: See inlining decisions
   ```bash
-  ./lox --engine.TraceInlining program.lox
+  ./lox --engine.TraceInlining program.lox [script args]
   ```
 
 ## Best Practices

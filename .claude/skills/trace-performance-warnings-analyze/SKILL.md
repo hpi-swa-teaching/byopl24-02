@@ -136,7 +136,7 @@ The skill follows this workflow:
 
 #### All Warnings (Recommended for Initial Analysis)
 ```bash
-./lox --compiler.TracePerformanceWarnings=all program.lox
+./lox --compiler.TracePerformanceWarnings=all program.lox [script args]
 ```
 - Enables all warning types
 - Comprehensive coverage
@@ -144,7 +144,7 @@ The skill follows this workflow:
 
 #### Specific Warning Types
 ```bash
-./lox --compiler.TracePerformanceWarnings=call,instanceof,store program.lox
+./lox --compiler.TracePerformanceWarnings=call,instanceof,store program.lox [script args]
 ```
 - Focus on specific issues
 - Reduces output volume
@@ -155,7 +155,7 @@ The skill follows this workflow:
 ./lox --experimental-options \
   --compiler.TracePerformanceWarnings=all \
   --engine.TraceCompilation \
-  program.lox
+  program.lox [script args]
 ```
 - Correlate warnings with compilation events
 - See which compilations trigger warnings
@@ -166,7 +166,7 @@ The skill follows this workflow:
 ./lox --experimental-options \
   --compiler.TracePerformanceWarnings=all \
   --engine.CompileOnly=problematicFunction \
-  program.lox
+  program.lox [script args]
 ```
 - Dramatically reduces output
 - Focus on known problem areas
@@ -237,7 +237,7 @@ class MyNode extends Node {
 ./lox --experimental-options \
   --compiler.TracePerformanceWarnings=call \
   --engine.TraceInlining \
-  program.lox
+  program.lox [script args]
 ```
 Should see profile method inlined after fix
 
@@ -344,7 +344,7 @@ public class ReadLocalNode extends Node {
    ./lox --experimental-options \
      --engine.TraceCompilation \
      --compiler.TracePerformanceWarnings=bailout \
-     program.lox
+     program.lox [script args]
    ```
 
 2. **Use TraceInlining** to see if inlining is excessive
@@ -366,13 +366,13 @@ public class ReadLocalNode extends Node {
 ./lox --cpusampler \
   --cpusampler.ShowTiers=true \
   --cpusampler.Delay=5000 \
-  program.lox > cpu.txt
+  program.lox [script args] > cpu.txt
 ```
 
 #### Step 2: Check for Warnings in Hot Functions
 ```bash
 ./lox --compiler.TracePerformanceWarnings=all \
-  program.lox 2>&1 | tee warnings.txt
+  program.lox [script args] 2>&1 | tee warnings.txt
 
 # Check if hot functions have warnings
 grep "hotFunction" warnings.txt
@@ -391,7 +391,7 @@ grep "perf warn" warnings.txt | \
 ./lox --experimental-options \
   --compiler.TracePerformanceWarnings=all \
   --engine.CompileOnly=problematicFunction \
-  program.lox
+  program.lox [script args]
 ```
 
 #### Step 5: Fix Issues (see Problem patterns above)
@@ -400,7 +400,7 @@ grep "perf warn" warnings.txt | \
 ```bash
 # Re-run warnings check
 ./lox --compiler.TracePerformanceWarnings=all \
-  program.lox 2>&1 | grep "problematicFunction"
+  program.lox [script args] 2>&1 | grep "problematicFunction"
 
 # Should see fewer or no warnings
 
@@ -408,15 +408,15 @@ grep "perf warn" warnings.txt | \
 ./lox --experimental-options \
   --engine.TraceInlining \
   --engine.CompileOnly=problematicFunction \
-  program.lox
+  program.lox [script args]
 ```
 
 #### Step 7: Measure Performance Impact
 ```bash
 # Benchmark before and after
-time ./lox program.lox  # Before fixes
+time ./lox program.lox [script args]  # Before fixes
 # Apply fixes
-time ./lox program.lox  # After fixes - should be faster
+time ./lox program.lox [script args]  # After fixes - should be faster
 ```
 
 ## Best Practices
@@ -426,7 +426,7 @@ The skill follows these analysis best practices:
 ### 1. Use Performance Warnings First
 ```bash
 # Start optimization workflow here
-./lox --compiler.TracePerformanceWarnings=all program.lox
+./lox --compiler.TracePerformanceWarnings=all program.lox [script args]
 ```
 - Most targeted diagnostic
 - Identifies exact problems
@@ -435,8 +435,8 @@ The skill follows these analysis best practices:
 ### 2. Combine with Profiling
 ```bash
 # Identify hot + warnings
-./lox --cpusampler program.lox > cpu.txt
-./lox --compiler.TracePerformanceWarnings=all program.lox > warn.txt
+./lox --cpusampler program.lox [script args] > cpu.txt
+./lox --compiler.TracePerformanceWarnings=all program.lox [script args] > warn.txt
 
 # Find hot functions with warnings
 ```
@@ -448,7 +448,7 @@ The skill follows these analysis best practices:
 ./lox --experimental-options \
   --compiler.TracePerformanceWarnings=all \
   --engine.CompileOnly=hotFunction \
-  program.lox
+  program.lox [script args]
 ```
 - Dramatically reduces output
 - Focus on known problems
@@ -458,7 +458,7 @@ The skill follows these analysis best practices:
 ./lox --experimental-options \
   --compiler.TracePerformanceWarnings=all \
   --engine.TraceCompilation \
-  program.lox 2>&1 | tee full-trace.log
+  program.lox [script args] 2>&1 | tee full-trace.log
 ```
 - See if warnings cause compilation failures
 - Understand compilation context
@@ -469,7 +469,7 @@ The skill follows these analysis best practices:
 ./lox --experimental-options \
   --compiler.TracePerformanceWarnings=call \
   --engine.TraceInlining \
-  program.lox
+  program.lox [script args]
 ```
 - Confirm methods now inline
 - Validate optimization effectiveness
@@ -516,14 +516,14 @@ The skill typically follows this workflow:
 ```bash
 ./lox --cpusampler --cpusampler.ShowTiers=true \
   --cpusampler.Delay=5000 \
-  program.lox > cpu.txt
+  program.lox [script args] > cpu.txt
 ```
 **Identify**: Top 3-5 hot functions
 
 ### Step 2: Check for Warnings
 ```bash
 ./lox --compiler.TracePerformanceWarnings=all \
-  program.lox 2>&1 | tee warnings.txt
+  program.lox [script args] 2>&1 | tee warnings.txt
 ```
 **Look for**: Warnings in hot functions
 
@@ -552,19 +552,19 @@ grep "perf warn hotFunction" warnings.txt
 # No more warnings for this function
 ./lox --compiler.TracePerformanceWarnings=all \
   --engine.CompileOnly=hotFunction \
-  program.lox
+  program.lox [script args]
 
 # Methods now inline
 ./lox --experimental-options \
   --engine.TraceInlining \
   --engine.CompileOnly=hotFunction \
-  program.lox
+  program.lox [script args]
 ```
 
 ### Step 7: Measure Impact
 ```bash
 # Benchmark
-time ./lox program.lox  # Should be faster
+time ./lox program.lox [script args]  # Should be faster
 ```
 
 ## Success Criteria

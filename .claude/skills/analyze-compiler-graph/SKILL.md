@@ -76,7 +76,7 @@ Do not assume success based on exit codes.
 EXTRA_JAVA_ARGS="-Djdk.graal.Dump=Truffle:1 \
   -Djdk.graal.PrintGraph=File \
   -Djdk.graal.DumpPath=compiler_graphs" \
-  ./lox program.lox
+  ./lox program.lox [script args]
 ```
 - Dumps all Truffle compilations
 - Level 1: Basic graphs (After parsing, After TruffleTier)
@@ -85,11 +85,11 @@ EXTRA_JAVA_ARGS="-Djdk.graal.Dump=Truffle:1 \
 #### Focused Dump (Specific Method)
 ```bash
 EXTRA_JAVA_ARGS="-Djdk.graal.Dump=Truffle:1 \
-  -Djdk.graal.MethodFilter=*hotFunction* \
+  -Djdk.graal.MethodFilter="*hotFunction*" \
   -Djdk.graal.DumpPath=compiler_graphs" \
   ./lox --experimental-options \
   --engine.CompileOnly=hotFunction \
-  program.lox
+  program.lox [script args]
 ```
 - Dramatically reduces output
 - Focus on known problem method
@@ -102,7 +102,7 @@ EXTRA_JAVA_ARGS="-Djdk.graal.Dump=Truffle:1 \
   -Djdk.graal.DumpPath=compiler_graphs" \
   ./lox --experimental-options \
   --engine.NodeSourcePositions \
-  program.lox
+  program.lox [script args]
 ```
 - Enables source location tracking
 - Required for `seafoam source` command
@@ -111,9 +111,9 @@ EXTRA_JAVA_ARGS="-Djdk.graal.Dump=Truffle:1 \
 #### Level 2: Detailed Phases
 ```bash
 EXTRA_JAVA_ARGS="-Djdk.graal.Dump=Truffle:2 \
-  -Djdk.graal.MethodFilter=*hotFunction* \
+  -Djdk.graal.MethodFilter="*hotFunction*" \
   -Djdk.graal.DumpPath=compiler_graphs" \
-  ./lox program.lox
+  ./lox program.lox [script args]
 ```
 - Shows all optimization phases
 - Use only for investigating specific phase failures
@@ -224,6 +224,13 @@ seafoam --json file.bgv.gz:2 describe | jq '.node_counts' | jq 'to_entries | sor
 - High `InvokeNode` count = Unspecialized method calls
 - `AddNode`, `MulNode` = Good (arithmetic specialized)
 - `ConstantNode` high = Good (constant propagation working)
+
+#### Additional: Generate SVG Visualization
+
+```bash
+# Render the "After TruffleTier" phase to an image
+seafoam file.bgv.gz:2 render > graph.svg
+```
 
 ### 4. Common Problem Patterns
 
@@ -346,18 +353,21 @@ DeoptimizeNode or UnreachedNode found in hot path
 
 ### Step 1: Profile to Identify Hot Function
 ```bash
-./lox --cpusampler --cpusampler.ShowTiers=true program.lox
+./lox --cpusampler --cpusampler.ShowTiers=true program.lox [script args]
 ```
 **Identify**: Function consuming most time
 
 ### Step 2: Dump Graphs for Hot Function Only
 ```bash
+# Clean previous dumps to ensure data isolation
+rm -rf compiler_graphs/
+
 EXTRA_JAVA_ARGS="-Djdk.graal.Dump=Truffle:1 \
-  -Djdk.graal.MethodFilter=*hotFunction* \
+  -Djdk.graal.MethodFilter="*hotFunction*" \
   -Djdk.graal.DumpPath=compiler_graphs" \
   ./lox --experimental-options \
   --engine.CompileOnly=hotFunction \
-  program.lox
+  program.lox [script args]
 ```
 
 ### Step 3: Convert to JSON
@@ -401,7 +411,7 @@ cat truffle-tier.json | jq '.nodes[] | select(.props.label == "InvokeNode") | .p
 -Djdk.graal.Dump=Truffle:1
 
 # ✅ GOOD: Focused on problem
--Djdk.graal.Dump=Truffle:1 -Djdk.graal.MethodFilter=*hotFunction*
+-Djdk.graal.Dump=Truffle:1 -Djdk.graal.MethodFilter="*hotFunction*"
 ```
 
 ### 2. Start with Level 1
@@ -429,7 +439,7 @@ EXTRA_JAVA_ARGS="-Djdk.graal.Dump=Truffle:1 ..." \
   ./lox --experimental-options \
   --compiler.TracePerformanceWarnings=all \
   --engine.TraceCompilation \
-  program.lox 2>&1 | tee combined.log
+  program.lox [script args] 2>&1 | tee combined.log
 ```
 
 ## Common Pitfalls

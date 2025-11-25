@@ -77,7 +77,7 @@ Executes with these granularity levels:
 
 #### Function-Level (Default - Low Overhead)
 ```bash
-./lox --cputracer program.lox
+./lox --cputracer program.lox [script args]
 ```
 - Traces function/method entries only
 - Shows total executions and interpreted vs compiled split
@@ -197,6 +197,14 @@ Only trace code in specific files
 ```
 Statement-level detail on specific function in specific file
 
+#### Output as JSON
+```bash
+./lox --cputracer --cputracer.Output=json \
+  --cputracer.OutputFile=trace.json \
+  program.lox
+```
+Machine-readable format for programmatic analysis
+
 ### 5. Generate Follow-up Actions
 
 Based on the analysis, the skill suggests:
@@ -207,6 +215,8 @@ Based on the analysis, the skill suggests:
 - Correlation with CPUSampler for time/frequency analysis
 
 ## Output Format Analysis
+
+### Histogram Format
 
 The skill interprets CPU Tracer histogram output:
 
@@ -222,6 +232,77 @@ Compiled Count: Number of times the compiled element was executed and percentage
 Name       | Total Count      | Interpreted Count | Compiled Count    | Location
 -----------------------------------------------------------------------------------------
 accept     | 234117338 50.0%  | 365660 0.2%      | 233751678 99.8%  | primes.lox~15:245-258
+```
+
+#### JSON Format
+
+```json
+{
+    "version": "0.3.0",
+    "profile": [
+        {
+            "source_section": {
+                "path": "/Users/antonykamp/Projects/hpi-ma/byopl24-02/benchmark.lox",
+                "language": "lox",
+                "end_column": 1,
+                "end_line": 16,
+                "start_column": 1,
+                "source_name": "benchmark.lox",
+                "start_line": 1
+            },
+            "compiled_count": 0,
+            "root_name": "init",
+            "interpreted_count": 2,
+            "count": 2
+        },
+        {
+            "source_section": {
+                "path": "/Users/antonykamp/Projects/hpi-ma/byopl24-02/run.lox",
+                "language": "lox",
+                "end_column": 1,
+                "end_line": 52,
+                "start_column": 1,
+                "source_name": "run.lox",
+                "start_line": 1
+            },
+            "compiled_count": 0,
+            "root_name": "init",
+            "interpreted_count": 8,
+            "count": 8
+        },
+        {
+            "source_section": {
+                "path": "/Users/antonykamp/Projects/hpi-ma/byopl24-02/harness.lox",
+                "language": "lox",
+                "end_column": 11,
+                "end_line": 10,
+                "start_column": 1,
+                "source_name": "harness.lox",
+                "start_line": 2
+            },
+            "compiled_count": 0,
+            "root_name": "processArguments",
+            "interpreted_count": 1,
+            "count": 1
+        },
+        {
+            "source_section": {
+                "path": "/Users/antonykamp/Projects/hpi-ma/byopl24-02/queens.lox",
+                "language": "lox",
+                "end_column": 33,
+                "end_line": 57,
+                "start_column": 1,
+                "source_name": "queens.lox",
+                "start_line": 1
+            },
+            "compiled_count": 9249,
+            "root_name": "init",
+            "interpreted_count": 2834,
+            "count": 12083
+        }
+    ],
+    "tool": "cputracer"
+}
 ```
 
 ### Field Interpretation
@@ -259,10 +340,10 @@ accept     | 234117338 50.0%  | 365660 0.2%      | 233751678 99.8%  | primes.lox
 ### CPU Tracer + CPU Sampler (Recommended Combo)
 ```bash
 # Run 1: Execution counts
-./lox --cputracer program.lox > tracer.txt
+./lox --cputracer program.lox [script args] > tracer.txt
 
 # Run 2: Execution time
-./lox --cpusampler --cpusampler.Delay=2000 --cpusampler.ShowTiers=true program.lox > sampler.txt
+./lox --cpusampler --cpusampler.Delay=2000 --cpusampler.ShowTiers=true program.lox [script args] > sampler.txt
 
 # Analyze correlation:
 # - High tracer count + high sampler time = critical optimization target
@@ -273,7 +354,7 @@ accept     | 234117338 50.0%  | 365660 0.2%      | 233751678 99.8%  | primes.lox
 
 ### CPU Tracer + Trace Compilation
 ```bash
-./lox --cputracer --engine.TraceCompilation program.lox
+./lox --cputracer --engine.TraceCompilation program.lox [script args]
 ```
 - Tracer shows low compiled % → Trace compilation shows why
 - Look for bailouts, deoptimizations, or missing compilation triggers
@@ -281,12 +362,12 @@ accept     | 234117338 50.0%  | 365660 0.2%      | 233751678 99.8%  | primes.lox
 ### CPU Tracer + Statement Tracing (Progressive Detail)
 ```bash
 # Step 1: Find hot functions
-./lox --cputracer program.lox
+./lox --cputracer program.lox [script args]
 
 # Step 2: Trace statements in hot functions only
 ./lox --cputracer --cputracer.TraceStatements \
   --cputracer.FilterRootName=*hotFunction* \
-  program.lox
+  program.lox [script args]
 ```
 
 ## Advanced Options
@@ -368,7 +449,7 @@ The skill typically follows this analysis workflow:
 
 ### Step 1: Initial Function-Level Profile
 ```bash
-./lox --cputracer program.lox > trace-functions.txt
+./lox --cputracer program.lox [script args] > trace-functions.txt
 ```
 **Analyze**: Find top 3-5 functions by total count
 
