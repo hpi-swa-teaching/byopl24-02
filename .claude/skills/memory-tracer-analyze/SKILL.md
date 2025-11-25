@@ -53,6 +53,28 @@ Before running this skill, you should know:
 - Whether you want to focus on specific functions (reduces overhead)
 - Ideally, CPU profiling results showing hot functions
 
+## Reliability Protocol (MANDATORY)
+
+**Context:** Tools often fail due to environment issues, permissions, or misconfiguration. To avoid hallucinating results, misinterpreting output, or wasting resources, you must follow this 3-step verification loop.
+
+### Step 1: Pre-Execution Baseline
+
+Before executing the primary task, establish a mental baseline:
+* **Complexity Estimate:** asking yourself what you expect from a run with a trivial input (i.e. "If I run this on trivial input, how fast should it be?").
+* **Failure Mode Prediction:** "If this tool is broken, will it hang, crash, or return empty text?"
+* **Sanity Check:** If the tool takes 100x longer than your estimate, **STOP**. It is likely misconfigured or waiting on input.
+
+### Step 2: The Probe (Dry Run)
+Never run a complex or heavy command blind. Execute a **Probe** first:
+* **The Test:** Run the exact command structure on a trivial target (e.g., `print "test";`, `SELECT 1`, or a dummy file).
+* **Constraint:** If the Probe hangs, errors, or produces empty output, **STOP**. Do not proceed to the main task.
+
+### Step 3: Output Audit (Verification)
+
+Do not assume success based on exit codes.
+* **Physical Check:** verify the output artifact exists and has a file size > 0 bytes.
+* **Content Scan:** Read the first 5 lines/bytes of the output to ensure it is not an error message written to stdout (e.g., "Error: Command not found" saved inside `output.json`). Verify it's in the range of expected content and metrics. If it's to far off, **STOP**.
+
 ## How the Skill Works
 
 The skill follows this workflow:
