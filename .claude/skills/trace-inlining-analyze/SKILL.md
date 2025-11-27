@@ -5,11 +5,11 @@ description: Shows inlining decisions during compilation with call tree and reas
 
 # Skill: Run and Analyze Inlining Tracer
 
-This skill runs the Trace Inlining tool on a Lox program and provides detailed analysis of inlining decisions to help identify optimization opportunities and understand why functions do or don't inline.
+This skill runs the Trace Inlining tool on your language implementation and provides detailed analysis of inlining decisions to help identify optimization opportunities and understand why functions do or don't inline.
 
 ## What This Skill Does
 
-1. **Runs Inlining Tracer**: Executes the Lox program with inlining tracing enabled
+1. **Runs Inlining Tracer**: Executes the program with inlining tracing enabled
 2. **Analyzes Inlining Decisions**: Interprets the trace output to identify:
    - Which calls are successfully inlined
    - Why calls fail to inline (budget exhaustion, size limits, recursion)
@@ -38,38 +38,28 @@ Poor inlining = slow code, even if compilation succeeds!
 ## Prerequisites
 
 Before running this skill, you should know:
-- The path to the Lox program you want to analyze
+- **Required**: Having benchmark baseline data for comparison
+- The path to the program you want to analyze
 - Whether you have specific functions to focus on (reduces output volume)
 - Ideally, profiling results showing hot functions
 
-## Reliability Protocol (MANDATORY)
+## Fermi Verification (MANDATORY)
 
 **Context:** Tools often fail due to environment issues, permissions, or misconfiguration. To avoid hallucinating results, misinterpreting output, or wasting resources, you must follow this 3-step verification loop.
 
-### Step 1: Pre-Execution Baseline
+**Mitigation Strategy**: Fermi Verification Before accepting the tool's output, you must:
 
-Before executing the primary task, establish a mental baseline:
-* **Complexity Estimate:** asking yourself what you expect from a run with a trivial input (i.e. "If I run this on trivial input, how fast should it be?").
-* **Failure Mode Prediction:** "If this tool is broken, will it hang, crash, or return empty text?"
-* **Sanity Check:** If the tool takes 100x longer than your estimate, **STOP**. It is likely misconfigured or waiting on input.
-
-### Step 2: The Probe (Dry Run)
-Never run a complex or heavy command blind. Execute a **Probe** first:
-* **The Test:** Run the exact command structure on a trivial target (e.g., `print "test";`, `SELECT 1`, or a dummy file).
-* **Constraint:** If the Probe hangs, errors, or produces empty output, **STOP**. Do not proceed to the main task.
-
-### Step 3: Output Audit (Verification)
-
-Do not assume success based on exit codes.
-* **Physical Check:** verify the output artifact exists and has a file size > 0 bytes.
-* **Content Scan:** Read the first 5 lines/bytes of the output to ensure it is not an error message written to stdout (e.g., "Error: Command not found" saved inside `output.json`). Verify it's in the range of expected content and metrics. If it's to far off, **STOP**.
+1. Estimate: Look at the complexity of the code. Perform a "Fermi Calculation" to estimate the expected order of magnitude of allocations (e.g., "This acts on an array of 10k items, so I expect at least 10k allocations").
+2. Probe: Run the tool on a trivial input (e.g., a minimal program) to ensure it produces output quickly and correctly.
+3. Execute: Run the tool on the real target.
+4. Compare: If the tool output deviates from your Fermi Estimate by more than one order of magnitude (or is zero), treat the result as a failure and retry with different flags.
 
 ## How the Skill Works
 
 The skill follows this workflow:
 
 ### 1. Initial Setup
-- Confirms the Lox program path and any arguments
+- Confirms the program path and any arguments
 - Optionally sets up function filtering with `--engine.CompileOnly`
 - Determines if detailed tracing is needed
 
@@ -79,7 +69,7 @@ The skill follows this workflow:
 
 #### Basic Inlining Trace (Recommended)
 ```bash
-./lox --experimental-options --engine.TraceInlining program.lox [script args]
+<launcher> --experimental-options --engine.TraceInlining <program> [script args]
 ```
 - Shows inlining decisions for all compilations
 - Includes depth-first call tree traversal
@@ -87,10 +77,10 @@ The skill follows this workflow:
 
 #### Detailed Inlining Trace (Verbose)
 ```bash
-./lox --experimental-options \
+<launcher> --experimental-options \
   --engine.TraceInlining \
   --engine.TraceInliningDetails \
-  program.lox [script args]
+  <program> [script args]
 ```
 - Shows entire explored call tree (including rejected candidates)
 - Much more output volume
@@ -98,10 +88,10 @@ The skill follows this workflow:
 
 #### Focused Trace (Recommended for Large Programs)
 ```bash
-./lox --experimental-options \
+<launcher> --experimental-options \
   --engine.TraceInlining \
   --engine.CompileOnly=functionName \
-  program.lox [script args]
+  <program> [script args]
 ```
 - Restricts compilation tracing to specific function
 - Dramatically reduces output volume
@@ -109,9 +99,9 @@ The skill follows this workflow:
 
 #### Redirect Output to File
 ```bash
-./lox --experimental-options \
+<launcher> --experimental-options \
   --engine.TraceInlining \
-  program.lox [script args] > inlining.txt 2>&1
+  <program> [script args] > inlining.txt 2>&1
 ```
 - Enables offline analysis with text processing tools
 - Compare across runs
@@ -219,10 +209,10 @@ Each trace line contains these key metrics:
 **Resolution**:
 ```bash
 # Increase exploration budget by 50%
-./lox --experimental-options \
+<launcher> --experimental-options \
   --engine.TraceInlining \
   --engine.InliningExpansionBudget=18000 \
-  program.lox [script args]
+  <program> [script args]
 ```
 - Increase conservatively (25-50% increments)
 - Use profiling to confirm cutoff functions are actually hot
@@ -252,7 +242,7 @@ Each trace line contains these key metrics:
 
 **Resolution**:
 1. **Refactor into smaller functions**:
-   ```lox
+   ```<your-language>
    // Before: One large function
    fun processData(data) {
      // 100 lines of code
@@ -288,11 +278,11 @@ Each trace line contains these key metrics:
 **Resolution**:
 ```bash
 # Enable detailed compiler logging
-./lox --experimental-options \
+<launcher> --experimental-options \
   --engine.TraceInlining \
   --vm.Djdk.graal.Log=:3 \
   --vm.Djdk.graal.MethodFilter=problematicFunction \
-  program.lox [script args]
+  <program> [script args]
 ```
 - Investigate immediately with detailed logging
 - Use IGV to examine where partial evaluation fails
@@ -386,10 +376,10 @@ Recursive functions show Recursion Depth > 0:
 
 ### Trace Inlining + Trace Compilation
 ```bash
-./lox --experimental-options \
+<launcher> --experimental-options \
   --engine.TraceInlining \
   --engine.TraceCompilation \
-  program.lox [script args]
+  <program> [script args]
 ```
 **Why combine**:
 - TraceCompilation: Overall compilation success, timing, IR size
@@ -398,10 +388,10 @@ Recursive functions show Recursion Depth > 0:
 
 ### Trace Inlining + Performance Warnings
 ```bash
-./lox --experimental-options \
+<launcher> --experimental-options \
   --engine.TraceInlining \
   --engine.TracePerformanceWarnings=call \
-  program.lox [script args]
+  <program> [script args]
 ```
 **Why combine**:
 - Performance warnings: Flags virtual calls remaining in compiled code
@@ -411,15 +401,15 @@ Recursive functions show Recursion Depth > 0:
 ### Trace Inlining + CPU Sampler
 ```bash
 # Step 1: Profile to find hot functions
-./lox --cpusampler --cpusampler.Delay=2000 \
+<launcher> --cpusampler --cpusampler.Delay=2000 \
   --cpusampler.ShowTiers=true \
-  program.lox [script args] > profile.txt
+  <program> [script args] > profile.txt
 
 # Step 2: Analyze inlining for hot functions
-./lox --experimental-options \
+<launcher> --experimental-options \
   --engine.TraceInlining \
   --engine.CompileOnly=hotFunction \
-  program.lox [script args] > inlining.txt
+  <program> [script args] > inlining.txt
 ```
 **Why combine**:
 - CPU Sampler: Identifies hot functions consuming time
@@ -428,11 +418,11 @@ Recursive functions show Recursion Depth > 0:
 
 ### Trace Inlining + IGV (Visual Analysis)
 ```bash
-./lox --experimental-options \
+<launcher> --experimental-options \
   --engine.TraceInlining \
   --vm.Djdk.graal.Dump=Truffle:1 \
   --vm.Djdk.graal.PrintGraph=Network \
-  program.lox [script args]
+  <program> [script args]
 ```
 **Why combine**:
 - TraceInlining: Text-based decision log
@@ -443,7 +433,7 @@ Recursive functions show Recursion Depth > 0:
 
 ### Disable Inlining (Diagnostic)
 ```bash
-./lox --experimental-options --engine.Inlining=false program.lox [script args]
+<launcher> --experimental-options --engine.Inlining=false <program> [script args]
 ```
 - Measures inlining's performance impact
 - Compare with/without inlining
@@ -451,20 +441,20 @@ Recursive functions show Recursion Depth > 0:
 
 ### Filter to Specific Function
 ```bash
-./lox --experimental-options \
+<launcher> --experimental-options \
   --engine.TraceInlining \
   --engine.CompileOnly=specificFunction \
-  program.lox [script args]
+  <program> [script args]
 ```
 - Drastically reduces output volume
 - Focus on investigating specific issues
 
 ### Detailed Call Tree
 ```bash
-./lox --experimental-options \
+<launcher> --experimental-options \
   --engine.TraceInlining \
   --engine.TraceInliningDetails \
-  program.lox [script args]
+  <program> [script args]
 ```
 - Shows entire explored call tree (including rejected candidates)
 - Much more output - use for deep analysis only
@@ -491,9 +481,9 @@ The skill follows these analysis best practices:
 
 5. **Redirect Output to Files**
    ```bash
-   ./lox --experimental-options \
+   <launcher> --experimental-options \
      --engine.TraceInlining \
-     program.lox [script args] > inlining.txt 2>&1
+     <program> [script args] > inlining.txt 2>&1
    ```
    - Enable offline analysis with text processing tools
    - Compare across runs
@@ -540,18 +530,18 @@ The skill typically follows this analysis workflow:
 
 ### Step 1: Profile to Find Hot Functions
 ```bash
-./lox --cpusampler --cpusampler.Delay=2000 \
+<launcher> --cpusampler --cpusampler.Delay=2000 \
   --cpusampler.ShowTiers=true \
-  program.lox [script args]
+  <program> [script args]
 ```
 **Identify**: Top 3-5 functions consuming most time
 
 ### Step 2: Trace Inlining for Hot Functions
 ```bash
-./lox --experimental-options \
+<launcher> --experimental-options \
   --engine.TraceInlining \
   --engine.CompileOnly=hotFunction \
-  program.lox [script args] > inlining.txt
+  <program> [script args] > inlining.txt
 ```
 **Analyze**: Check if hot functions inline their callees
 
@@ -566,10 +556,10 @@ The skill typically follows this analysis workflow:
 
 **If Budget Exhaustion**:
 ```bash
-./lox --experimental-options \
+<launcher> --experimental-options \
   --engine.TraceInlining \
   --engine.InliningExpansionBudget=18000 \
-  program.lox [script args]
+  <program> [script args]
 ```
 
 **If Functions Too Large**: Refactor into smaller pieces
@@ -579,12 +569,12 @@ The skill typically follows this analysis workflow:
 ### Step 5: Verify Improvements
 ```bash
 # Re-run profiling
-./lox --cpusampler --cpusampler.Delay=2000 \
+<launcher> --cpusampler --cpusampler.Delay=2000 \
   --cpusampler.ShowTiers=true \
-  program.lox [script args]
+  <program> [script args]
 
 # Compare inlining trace
-./lox --experimental-options --engine.TraceInlining program.lox [script args]
+<launcher> --experimental-options --engine.TraceInlining <program> [script args]
 ```
 **Check**: Did performance improve? Are more calls inlined?
 
@@ -632,7 +622,7 @@ For detailed information, see:
 ## Implementation Notes
 
 This skill:
-- Uses the Lox launcher: `./lox`
+- Uses your language's launcher: `<launcher>`
 - Requires `--experimental-options` flag
 - Defaults to basic tracing (not detailed)
 - Uses `--engine.CompileOnly` for focused analysis

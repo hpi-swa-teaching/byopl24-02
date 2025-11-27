@@ -5,11 +5,11 @@ description: Traces deoptimization events where execution falls back from compil
 
 # Skill: Run and Analyze Transfer To Interpreter Tracer
 
-This skill runs the Transfer to Interpreter tracing tool on a Lox program and provides detailed analysis of deoptimization events to help identify and eliminate compilation instability.
+This skill runs the Transfer to Interpreter tracing tool on your language implementation and provides detailed analysis of deoptimization events to help identify and eliminate compilation instability.
 
 ## What This Skill Does
 
-1. **Runs Deoptimization Tracer**: Executes the Lox program with transfer-to-interpreter tracing enabled
+1. **Runs Deoptimization Tracer**: Executes the program with transfer-to-interpreter tracing enabled
 2. **Analyzes Deoptimization Patterns**: Interprets the trace output to identify:
    - Deoptimization loops (same location repeatedly)
    - Unstable type assumptions
@@ -38,25 +38,21 @@ This skill runs the Transfer to Interpreter tracing tool on a Lox program and pr
 ## Prerequisites
 
 Before running this skill, you should know:
-- The path to the Lox program to analyze
+- **Required**: Having benchmark baseline data for comparison
+- The path to the program to analyze
 - Whether you want to focus on specific functions (reduces output)
 - Approximate warmup time for the program
 
-## Reliability Protocol (MANDATORY)
+## Fermi Verification (MANDATORY)
 
 **Context:** Tools often fail due to environment issues, permissions, or misconfiguration. To avoid hallucinating results, misinterpreting output, or wasting resources, you must follow this 3-step verification loop.
 
-### Step 1: Pre-Execution Baseline
+**Mitigation Strategy**: Fermi Verification Before accepting the tool's output, you must:
 
-Before executing the primary task, establish a mental baseline:
-* **Complexity Estimate:** asking yourself what you expect from a run with a trivial input (i.e. "If I run this on trivial input, how fast should it be?").
-* **Failure Mode Prediction:** "If this tool is broken, will it hang, crash, or return empty text?"
-* **Sanity Check:** If the tool takes 100x longer than your estimate, **STOP**. It is likely misconfigured or waiting on input.
-
-### Step 2: The Probe (Dry Run)
-Never run a complex or heavy command blind. Execute a **Probe** first:
-* **The Test:** Run the exact command structure on a trivial target (e.g., `print "test";`, `SELECT 1`, or a dummy file).
-* **Constraint:** If the Probe hangs, errors, or produces empty output, **STOP**. Do not proceed to the main task.
+1. Estimate: Look at the complexity of the code. Perform a "Fermi Calculation" to estimate the expected order of magnitude of allocations (e.g., "This acts on an array of 10k items, so I expect at least 10k allocations").
+2. Probe: Run the tool on a trivial input (e.g., a minimal program) to ensure it produces output quickly and correctly.
+3. Execute: Run the tool on the real target.
+4. Compare: If the tool output deviates from your Fermi Estimate by more than one order of magnitude (or is zero), treat the result as a failure and retry with different flags.
 
 ### Step 3: Output Audit (Verification)
 
@@ -69,7 +65,7 @@ Do not assume success based on exit codes.
 The skill follows this workflow:
 
 ### 1. Initial Setup
-- Confirms the Lox program path and arguments
+- Confirms the program path and arguments
 - Optionally sets up function filtering with `--engine.CompileOnly`
 - Determines output redirection strategy
 
@@ -77,9 +73,9 @@ The skill follows this workflow:
 
 #### Basic Trace (Recommended)
 ```bash
-./lox --experimental-options \
+<launcher> --experimental-options \
   --engine.TraceTransferToInterpreter \
-  program.lox [script args]
+  <program> [script args]
 ```
 - Traces all deoptimization events
 - Outputs to stderr by default
@@ -87,10 +83,10 @@ The skill follows this workflow:
 
 #### Focused Trace (For Specific Functions)
 ```bash
-./lox --experimental-options \
+<launcher> --experimental-options \
   --engine.TraceTransferToInterpreter \
   --engine.CompileOnly=functionName \
-  program.lox [script args]
+  <program> [script args]
 ```
 - Restricts compilation to specific function
 - Dramatically reduces output volume
@@ -98,10 +94,10 @@ The skill follows this workflow:
 
 #### Combined with Compilation Trace (Highly Recommended)
 ```bash
-./lox --experimental-options \
+<launcher> --experimental-options \
   --engine.TraceTransferToInterpreter \
   --engine.TraceCompilation \
-  program.lox [script args] 2>&1 | tee transfers.log
+  <program> [script args] 2>&1 | tee transfers.log
 ```
 - Shows both compilation events and transfers
 - Essential for understanding deoptimization cycles
@@ -112,13 +108,13 @@ The skill follows this workflow:
 #### Transfer Event Structure
 ```
 [engine] transferToInterpreter at
-problemFunction(source.lox:42:123-456)
-callerFunction(source.lox:18:78-90)
-topLevelFunction(source.lox:5:10-50)
+problemFunction(<source>:42:123-456)
+callerFunction(<source>:18:78-90)
+topLevelFunction(<source>:5:10-50)
 ```
 
 **Key information**:
-- **Location**: `problemFunction(source.lox:42:123-456)` - Exact source location
+- **Location**: `problemFunction(<source>:42:123-456)` - Exact source location
 - **Stack trace**: Shows call chain leading to transfer
 - **Timing**: Appears immediately when transfer occurs
 
@@ -126,10 +122,10 @@ topLevelFunction(source.lox:5:10-50)
 
 #### Pattern 1: Deoptimization Loop (CRITICAL!)
 ```
-[engine] transferToInterpreter at MyNode.execute(code.lox:42)
-[engine] transferToInterpreter at MyNode.execute(code.lox:42)
-[engine] transferToInterpreter at MyNode.execute(code.lox:42)
-[engine] transferToInterpreter at MyNode.execute(code.lox:42)
+[engine] transferToInterpreter at MyNode.execute(<source>:42)
+[engine] transferToInterpreter at MyNode.execute(<source>:42)
+[engine] transferToInterpreter at MyNode.execute(<source>:42)
+[engine] transferToInterpreter at MyNode.execute(<source>:42)
 ...dozens or hundreds of times...
 ```
 
@@ -168,8 +164,8 @@ topLevelFunction(source.lox:5:10-50)
    Object doGeneric(Object a, Object b) { /* fallback */ }
    ```
 
-2. **For Lox user code**: Avoid mixing types in hot paths
-   ```lox
+2. **For guest language code**: Avoid mixing types in hot paths
+   ```<your-language>
    // ❌ BAD: Mixing types in hot loop
    for (var i = 0; i < 1000; i = i + 1) {
      var x = someFunction(i);  // Returns int sometimes, double other times
@@ -185,18 +181,18 @@ topLevelFunction(source.lox:5:10-50)
 
 3. **Tune compilation thresholds** (allow more profiling):
    ```bash
-   ./lox --experimental-options \
+   <launcher> --experimental-options \
      --engine.FirstTierCompilationThreshold=1000 \
      --engine.TraceTransferToInterpreter \
-     program.lox [script args]
+     <program> [script args]
    ```
 
 **Verification**:
 ```bash
 # Before fix: Count transfers
-./lox --experimental-options \
+<launcher> --experimental-options \
   --engine.TraceTransferToInterpreter \
-  program.lox [script args] 2>&1 | grep -c "transferToInterpreter"
+  <program> [script args] 2>&1 | grep -c "transferToInterpreter"
 
 # After fix: Should be zero or very few
 ```
@@ -204,7 +200,7 @@ topLevelFunction(source.lox:5:10-50)
 #### Pattern 2: Property Access Deoptimizations
 ```
 [engine] transferToInterpreter at
-getProperty(code.lox:123)
+getProperty(<source>:123)
 ...
 PropertyCacheNode.deoptimize(...)
 PropertyGetNode.getValueOrDefault(...)
@@ -224,7 +220,7 @@ PropertyGetNode.getValueOrDefault(...)
 - Shape changes invalidate these assumptions
 
 **Common Causes**:
-```lox
+```<your-language>
 // ❌ BAD: Adding properties dynamically
 class Point {
   init(x, y) {
@@ -239,7 +235,7 @@ p.z = 3;  // Shape change! Deoptimizes!
 ```
 
 **Resolution**:
-```lox
+```<your-language>
 // ✅ GOOD: All properties in constructor
 class Point {
   init(x, y, z) {
@@ -257,10 +253,10 @@ p.z = 3;  // No shape change, stays optimized
 **Verification Tools**:
 ```bash
 # Combine with assumption tracing
-./lox --experimental-options \
+<launcher> --experimental-options \
   --engine.TraceTransferToInterpreter \
   --engine.TraceAssumptions \
-  program.lox [script args] 2>&1 | tee analysis.log
+  <program> [script args] 2>&1 | tee analysis.log
 ```
 
 #### Pattern 3: Warmup Transfers (Normal, But Monitor)
@@ -301,25 +297,25 @@ p.z = 3;  // No shape change, stays optimized
 **Resolution for Excessive Warmup**:
 ```bash
 # Increase first-tier threshold for more profiling
-./lox --experimental-options \
+<launcher> --experimental-options \
   --engine.FirstTierCompilationThreshold=800 \
   --engine.TraceTransferToInterpreter \
-  program.lox [script args]
+  <program> [script args]
 ```
 
 **Verification**:
 ```bash
 # Skip warmup in profiling
-./lox --cpusampler --cpusampler.Delay=10000 \
+<launcher> --cpusampler --cpusampler.Delay=10000 \
   --cpusampler.ShowTiers=true \
-  program.lox [script args]
+  <program> [script args]
 ```
 
 #### Pattern 4: Rare Path Transfers (Acceptable)
 ```
 [During entire execution]
-[engine] transferToInterpreter at errorHandler(code.lox:250)
-[engine] transferToInterpreter at validateInput(code.lox:89)
+[engine] transferToInterpreter at errorHandler(<source>:250)
+[engine] transferToInterpreter at validateInput(<source>:89)
 ```
 
 **Problem**: Occasional transfers from uncommon paths
@@ -350,7 +346,7 @@ p.z = 3;  // No shape change, stays optimized
 **Verification**:
 ```bash
 # Check if these paths are actually hot
-./lox --cpusampler program.lox [script args]
+<launcher> --cpusampler <program> [script args]
 ```
 
 ### 5. Correlation with Compilation Trace
@@ -358,10 +354,10 @@ p.z = 3;  // No shape change, stays optimized
 **Essential combination** - always use together!
 
 ```bash
-./lox --experimental-options \
+<launcher> --experimental-options \
   --engine.TraceTransferToInterpreter \
   --engine.TraceCompilation \
-  program.lox [script args] 2>&1 | tee full-trace.log
+  <program> [script args] 2>&1 | tee full-trace.log
 ```
 
 **Look for this pattern (deoptimization cycle)**:
@@ -422,36 +418,36 @@ The skill follows these analysis best practices:
 
 ### 1. Always Combine with TraceCompilation
 ```bash
-./lox --experimental-options \
+<launcher> --experimental-options \
   --engine.TraceTransferToInterpreter \
   --engine.TraceCompilation \
-  program.lox [script args] 2>&1 | tee analysis.log
+  <program> [script args] 2>&1 | tee analysis.log
 ```
 **Why**: See compilation lifecycle with deoptimization events
 
 ### 2. Filter to Specific Functions for Debugging
 ```bash
-./lox --experimental-options \
+<launcher> --experimental-options \
   --engine.TraceTransferToInterpreter \
   --engine.CompileOnly=problematicFunction \
-  program.lox [script args] 2>&1
+  <program> [script args] 2>&1
 ```
 **Why**: Reduce output volume for focused analysis
 
 ### 3. Redirect Output to File
 ```bash
-./lox --experimental-options \
+<launcher> --experimental-options \
   --engine.TraceTransferToInterpreter \
-  program.lox [script args] 2>transfers.log
+  <program> [script args] 2>transfers.log
 ```
 **Why**: Analyze offline, compare across runs, count patterns
 
 ### 4. Distinguish Warmup from Steady-State
 ```bash
 # Run long enough to see pattern
-./lox --experimental-options \
+<launcher> --experimental-options \
   --engine.TraceTransferToInterpreter \
-  long-running-program.lox 2>&1 | \
+  long-running-<program> 2>&1 | \
   awk '{print NR, $0}' > numbered-output.log
 ```
 **Why**: Only steady-state transfers are real problems
@@ -466,11 +462,11 @@ grep "transferToInterpreter at" transfers.log | \
 
 ### 6. Use Deterministic Compilation for Debugging
 ```bash
-./lox --experimental-options \
+<launcher> --experimental-options \
   --engine.TraceTransferToInterpreter \
   --engine.CompileImmediately \
   --engine.BackgroundCompilation=false \
-  program.lox [script args] 2>&1
+  <program> [script args] 2>&1
 ```
 **Why**: Makes behavior deterministic, avoids race conditions
 
@@ -478,10 +474,10 @@ grep "transferToInterpreter at" transfers.log | \
 
 ### Transfer Tracer + Compilation Trace (Essential!)
 ```bash
-./lox --experimental-options \
+<launcher> --experimental-options \
   --engine.TraceTransferToInterpreter \
   --engine.TraceCompilation \
-  program.lox [script args] 2>&1 | tee full-trace.log
+  <program> [script args] 2>&1 | tee full-trace.log
 ```
 **Why**:
 - TraceCompilation: When/what compiled, invalidations
@@ -490,10 +486,10 @@ grep "transferToInterpreter at" transfers.log | \
 
 ### Transfer Tracer + Assumption Trace
 ```bash
-./lox --experimental-options \
+<launcher> --experimental-options \
   --engine.TraceTransferToInterpreter \
   --engine.TraceAssumptions \
-  program.lox [script args] 2>&1 | tee assumptions.log
+  <program> [script args] 2>&1 | tee assumptions.log
 ```
 **Why**:
 - TraceAssumptions: Which specific assumptions invalidating
@@ -503,14 +499,14 @@ grep "transferToInterpreter at" transfers.log | \
 ### Transfer Tracer + CPU Sampler
 ```bash
 # Step 1: Identify deoptimization issues
-./lox --experimental-options \
+<launcher> --experimental-options \
   --engine.TraceTransferToInterpreter \
-  program.lox [script args] 2>transfers.log
+  <program> [script args] 2>transfers.log
 
 # Step 2: Profile to see impact
-./lox --cpusampler --cpusampler.ShowTiers=true \
+<launcher> --cpusampler --cpusampler.ShowTiers=true \
   --cpusampler.Delay=10000 \
-  program.lox [script args]
+  <program> [script args]
 ```
 **Why**:
 - CPU Sampler: Shows time in interpreted vs compiled
@@ -519,10 +515,10 @@ grep "transferToInterpreter at" transfers.log | \
 
 ### Transfer Tracer + Compilation Statistics
 ```bash
-./lox --experimental-options \
+<launcher> --experimental-options \
   --engine.TraceTransferToInterpreter \
   --engine.CompilationStatistics \
-  program.lox [script args] 2>&1
+  <program> [script args] 2>&1
 ```
 **Why**:
 - CompilationStatistics: Aggregate invalidation counts/rates
@@ -533,10 +529,10 @@ grep "transferToInterpreter at" transfers.log | \
 
 ### Increase Stack Trace Depth
 ```bash
-./lox --experimental-options \
+<launcher> --experimental-options \
   --engine.TraceTransferToInterpreter \
   --engine.TraceStackTraceLimit=50 \
-  program.lox [script args] 2>&1
+  <program> [script args] 2>&1
 ```
 - Default: 20 frames
 - Increase for deep call chains
@@ -544,10 +540,10 @@ grep "transferToInterpreter at" transfers.log | \
 
 ### Immediate Compilation (Testing)
 ```bash
-./lox --experimental-options \
+<launcher> --experimental-options \
   --engine.TraceTransferToInterpreter \
   --engine.CompileImmediately \
-  program.lox [script args] 2>&1
+  <program> [script args] 2>&1
 ```
 - Compiles as soon as methods run
 - Useful for triggering issues quickly
@@ -555,10 +551,10 @@ grep "transferToInterpreter at" transfers.log | \
 
 ### Synchronous Compilation (Debugging)
 ```bash
-./lox --experimental-options \
+<launcher> --experimental-options \
   --engine.TraceTransferToInterpreter \
   --engine.BackgroundCompilation=false \
-  program.lox [script args] 2>&1
+  <program> [script args] 2>&1
 ```
 - Disables background compilation
 - Makes timing deterministic
@@ -599,10 +595,10 @@ The skill typically follows this analysis workflow:
 
 ### Step 1: Initial Trace
 ```bash
-./lox --experimental-options \
+<launcher> --experimental-options \
   --engine.TraceTransferToInterpreter \
   --engine.TraceCompilation \
-  program.lox [script args] 2>&1 | tee initial-trace.log
+  <program> [script args] 2>&1 | tee initial-trace.log
 ```
 
 ### Step 2: Count and Categorize Transfers
@@ -641,9 +637,9 @@ grep "myFunction" initial-trace.log | \
 ### Step 6: Verify Fixes
 ```bash
 # Re-run trace
-./lox --experimental-options \
+<launcher> --experimental-options \
   --engine.TraceTransferToInterpreter \
-  program.lox [script args] 2>&1 | tee fixed-trace.log
+  <program> [script args] 2>&1 | tee fixed-trace.log
 
 # Count transfers
 grep -c "transferToInterpreter" fixed-trace.log
@@ -654,10 +650,10 @@ grep -c "transferToInterpreter" fixed-trace.log
 ### Step 7: Measure Performance Impact
 ```bash
 # Before fix
-time ./lox program.lox [script args]
+time <launcher> <program> [script args]
 
 # After fix (should be much faster)
-time ./lox program.lox [script args]
+time <launcher> <program> [script args]
 ```
 
 ## Success Criteria
@@ -686,12 +682,12 @@ time ./lox program.lox [script args]
 ```
 [engine] opt done    sieveFunction  <tier1>
 [engine] opt done    isPrimeHelper  <tier1>
-[engine] transferToInterpreter at isPrimeHelper(sieve.lox:42)
-[engine] transferToInterpreter at isPrimeHelper(sieve.lox:42)
-[engine] transferToInterpreter at isPrimeHelper(sieve.lox:42)
+[engine] transferToInterpreter at isPrimeHelper(<source>:42)
+[engine] transferToInterpreter at isPrimeHelper(<source>:42)
+[engine] transferToInterpreter at isPrimeHelper(<source>:42)
 [engine] opt deopt   isPrimeHelper
 [engine] opt done    isPrimeHelper  <tier1>
-[engine] transferToInterpreter at isPrimeHelper(sieve.lox:42)
+[engine] transferToInterpreter at isPrimeHelper(<source>:42)
 ```
 
 ### Skill Analysis
@@ -709,7 +705,7 @@ time ./lox program.lox [script args]
    - Repeated deopt worse than no compilation
 
 4. **Recommended fix**:
-   ```lox
+   ```<your-language>
    // Check line 42 - likely something like:
    fun isPrimeHelper(n, divisor) {
      if (divisor * divisor > n) return true;  // Line 42
@@ -735,7 +731,7 @@ For detailed information, see:
 ## Implementation Notes
 
 This skill:
-- Uses the Lox launcher: `./lox`
+- Uses your language's launcher: `<launcher>`
 - Requires `--experimental-options` flag
 - Outputs to stderr (redirect with `2>`)
 - Combines with TraceCompilation for full picture

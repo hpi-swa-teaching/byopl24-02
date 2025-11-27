@@ -5,11 +5,11 @@ description: Counts exact execution frequencies at function/statement level with
 
 # Skill: Run and Analyze CPU Tracer
 
-This skill runs the CPU Tracer profiling tool on a Lox program and provides detailed analysis of execution count patterns to help identify compilation issues, control flow patterns, and algorithmic complexity problems.
+This skill runs the CPU Tracer profiling tool on your language implementation and provides detailed analysis of execution count patterns to help identify compilation issues, control flow patterns, and algorithmic complexity problems.
 
 ## What This Skill Does
 
-1. **Runs CPU Tracer**: Executes the Lox program with CPU tracing at appropriate granularity (roots/calls/statements)
+1. **Runs CPU Tracer**: Executes the program with CPU tracing at appropriate granularity (roots/calls/statements)
 2. **Analyzes Execution Counts**: Interprets the profiling output to identify:
    - Execution hotspots (frequently executed code paths)
    - Compilation effectiveness (interpreted vs compiled execution split)
@@ -36,38 +36,28 @@ This skill runs the CPU Tracer profiling tool on a Lox program and provides deta
 ## Prerequisites
 
 Before running this skill, you should know:
-- The path to the Lox program you want to profile
+- **Required**: Having benchmark baseline data for comparison
+- The path to the program you want to profile
 - Whether you need function-level or statement-level granularity
 - Any specific functions to filter (for focused analysis)
 
-## Reliability Protocol (MANDATORY)
+## Fermi Verification (MANDATORY)
 
 **Context:** Tools often fail due to environment issues, permissions, or misconfiguration. To avoid hallucinating results, misinterpreting output, or wasting resources, you must follow this 3-step verification loop.
 
-### Step 1: Pre-Execution Baseline
+**Mitigation Strategy**: Fermi Verification Before accepting the tool's output, you must:
 
-Before executing the primary task, establish a mental baseline:
-* **Complexity Estimate:** asking yourself what you expect from a run with a trivial input (i.e. "If I run this on trivial input, how fast should it be?").
-* **Failure Mode Prediction:** "If this tool is broken, will it hang, crash, or return empty text?"
-* **Sanity Check:** If the tool takes 100x longer than your estimate, **STOP**. It is likely misconfigured or waiting on input.
-
-### Step 2: The Probe (Dry Run)
-Never run a complex or heavy command blind. Execute a **Probe** first:
-* **The Test:** Run the exact command structure on a trivial target (e.g., `print "test";`, `SELECT 1`, or a dummy file).
-* **Constraint:** If the Probe hangs, errors, or produces empty output, **STOP**. Do not proceed to the main task.
-
-### Step 3: Output Audit (Verification)
-
-Do not assume success based on exit codes.
-* **Physical Check:** verify the output artifact exists and has a file size > 0 bytes.
-* **Content Scan:** Read the first 5 lines/bytes of the output to ensure it is not an error message written to stdout (e.g., "Error: Command not found" saved inside `output.json`). Verify it's in the range of expected content and metrics. If it's to far off, **STOP**.
+1. Estimate: Look at the complexity of the code. Perform a "Fermi Calculation" to estimate the expected order of magnitude of allocations (e.g., "This acts on an array of 10k items, so I expect at least 10k allocations").
+2. Probe: Run the tool on a trivial input (e.g., a minimal program) to ensure it produces output quickly and correctly.
+3. Execute: Run the tool on the real target.
+4. Compare: If the tool output deviates from your Fermi Estimate by more than one order of magnitude (or is zero), treat the result as a failure and retry with different flags.
 
 ## How the Skill Works
 
 The skill follows this workflow:
 
 ### 1. Initial Setup
-- Confirms the Lox program path and any arguments
+- Confirms the program path and any arguments
 - Determines appropriate tracing granularity (roots/calls/statements)
 - Sets up filters if focusing on specific code
 
@@ -77,7 +67,7 @@ Executes with these granularity levels:
 
 #### Function-Level (Default - Low Overhead)
 ```bash
-./lox --cputracer program.lox [script args]
+<launcher> --cputracer <program> [script args]
 ```
 - Traces function/method entries only
 - Shows total executions and interpreted vs compiled split
@@ -85,7 +75,7 @@ Executes with these granularity levels:
 
 #### Call-Site Level (Medium Overhead)
 ```bash
-./lox --cputracer --cputracer.TraceCalls program.lox
+<launcher> --cputracer --cputracer.TraceCalls <program>
 ```
 - Adds call-site tracking within functions
 - Shows which call sites are hot
@@ -93,9 +83,9 @@ Executes with these granularity levels:
 
 #### Statement-Level (Highest Overhead - Use with Filters!)
 ```bash
-./lox --cputracer --cputracer.TraceStatements \
+<launcher> --cputracer --cputracer.TraceStatements \
   --cputracer.FilterRootName=*hotFunction* \
-  program.lox
+  <program>
 ```
 - Traces every statement execution
 - Most detailed granularity for understanding control flow
@@ -110,7 +100,7 @@ The skill looks for these key patterns:
 - **Cause**: Compilation barrier, deoptimization, or compilation threshold not reached
 - **Example**:
   ```
-  accept    | 234117338 50.0%  | 100000 42.7%  | 134117338 57.3%  | primes.lox~15:245-258
+  accept    | 234117338 50.0%  | 100000 42.7%  | 134117338 57.3%  | <source>~15:245-258
   ```
   This shows only 57.3% compiled despite 234M executions - problematic!
 
@@ -125,9 +115,9 @@ The skill looks for these key patterns:
 - **Symptom**: Few functions consuming 80%+ of total executions
 - **Example**:
   ```
-  innerLoop | 450000000 85.0%  | 5000 0.0%     | 449995000 100.0% | benchmark.lox~42:512-530
-  helper    |  50000000 9.5%   | 2000 0.0%     |  49998000 100.0% | benchmark.lox~18:203-220
-  setup     |      5000 0.0%   | 5000 100.0%   |         0 0.0%   | benchmark.lox~5:45-89
+  innerLoop | 450000000 85.0%  | 5000 0.0%     | 449995000 100.0% | <program>~42:512-530
+  helper    |  50000000 9.5%   | 2000 0.0%     |  49998000 100.0% | <program>~18:203-220
+  setup     |      5000 0.0%   | 5000 100.0%   |         0 0.0%   | <program>~5:45-89
   ```
   Focus on `innerLoop` and `helper` - they dominate execution
 
@@ -178,30 +168,30 @@ The skill uses filters to manage overhead:
 
 #### Filter by Function Name
 ```bash
-./lox --cputracer --cputracer.FilterRootName=*parse* program.lox
+<launcher> --cputracer --cputracer.FilterRootName=*parse* <program>
 ```
 Focus on functions matching pattern (e.g., all parsing functions)
 
 #### Filter by File
 ```bash
-./lox --cputracer --cputracer.FilterFile=*benchmark* program.lox
+<launcher> --cputracer --cputracer.FilterFile=*benchmark* <program>
 ```
 Only trace code in specific files
 
 #### Combined Filtering
 ```bash
-./lox --cputracer --cputracer.TraceStatements \
+<launcher> --cputracer --cputracer.TraceStatements \
   --cputracer.FilterRootName=*innerLoop* \
-  --cputracer.FilterFile=*benchmark.lox* \
-  program.lox
+  --cputracer.FilterFile=*<program>* \
+  <program>
 ```
 Statement-level detail on specific function in specific file
 
 #### Output as JSON
 ```bash
-./lox --cputracer --cputracer.Output=json \
+<launcher> --cputracer --cputracer.Output=json \
   --cputracer.OutputFile=trace.json \
-  program.lox
+  <program>
 ```
 Machine-readable format for programmatic analysis
 
@@ -231,7 +221,7 @@ Compiled Count: Number of times the compiled element was executed and percentage
 
 Name       | Total Count      | Interpreted Count | Compiled Count    | Location
 -----------------------------------------------------------------------------------------
-accept     | 234117338 50.0%  | 365660 0.2%      | 233751678 99.8%  | primes.lox~15:245-258
+accept     | 234117338 50.0%  | 365660 0.2%      | 233751678 99.8%  | <source>~15:245-258
 ```
 
 #### JSON Format
@@ -242,12 +232,12 @@ accept     | 234117338 50.0%  | 365660 0.2%      | 233751678 99.8%  | primes.lox
     "profile": [
         {
             "source_section": {
-                "path": "/Users/antonykamp/Projects/hpi-ma/byopl24-02/benchmark.lox",
-                "language": "lox",
+                "path": "/Users/antonykamp/Projects/hpi-ma/byopl24-02/<program>",
+                "language": "<guest-language>",
                 "end_column": 1,
                 "end_line": 16,
                 "start_column": 1,
-                "source_name": "benchmark.lox",
+                "source_name": "<program>",
                 "start_line": 1
             },
             "compiled_count": 0,
@@ -257,12 +247,12 @@ accept     | 234117338 50.0%  | 365660 0.2%      | 233751678 99.8%  | primes.lox
         },
         {
             "source_section": {
-                "path": "/Users/antonykamp/Projects/hpi-ma/byopl24-02/run.lox",
-                "language": "lox",
+                "path": "<path>",
+                "language": "<guest-language>",
                 "end_column": 1,
                 "end_line": 52,
                 "start_column": 1,
-                "source_name": "run.lox",
+                "source_name": "<source>",
                 "start_line": 1
             },
             "compiled_count": 0,
@@ -272,12 +262,12 @@ accept     | 234117338 50.0%  | 365660 0.2%      | 233751678 99.8%  | primes.lox
         },
         {
             "source_section": {
-                "path": "/Users/antonykamp/Projects/hpi-ma/byopl24-02/harness.lox",
-                "language": "lox",
+                "path": "<path>",
+                "language": "<guest-language>",
                 "end_column": 11,
                 "end_line": 10,
                 "start_column": 1,
-                "source_name": "harness.lox",
+                "source_name": "<source>",
                 "start_line": 2
             },
             "compiled_count": 0,
@@ -287,12 +277,12 @@ accept     | 234117338 50.0%  | 365660 0.2%      | 233751678 99.8%  | primes.lox
         },
         {
             "source_section": {
-                "path": "/Users/antonykamp/Projects/hpi-ma/byopl24-02/queens.lox",
-                "language": "lox",
+                "path": "<path>",
+                "language": "<guest-language>",
                 "end_column": 33,
                 "end_line": 57,
                 "start_column": 1,
-                "source_name": "queens.lox",
+                "source_name": "<source>",
                 "start_line": 1
             },
             "compiled_count": 9249,
@@ -340,10 +330,10 @@ accept     | 234117338 50.0%  | 365660 0.2%      | 233751678 99.8%  | primes.lox
 ### CPU Tracer + CPU Sampler (Recommended Combo)
 ```bash
 # Run 1: Execution counts
-./lox --cputracer program.lox [script args] > tracer.txt
+<launcher> --cputracer <program> [script args] > tracer.txt
 
 # Run 2: Execution time
-./lox --cpusampler --cpusampler.Delay=2000 --cpusampler.ShowTiers=true program.lox [script args] > sampler.txt
+<launcher> --cpusampler --cpusampler.Delay=2000 --cpusampler.ShowTiers=true <program> [script args] > sampler.txt
 
 # Analyze correlation:
 # - High tracer count + high sampler time = critical optimization target
@@ -354,7 +344,7 @@ accept     | 234117338 50.0%  | 365660 0.2%      | 233751678 99.8%  | primes.lox
 
 ### CPU Tracer + Trace Compilation
 ```bash
-./lox --cputracer --engine.TraceCompilation program.lox [script args]
+<launcher> --cputracer --engine.TraceCompilation <program> [script args]
 ```
 - Tracer shows low compiled % → Trace compilation shows why
 - Look for bailouts, deoptimizations, or missing compilation triggers
@@ -362,21 +352,21 @@ accept     | 234117338 50.0%  | 365660 0.2%      | 233751678 99.8%  | primes.lox
 ### CPU Tracer + Statement Tracing (Progressive Detail)
 ```bash
 # Step 1: Find hot functions
-./lox --cputracer program.lox [script args]
+<launcher> --cputracer <program> [script args]
 
 # Step 2: Trace statements in hot functions only
-./lox --cputracer --cputracer.TraceStatements \
+<launcher> --cputracer --cputracer.TraceStatements \
   --cputracer.FilterRootName=*hotFunction* \
-  program.lox [script args]
+  <program> [script args]
 ```
 
 ## Advanced Options
 
 ### JSON Output for Analysis
 ```bash
-./lox --cputracer --cputracer.Output=json \
+<launcher> --cputracer --cputracer.Output=json \
   --cputracer.OutputFile=trace.json \
-  program.lox
+  <program>
 ```
 - Machine-readable format
 - Process with `jq` or custom scripts
@@ -384,7 +374,7 @@ accept     | 234117338 50.0%  | 365660 0.2%      | 233751678 99.8%  | primes.lox
 
 ### Disable Compilation for Debugging
 ```bash
-./lox --cputracer --engine.BackgroundCompilation=false program.lox
+<launcher> --cputracer --engine.BackgroundCompilation=false <program>
 ```
 - Makes behavior deterministic
 - Easier to correlate with execution patterns
@@ -402,17 +392,17 @@ The skill follows these profiling best practices:
 2. **Always Filter with TraceStatements**
    ```bash
    # ❌ BAD: Overwhelming overhead and output
-   ./lox --cputracer --cputracer.TraceStatements program.lox
+   <launcher> --cputracer --cputracer.TraceStatements <program>
 
    # ✅ GOOD: Focused statement-level detail
-   ./lox --cputracer --cputracer.TraceStatements \
+   <launcher> --cputracer --cputracer.TraceStatements \
      --cputracer.FilterRootName=*hotFunction* \
-     program.lox
+     <program>
    ```
 
 3. **Save Output to Files**
    ```bash
-   ./lox --cputracer --cputracer.OutputFile=trace-run1.txt program.lox
+   <launcher> --cputracer --cputracer.OutputFile=trace-run1.txt <program>
    ```
    - Enables comparison across runs
    - Prevents terminal buffer overflow
@@ -449,7 +439,7 @@ The skill typically follows this analysis workflow:
 
 ### Step 1: Initial Function-Level Profile
 ```bash
-./lox --cputracer program.lox [script args] > trace-functions.txt
+<launcher> --cputracer <program> [script args] > trace-functions.txt
 ```
 **Analyze**: Find top 3-5 functions by total count
 
@@ -458,23 +448,23 @@ The skill typically follows this analysis workflow:
 
 ### Step 3: Investigate Compilation Issues (if needed)
 ```bash
-./lox --cputracer --engine.TraceCompilation program.lox
+<launcher> --cputracer --engine.TraceCompilation <program>
 ```
 **Analyze**: Look for bailouts, deoptimizations affecting hot functions
 
 ### Step 4: Statement-Level Detail on Hot Functions
 ```bash
-./lox --cputracer --cputracer.TraceStatements \
+<launcher> --cputracer --cputracer.TraceStatements \
   --cputracer.FilterRootName=*hotFunction* \
-  program.lox
+  <program>
 ```
 **Analyze**: Find which specific statements dominate execution
 
 ### Step 5: Correlate with Time (CPU Sampler)
 ```bash
-./lox --cpusampler --cpusampler.Delay=2000 \
+<launcher> --cpusampler --cpusampler.Delay=2000 \
   --cpusampler.ShowTiers=true \
-  program.lox
+  <program>
 ```
 **Compare**: High tracer count + high sampler time = critical optimization target
 
@@ -489,10 +479,10 @@ After making changes, re-run Step 1 and compare:
 ```
 Name          | Total Count      | Interpreted Count | Compiled Count    | Location
 ------------------------------------------------------------------------------------------
-innerBench    | 500000000 71.4%  | 15000 0.003%     | 499985000 99.997% | sieve.lox~42:512-530
-isPrime       | 150000000 21.4%  | 8000 0.005%      | 149992000 99.995% | sieve.lox~18:203-220
-next          |  50000000 7.1%   | 2000 0.004%      |  49998000 99.996% | sieve.lox~31:401-420
-setup         |        10 0.0%   | 10 100.0%        |         0 0.0%    | sieve.lox~5:45-89
+innerBench    | 500000000 71.4%  | 15000 0.003%     | 499985000 99.997% | <source>~42:512-530
+isPrime       | 150000000 21.4%  | 8000 0.005%      | 149992000 99.995% | <source>~18:203-220
+next          |  50000000 7.1%   | 2000 0.004%      |  49998000 99.996% | <source>~31:401-420
+setup         |        10 0.0%   | 10 100.0%        |         0 0.0%    | <source>~5:45-89
 ```
 
 ### Skill Analysis
@@ -501,9 +491,9 @@ setup         |        10 0.0%   | 10 100.0%        |         0 0.0%    | sieve.
 3. **Setup code**: `setup` runs once (10 times), 100% interpreted - normal and expected
 4. **Recommendation**: All functions are well-compiled. Use statement-level tracing on `innerBench` to find optimization opportunities within the function:
    ```bash
-   ./lox --cputracer --cputracer.TraceStatements \
+   <launcher> --cputracer --cputracer.TraceStatements \
      --cputracer.FilterRootName=*innerBench* \
-     sieve.lox
+     <source>
    ```
 
 ## Reference Documentation
@@ -516,7 +506,7 @@ For detailed information, see:
 ## Implementation Notes
 
 This skill:
-- Uses the Lox launcher: `./lox`
+- Uses your language's launcher: `<launcher>`
 - Defaults to function-level granularity (lowest overhead)
 - Uses filters when enabling statement-level tracing
 - Analyzes compiled % with >95% target for hot code

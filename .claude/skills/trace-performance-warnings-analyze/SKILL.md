@@ -5,11 +5,11 @@ description: Detects optimization barriers during compilation. Use FIRST when op
 
 # Skill: Run and Analyze Performance Warning Tracer
 
-This skill runs the Performance Warning tracer on a Lox program and provides detailed analysis of optimization barriers to help achieve peak compiled performance.
+This skill runs the Performance Warning tracer on your language implementation and provides detailed analysis of optimization barriers to help achieve peak compiled performance.
 
 ## What This Skill Does
 
-1. **Runs Performance Warning Tracer**: Executes the Lox program with warning detection enabled
+1. **Runs Performance Warning Tracer**: Executes the program with warning detection enabled
 2. **Analyzes Optimization Barriers**: Interprets warnings to identify:
    - Virtual calls that can't be inlined
    - Type checks that can't be resolved
@@ -19,27 +19,16 @@ This skill runs the Performance Warning tracer on a Lox program and provides det
    - Compilation bailouts
 3. **Provides Fix Recommendations**: Suggests specific code changes to eliminate barriers
 
-## Reliability Protocol (MANDATORY)
+## Fermi Verification (MANDATORY)
 
 **Context:** Tools often fail due to environment issues, permissions, or misconfiguration. To avoid hallucinating results, misinterpreting output, or wasting resources, you must follow this 3-step verification loop.
 
-### Step 1: Pre-Execution Baseline
+**Mitigation Strategy**: Fermi Verification Before accepting the tool's output, you must:
 
-Before executing the primary task, establish a mental baseline:
-* **Complexity Estimate:** asking yourself what you expect from a run with a trivial input (i.e. "If I run this on trivial input, how fast should it be?").
-* **Failure Mode Prediction:** "If this tool is broken, will it hang, crash, or return empty text?"
-* **Sanity Check:** If the tool takes 100x longer than your estimate, **STOP**. It is likely misconfigured or waiting on input.
-
-### Step 2: The Probe (Dry Run)
-Never run a complex or heavy command blind. Execute a **Probe** first:
-* **The Test:** Run the exact command structure on a trivial target (e.g., `print "test";`, `SELECT 1`, or a dummy file).
-* **Constraint:** If the Probe hangs, errors, or produces empty output, **STOP**. Do not proceed to the main task.
-
-### Step 3: Output Audit (Verification)
-
-Do not assume success based on exit codes.
-* **Physical Check:** verify the output artifact exists and has a file size > 0 bytes.
-* **Content Scan:** Read the first 5 lines/bytes of the output to ensure it is not an error message written to stdout (e.g., "Error: Command not found" saved inside `output.json`). Verify it's in the range of expected content and metrics. If it's to far off, **STOP**.
+1. Estimate: Look at the complexity of the code. Perform a "Fermi Calculation" to estimate the expected order of magnitude of allocations (e.g., "This acts on an array of 10k items, so I expect at least 10k allocations").
+2. Probe: Run the tool on a trivial input (e.g., a minimal program) to ensure it produces output quickly and correctly.
+3. Execute: Run the tool on the real target.
+4. Compare: If the tool output deviates from your Fermi Estimate by more than one order of magnitude (or is zero), treat the result as a failure and retry with different flags.
 
 ## Critical Understanding: Use This FIRST!
 
@@ -119,16 +108,28 @@ Do not assume success based on exit codes.
 ## Prerequisites
 
 Before running this skill, you should know:
-- The path to the Lox program to analyze
+- **Required**: Having benchmark baseline data for comparison
+- The path to the program to analyze
 - Ideally, profiling results showing hot functions
 - Whether to focus on specific methods
+
+## Fermi Verification (MANDATORY)
+
+**Context:** Tools often fail due to environment issues, permissions, or misconfiguration. To avoid hallucinating results, misinterpreting output, or wasting resources, you must follow this 3-step verification loop.
+
+**Mitigation Strategy**: Fermi Verification Before accepting the tool's output, you must:
+
+1. Estimate: Look at the complexity of the code. Perform a "Fermi Calculation" to estimate the expected order of magnitude of allocations (e.g., "This acts on an array of 10k items, so I expect at least 10k allocations").
+2. Probe: Run the tool on a trivial input (e.g., a minimal program) to ensure it produces output quickly and correctly.
+3. Execute: Run the tool on the real target.
+4. Compare: If the tool output deviates from your Fermi Estimate by more than one order of magnitude (or is zero), treat the result as a failure and retry with different flags.
 
 ## How the Skill Works
 
 The skill follows this workflow:
 
 ### 1. Initial Setup
-- Confirms the Lox program path and arguments
+- Confirms the program path and arguments
 - Determines whether to enable all warnings or specific types
 - Optionally sets up method filtering
 
@@ -136,7 +137,7 @@ The skill follows this workflow:
 
 #### All Warnings (Recommended for Initial Analysis)
 ```bash
-./lox --compiler.TracePerformanceWarnings=all program.lox [script args]
+<launcher> --compiler.TracePerformanceWarnings=all <program> [script args]
 ```
 - Enables all warning types
 - Comprehensive coverage
@@ -144,7 +145,7 @@ The skill follows this workflow:
 
 #### Specific Warning Types
 ```bash
-./lox --compiler.TracePerformanceWarnings=call,instanceof,store program.lox [script args]
+<launcher> --compiler.TracePerformanceWarnings=call,instanceof,store <program> [script args]
 ```
 - Focus on specific issues
 - Reduces output volume
@@ -152,10 +153,10 @@ The skill follows this workflow:
 
 #### With Compilation Trace (Recommended!)
 ```bash
-./lox --experimental-options \
+<launcher> --experimental-options \
   --compiler.TracePerformanceWarnings=all \
   --engine.TraceCompilation \
-  program.lox [script args]
+  <program> [script args]
 ```
 - Correlate warnings with compilation events
 - See which compilations trigger warnings
@@ -163,10 +164,10 @@ The skill follows this workflow:
 
 #### Focused on Specific Method
 ```bash
-./lox --experimental-options \
+<launcher> --experimental-options \
   --compiler.TracePerformanceWarnings=all \
   --engine.CompileOnly=problematicFunction \
-  program.lox [script args]
+  <program> [script args]
 ```
 - Dramatically reduces output
 - Focus on known problem areas
@@ -230,14 +231,14 @@ class MyNode extends Node {
 }
 ```
 
-**For Lox Users**: This is typically a language implementation issue, not user code
+**For users**: This is typically a language implementation issue, not user code
 
 **Verification**:
 ```bash
-./lox --experimental-options \
+<launcher> --experimental-options \
   --compiler.TracePerformanceWarnings=call \
   --engine.TraceInlining \
-  program.lox [script args]
+  <program> [script args]
 ```
 Should see profile method inlined after fix
 
@@ -248,8 +249,8 @@ Should see profile method inlined after fix
 
 **Root Cause**: Multiple types flow through same code path
 
-**Example Issue (Lox code)**:
-```lox
+**Example Issue (guest language code)**:
+```<your-language>
 fun calculate(value) {
   // Sometimes receives int, sometimes double, sometimes string
   // Compiler can't resolve to exact type
@@ -275,8 +276,8 @@ double doDouble(double value) { return value + 1; }
 int doString(Object value) { return 0; }
 ```
 
-**For Lox Users**: Avoid mixing types in hot paths
-```lox
+**For users**: Avoid mixing types in hot paths
+```<your-language>
 // ❌ BAD: Mixing types
 for (var i = 0; i < 1000; i = i + 1) {
   calculate(i);        // int
@@ -323,7 +324,7 @@ public class ReadLocalNode extends Node {
 }
 ```
 
-**For Lox Users**: This is language implementation issue
+**For users**: This is language implementation issue
 
 #### Problem 4: Compilation Bailout
 ```
@@ -341,10 +342,10 @@ public class ReadLocalNode extends Node {
 **Resolution**:
 1. **Check compilation trace**:
    ```bash
-   ./lox --experimental-options \
+   <launcher> --experimental-options \
      --engine.TraceCompilation \
      --compiler.TracePerformanceWarnings=bailout \
-     program.lox [script args]
+     <program> [script args]
    ```
 
 2. **Use TraceInlining** to see if inlining is excessive
@@ -363,16 +364,16 @@ public class ReadLocalNode extends Node {
 
 #### Step 1: Profile to Find Hot Functions
 ```bash
-./lox --cpusampler \
+<launcher> --cpusampler \
   --cpusampler.ShowTiers=true \
   --cpusampler.Delay=5000 \
-  program.lox [script args] > cpu.txt
+  <program> [script args] > cpu.txt
 ```
 
 #### Step 2: Check for Warnings in Hot Functions
 ```bash
-./lox --compiler.TracePerformanceWarnings=all \
-  program.lox [script args] 2>&1 | tee warnings.txt
+<launcher> --compiler.TracePerformanceWarnings=all \
+  <program> [script args] 2>&1 | tee warnings.txt
 
 # Check if hot functions have warnings
 grep "hotFunction" warnings.txt
@@ -388,10 +389,10 @@ grep "perf warn" warnings.txt | \
 
 #### Step 4: Focus on Problematic Functions
 ```bash
-./lox --experimental-options \
+<launcher> --experimental-options \
   --compiler.TracePerformanceWarnings=all \
   --engine.CompileOnly=problematicFunction \
-  program.lox [script args]
+  <program> [script args]
 ```
 
 #### Step 5: Fix Issues (see Problem patterns above)
@@ -399,24 +400,24 @@ grep "perf warn" warnings.txt | \
 #### Step 6: Verify Fixes
 ```bash
 # Re-run warnings check
-./lox --compiler.TracePerformanceWarnings=all \
-  program.lox [script args] 2>&1 | grep "problematicFunction"
+<launcher> --compiler.TracePerformanceWarnings=all \
+  <program> [script args] 2>&1 | grep "problematicFunction"
 
 # Should see fewer or no warnings
 
 # Verify with inlining trace
-./lox --experimental-options \
+<launcher> --experimental-options \
   --engine.TraceInlining \
   --engine.CompileOnly=problematicFunction \
-  program.lox [script args]
+  <program> [script args]
 ```
 
 #### Step 7: Measure Performance Impact
 ```bash
 # Benchmark before and after
-time ./lox program.lox [script args]  # Before fixes
+time <launcher> <program> [script args]  # Before fixes
 # Apply fixes
-time ./lox program.lox [script args]  # After fixes - should be faster
+time <launcher> <program> [script args]  # After fixes - should be faster
 ```
 
 ## Best Practices
@@ -426,7 +427,7 @@ The skill follows these analysis best practices:
 ### 1. Use Performance Warnings First
 ```bash
 # Start optimization workflow here
-./lox --compiler.TracePerformanceWarnings=all program.lox [script args]
+<launcher> --compiler.TracePerformanceWarnings=all <program> [script args]
 ```
 - Most targeted diagnostic
 - Identifies exact problems
@@ -435,8 +436,8 @@ The skill follows these analysis best practices:
 ### 2. Combine with Profiling
 ```bash
 # Identify hot + warnings
-./lox --cpusampler program.lox [script args] > cpu.txt
-./lox --compiler.TracePerformanceWarnings=all program.lox [script args] > warn.txt
+<launcher> --cpusampler <program> [script args] > cpu.txt
+<launcher> --compiler.TracePerformanceWarnings=all <program> [script args] > warn.txt
 
 # Find hot functions with warnings
 ```
@@ -445,20 +446,20 @@ The skill follows these analysis best practices:
 
 ### 3. Use CompileOnly to Reduce Noise
 ```bash
-./lox --experimental-options \
+<launcher> --experimental-options \
   --compiler.TracePerformanceWarnings=all \
   --engine.CompileOnly=hotFunction \
-  program.lox [script args]
+  <program> [script args]
 ```
 - Dramatically reduces output
 - Focus on known problems
 
 ### 4. Correlate with Compilation Trace
 ```bash
-./lox --experimental-options \
+<launcher> --experimental-options \
   --compiler.TracePerformanceWarnings=all \
   --engine.TraceCompilation \
-  program.lox [script args] 2>&1 | tee full-trace.log
+  <program> [script args] 2>&1 | tee full-trace.log
 ```
 - See if warnings cause compilation failures
 - Understand compilation context
@@ -466,10 +467,10 @@ The skill follows these analysis best practices:
 ### 5. Verify Fixes with TraceInlining
 ```bash
 # After fixing call warnings
-./lox --experimental-options \
+<launcher> --experimental-options \
   --compiler.TracePerformanceWarnings=call \
   --engine.TraceInlining \
-  program.lox [script args]
+  <program> [script args]
 ```
 - Confirm methods now inline
 - Validate optimization effectiveness
@@ -514,16 +515,16 @@ The skill typically follows this workflow:
 
 ### Step 1: Baseline Profiling
 ```bash
-./lox --cpusampler --cpusampler.ShowTiers=true \
+<launcher> --cpusampler --cpusampler.ShowTiers=true \
   --cpusampler.Delay=5000 \
-  program.lox [script args] > cpu.txt
+  <program> [script args] > cpu.txt
 ```
 **Identify**: Top 3-5 hot functions
 
 ### Step 2: Check for Warnings
 ```bash
-./lox --compiler.TracePerformanceWarnings=all \
-  program.lox [script args] 2>&1 | tee warnings.txt
+<launcher> --compiler.TracePerformanceWarnings=all \
+  <program> [script args] 2>&1 | tee warnings.txt
 ```
 **Look for**: Warnings in hot functions
 
@@ -550,21 +551,21 @@ grep "perf warn hotFunction" warnings.txt
 ### Step 6: Verify Fixes
 ```bash
 # No more warnings for this function
-./lox --compiler.TracePerformanceWarnings=all \
+<launcher> --compiler.TracePerformanceWarnings=all \
   --engine.CompileOnly=hotFunction \
-  program.lox [script args]
+  <program> [script args]
 
 # Methods now inline
-./lox --experimental-options \
+<launcher> --experimental-options \
   --engine.TraceInlining \
   --engine.CompileOnly=hotFunction \
-  program.lox [script args]
+  <program> [script args]
 ```
 
 ### Step 7: Measure Impact
 ```bash
 # Benchmark
-time ./lox program.lox [script args]  # Should be faster
+time <launcher> <program> [script args]  # Should be faster
 ```
 
 ## Success Criteria
@@ -596,7 +597,7 @@ For detailed information, see:
 ## Implementation Notes
 
 This skill:
-- Uses the Lox launcher: `./lox`
+- Uses your language's launcher: `<launcher>`
 - Flag: `--compiler.TracePerformanceWarnings=all`
 - May require `--experimental-options` in some versions
 - Outputs to stdout with `[engine] perf warn` prefix

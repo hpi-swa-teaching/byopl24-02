@@ -5,11 +5,11 @@ description: Experimental allocation profiler tracking memory allocations at gue
 
 # Skill: Run and Analyze Memory Tracer
 
-This skill runs the Memory Tracer profiling tool on a Lox program and provides detailed analysis of allocation patterns to help identify memory optimization opportunities.
+This skill runs the Memory Tracer profiling tool on your language implementation and provides detailed analysis of allocation patterns to help identify memory optimization opportunities.
 
 ## What This Skill Does
 
-1. **Runs Memory Tracer**: Executes the Lox program with allocation profiling enabled
+1. **Runs Memory Tracer**: Executes the program with allocation profiling enabled
 2. **Analyzes Allocation Patterns**: Interprets the output to identify:
    - Allocation hotspots (functions creating most objects)
    - Object type distribution
@@ -49,38 +49,28 @@ This skill runs the Memory Tracer profiling tool on a Lox program and provides d
 ## Prerequisites
 
 Before running this skill, you should know:
-- The path to the Lox program to analyze
+- **Required**: Having benchmark baseline data for comparison
+- The path to the program to analyze
 - Whether you want to focus on specific functions (reduces overhead)
 - Ideally, CPU profiling results showing hot functions
 
-## Reliability Protocol (MANDATORY)
+## Fermi Verification (MANDATORY)
 
 **Context:** Tools often fail due to environment issues, permissions, or misconfiguration. To avoid hallucinating results, misinterpreting output, or wasting resources, you must follow this 3-step verification loop.
 
-### Step 1: Pre-Execution Baseline
+**Mitigation Strategy**: Fermi Verification Before accepting the tool's output, you must:
 
-Before executing the primary task, establish a mental baseline:
-* **Complexity Estimate:** asking yourself what you expect from a run with a trivial input (i.e. "If I run this on trivial input, how fast should it be?").
-* **Failure Mode Prediction:** "If this tool is broken, will it hang, crash, or return empty text?"
-* **Sanity Check:** If the tool takes 100x longer than your estimate, **STOP**. It is likely misconfigured or waiting on input.
-
-### Step 2: The Probe (Dry Run)
-Never run a complex or heavy command blind. Execute a **Probe** first:
-* **The Test:** Run the exact command structure on a trivial target (e.g., `print "test";`, `SELECT 1`, or a dummy file).
-* **Constraint:** If the Probe hangs, errors, or produces empty output, **STOP**. Do not proceed to the main task.
-
-### Step 3: Output Audit (Verification)
-
-Do not assume success based on exit codes.
-* **Physical Check:** verify the output artifact exists and has a file size > 0 bytes.
-* **Content Scan:** Read the first 5 lines/bytes of the output to ensure it is not an error message written to stdout (e.g., "Error: Command not found" saved inside `output.json`). Verify it's in the range of expected content and metrics. If it's to far off, **STOP**.
+1. Estimate: Look at the complexity of the code. Perform a "Fermi Calculation" to estimate the expected order of magnitude of allocations (e.g., "This acts on an array of 10k items, so I expect at least 10k allocations").
+2. Probe: Run the tool on a trivial input (e.g., a minimal program) to ensure it produces output quickly and correctly.
+3. Execute: Run the tool on the real target.
+4. Compare: If the tool output deviates from your Fermi Estimate by more than one order of magnitude (or is zero), treat the result as a failure and retry with different flags.
 
 ## How the Skill Works
 
 The skill follows this workflow:
 
 ### 1. Initial Setup
-- Confirms the Lox program path and arguments
+- Confirms the program path and arguments
 - Determines appropriate output format and granularity
 - Optionally sets up filters for focused profiling
 
@@ -88,7 +78,7 @@ The skill follows this workflow:
 
 #### Basic Allocation Profile (Recommended)
 ```bash
-./lox --experimental-options --memtracer program.lox [script args]
+<launcher> --experimental-options --memtracer <program> [script args]
 ```
 - Default histogram output
 - Shows allocations by source location
@@ -96,10 +86,10 @@ The skill follows this workflow:
 
 #### Type Histogram (What Object Types)
 ```bash
-./lox --experimental-options \
+<launcher> --experimental-options \
   --memtracer \
   --memtracer.Output=typehistogram \
-  program.lox [script args]
+  <program> [script args]
 ```
 - Groups allocations by object type/class
 - Shows what kinds of objects created most
@@ -107,10 +97,10 @@ The skill follows this workflow:
 
 #### Call Tree (Hierarchical View)
 ```bash
-./lox --experimental-options \
+<launcher> --experimental-options \
   --memtracer \
   --memtracer.Output=calltree \
-  program.lox [script args]
+  <program> [script args]
 ```
 - Hierarchical allocation call tree
 - Shows allocation patterns in calling context
@@ -118,11 +108,11 @@ The skill follows this workflow:
 
 #### Statement-Level Detail (High Overhead!)
 ```bash
-./lox --experimental-options \
+<launcher> --experimental-options \
   --memtracer \
   --memtracer.TraceStatements \
   --memtracer.FilterRootName=*hotFunction* \
-  program.lox [script args]
+  <program> [script args]
 ```
 - Attributes allocations to individual statements
 - **HIGH OVERHEAD** - always use with filters!
@@ -130,10 +120,10 @@ The skill follows this workflow:
 
 #### With Call Sites (More Context)
 ```bash
-./lox --experimental-options \
+<launcher> --experimental-options \
   --memtracer \
   --memtracer.TraceCalls \
-  program.lox [script args]
+  <program> [script args]
 ```
 - Includes call site information
 - Shows which functions called allocating function
@@ -151,9 +141,9 @@ Self Count: Number of allocations in this element alone (excluding sub calls).
 
 Name                | Self Count    | Total Count   | Location
 --------------------------------------------------------------------------------
-next                | 5000  99.9%   | 5000  99.9%   | primes.lox~31-37:537-737
-:program            | 6     0.1%    | 5007  100.0%  | primes.lox~1-46:0-982
-Primes              | 1     0.0%    | 1     0.0%    | primes.lox~25-38:424-739
+next                | 5000  99.9%   | 5000  99.9%   | <source>~31-37:537-737
+:program            | 6     0.1%    | 5007  100.0%  | <source>~1-46:0-982
+Primes              | 1     0.0%    | 1     0.0%    | <source>~25-38:424-739
 ```
 
 **Field Interpretation**:
@@ -183,9 +173,9 @@ Primes              | 1     0.0%    | 1     0.0%    | primes.lox~25-38:424-739
 ```
 Name                | Self Count    | Total Count   | Location
 --------------------------------------------------------------------------------
-createFilter        | 5000  95.0%   | 5000  95.0%   | sieve.lox~42:512-530
-checkPrime          | 150   2.9%    | 5150  97.9%   | sieve.lox~18:203-220
-:program            | 7     0.1%    | 5257  100.0%  | sieve.lox~1-50:0-1000
+createFilter        | 5000  95.0%   | 5000  95.0%   | <source>~42:512-530
+checkPrime          | 150   2.9%    | 5150  97.9%   | <source>~18:203-220
+:program            | 7     0.1%    | 5257  100.0%  | <source>~1-50:0-1000
 ```
 
 **Problem**: Single function dominates allocations (95%!)
@@ -196,7 +186,7 @@ checkPrime          | 150   2.9%    | 5150  97.9%   | sieve.lox~18:203-220
 - Function appears in hot path (via CPU profiling)
 
 **Root Cause**: Per-iteration allocation in hot loop
-```lox
+```<your-language>
 // Example problematic pattern
 for (var i = 0; i < 1000; i = i + 1) {
   var filter = createFilter(i);  // Creates new object each iteration!
@@ -214,7 +204,7 @@ for (var i = 0; i < 1000; i = i + 1) {
 **Resolution**:
 
 1. **Object Pooling** (if objects can be reused):
-   ```lox
+   ```<your-language>
    // Create pool of reusable objects
    var pool = createFilterPool(10);
    for (var i = 0; i < 1000; i = i + 1) {
@@ -226,7 +216,7 @@ for (var i = 0; i < 1000; i = i + 1) {
    ```
 
 2. **Mutable Data Structures** (if safe):
-   ```lox
+   ```<your-language>
    // Reuse single object
    var filter = createFilter(0);
    for (var i = 0; i < 1000; i = i + 1) {
@@ -236,7 +226,7 @@ for (var i = 0; i < 1000; i = i + 1) {
    ```
 
 3. **Pre-size Collections**:
-   ```lox
+   ```<your-language>
    // ❌ BAD: Growing collection
    var result = 👉👈;
    for (var i = 0; i < 1000; i = i + 1) {
@@ -250,11 +240,11 @@ for (var i = 0; i < 1000; i = i + 1) {
 **Verification**:
 ```bash
 # Before optimization
-./lox --experimental-options --memtracer program.lox [script args] > before.txt
+<launcher> --experimental-options --memtracer <program> [script args] > before.txt
 grep "createFilter" before.txt
 
 # After optimization
-./lox --experimental-options --memtracer program.lox [script args] > after.txt
+<launcher> --experimental-options --memtracer <program> [script args] > after.txt
 grep "createFilter" after.txt
 
 # Should see dramatically reduced count
@@ -264,7 +254,7 @@ grep "createFilter" after.txt
 ```
 Name                | Self Count    | Total Count   | Location
 --------------------------------------------------------------------------------
-simpleHelper        | 1000  19.0%   | 1000  19.0%   | code.lox~67:890-910
+simpleHelper        | 1000  19.0%   | 1000  19.0%   | <source>~67:890-910
 ```
 
 **Problem**: Function thought to be allocation-free is allocating!
@@ -276,8 +266,8 @@ simpleHelper        | 1000  19.0%   | 1000  19.0%   | code.lox~67:890-910
 
 **Root Cause**: Subtle language semantics causing hidden allocations
 
-**Common Hidden Allocations in Lox**:
-```lox
+**Common Hidden Allocations**:
+```<your-language>
 // Boxing operations
 fun calculate(n) {
   return n + 1;  // Might box if n type varies
@@ -298,11 +288,11 @@ fun getElement(arr, i) {
 
 1. **Use TraceStatements to pinpoint**:
    ```bash
-   ./lox --experimental-options \
+   <launcher> --experimental-options \
      --memtracer \
      --memtracer.TraceStatements \
      --memtracer.FilterRootName=*simpleHelper* \
-     program.lox [script args]
+     <program> [script args]
    ```
 
 2. **Examine each statement** for hidden allocations
@@ -339,7 +329,7 @@ CustomClass         | 100   2.0%   | User objects
 **Resolution by Type**:
 
 1. **Excessive Arrays**:
-   ```lox
+   ```<your-language>
    // ❌ BAD: Intermediate arrays
    fun process(data) {
      var filtered = filterArray(data);    // Allocates
@@ -361,7 +351,7 @@ CustomClass         | 100   2.0%   | User objects
    ```
 
 2. **Excessive Strings**:
-   ```lox
+   ```<your-language>
    // ❌ BAD: Repeated concatenation
    var result = "";
    for (var i = 0; i < 100; i = i + 1) {
@@ -386,13 +376,13 @@ CustomClass         | 100   2.0%   | User objects
 
 ```bash
 # Step 1: CPU profiling
-./lox --cpusampler --cpusampler.Delay=2000 \
+<launcher> --cpusampler --cpusampler.Delay=2000 \
   --cpusampler.ShowTiers=true \
-  program.lox [script args] > cpu.txt
+  <program> [script args] > cpu.txt
 
 # Step 2: Memory profiling
-./lox --experimental-options --memtracer \
-  program.lox [script args] > memory.txt
+<launcher> --experimental-options --memtracer \
+  <program> [script args] > memory.txt
 
 # Step 3: Compare outputs
 ```
@@ -463,7 +453,7 @@ Reality: Second function uses more memory (10KB vs 10KB)
 #### Pre-Optimization View
 **Critical**: Shows allocations BEFORE compiler optimizations!
 
-```lox
+```<your-language>
 fun hotFunction(n) {
   var temp = Point(n, n);  // Appears in memtracer output
   return temp.x + temp.y;  // Object might not escape
@@ -486,29 +476,29 @@ fun hotFunction(n) {
 
 #### Filter by Function Name
 ```bash
-./lox --experimental-options \
+<launcher> --experimental-options \
   --memtracer \
   --memtracer.FilterRootName=*process* \
-  program.lox [script args]
+  <program> [script args]
 ```
 - Focus on functions matching pattern
 - Reduces overhead and output volume
 
 #### Filter by File
 ```bash
-./lox --experimental-options \
+<launcher> --experimental-options \
   --memtracer \
   --memtracer.FilterFile=*benchmark* \
-  program.lox [script args]
+  <program> [script args]
 ```
 - Only trace allocations in specific files
 
 #### Include Internal Allocations
 ```bash
-./lox --experimental-options \
+<launcher> --experimental-options \
   --memtracer \
   --memtracer.TraceInternal \
-  program.lox [script args]
+  <program> [script args]
 ```
 - Shows framework/runtime allocations
 - Primarily for language implementers
@@ -516,13 +506,13 @@ fun hotFunction(n) {
 
 #### Combined Options
 ```bash
-./lox --experimental-options \
+<launcher> --experimental-options \
   --memtracer \
   --memtracer.TraceStatements \
   --memtracer.TraceCalls \
   --memtracer.FilterRootName=*hotFunction* \
   --memtracer.Output=calltree \
-  program.lox [script args]
+  <program> [script args]
 ```
 - Statement-level detail
 - Call site information
@@ -535,7 +525,7 @@ The skill follows these profiling best practices:
 
 ### 1. Start with High-Level Overview
 ```bash
-./lox --experimental-options --memtracer program.lox [script args]
+<launcher> --experimental-options --memtracer <program> [script args]
 ```
 - Default histogram with root-level granularity
 - Identify top allocation sources
@@ -544,11 +534,11 @@ The skill follows these profiling best practices:
 ### 2. Use Filters for Focused Analysis
 ```bash
 # After identifying hotspot
-./lox --experimental-options \
+<launcher> --experimental-options \
   --memtracer \
   --memtracer.TraceStatements \
   --memtracer.FilterRootName=*hotspot* \
-  program.lox [script args]
+  <program> [script args]
 ```
 - Reduces overhead dramatically
 - Makes output manageable
@@ -557,8 +547,8 @@ The skill follows these profiling best practices:
 ### 3. Combine with CPU Profiling
 ```bash
 # Run both profiles
-./lox --cpusampler --cpusampler.Delay=2000 program.lox [script args] > cpu.txt
-./lox --experimental-options --memtracer program.lox [script args] > mem.txt
+<launcher> --cpusampler --cpusampler.Delay=2000 <program> [script args] > cpu.txt
+<launcher> --experimental-options --memtracer <program> [script args] > mem.txt
 
 # Compare outputs
 ```
@@ -575,9 +565,9 @@ The skill follows these profiling best practices:
 ### 5. Iterative Optimization
 ```bash
 # Profile → Optimize → Verify cycle
-./lox --experimental-options --memtracer program.lox [script args] > before.txt
+<launcher> --experimental-options --memtracer <program> [script args] > before.txt
 # Make optimization
-./lox --experimental-options --memtracer program.lox [script args] > after.txt
+<launcher> --experimental-options --memtracer <program> [script args] > after.txt
 # Compare counts
 diff before.txt after.txt
 ```
@@ -585,9 +575,9 @@ diff before.txt after.txt
 ### 6. Verify Actual Performance Impact
 ```bash
 # Memory profiling shows improvement, but does performance?
-time ./lox program.lox [script args]  # Before
+time <launcher> <program> [script args]  # Before
 # Optimize
-time ./lox program.lox [script args]  # After - should be faster
+time <launcher> <program> [script args]  # After - should be faster
 ```
 - Don't optimize based solely on allocation counts
 - Verify actual performance improvement
@@ -631,16 +621,16 @@ The skill typically follows this analysis workflow:
 
 ### Step 1: CPU Profile First
 ```bash
-./lox --cpusampler --cpusampler.Delay=2000 \
+<launcher> --cpusampler --cpusampler.Delay=2000 \
   --cpusampler.ShowTiers=true \
-  program.lox [script args] > cpu.txt
+  <program> [script args] > cpu.txt
 ```
 **Identify**: Top 3-5 functions consuming most time
 
 ### Step 2: Memory Profile
 ```bash
-./lox --experimental-options --memtracer \
-  program.lox [script args] > memory.txt
+<launcher> --experimental-options --memtracer \
+  <program> [script args] > memory.txt
 ```
 **Identify**: Functions creating most allocations
 
@@ -654,20 +644,20 @@ grep "hotFunction" memory.txt
 
 ### Step 4: Type Analysis (Optional)
 ```bash
-./lox --experimental-options \
+<launcher> --experimental-options \
   --memtracer \
   --memtracer.Output=typehistogram \
-  program.lox [script args]
+  <program> [script args]
 ```
 **Understand**: What kinds of objects being created
 
 ### Step 5: Statement-Level Detail
 ```bash
-./lox --experimental-options \
+<launcher> --experimental-options \
   --memtracer \
   --memtracer.TraceStatements \
   --memtracer.FilterRootName=*hotFunction* \
-  program.lox [script args]
+  <program> [script args]
 ```
 **Pinpoint**: Exact statements causing allocations
 
@@ -680,14 +670,14 @@ grep "hotFunction" memory.txt
 ### Step 7: Verify
 ```bash
 # Re-run memory profile
-./lox --experimental-options --memtracer \
-  program.lox [script args] > after-memory.txt
+<launcher> --experimental-options --memtracer \
+  <program> [script args] > after-memory.txt
 
 # Compare counts
 diff memory.txt after-memory.txt
 
 # Measure actual performance
-time ./lox program.lox [script args]
+time <launcher> <program> [script args]
 ```
 **Confirm**: Allocations reduced and performance improved
 
@@ -716,7 +706,7 @@ For detailed information, see:
 ## Implementation Notes
 
 This skill:
-- Uses the Lox launcher: `./lox`
+- Uses your language's launcher: `<launcher>`
 - Requires `--experimental-options` flag (mandatory)
 - Tool is experimental - for development only
 - Shows pre-optimization allocations

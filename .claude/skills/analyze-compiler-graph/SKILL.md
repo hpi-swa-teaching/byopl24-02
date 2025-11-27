@@ -40,32 +40,22 @@ This skill dumps Graal IR compiler graphs and analyzes them to understand optimi
 ## Prerequisites
 
 Before using this skill:
+- **Required**: Having benchmark baseline data for comparison
 - **Required**: Profiling data showing specific hot functions
 - **Required**: bgv2json or Seafoam installed
 - **Recommended**: Performance warning output
 - **Recommended**: Compilation trace output
 
-## Reliability Protocol (MANDATORY)
+## Fermi Verification (MANDATORY)
 
 **Context:** Tools often fail due to environment issues, permissions, or misconfiguration. To avoid hallucinating results, misinterpreting output, or wasting resources, you must follow this 3-step verification loop.
 
-### Step 1: Pre-Execution Baseline
+**Mitigation Strategy**: Fermi Verification Before accepting the tool's output, you must:
 
-Before executing the primary task, establish a mental baseline:
-* **Complexity Estimate:** asking yourself what you expect from a run with a trivial input (i.e. "If I run this on trivial input, how fast should it be?").
-* **Failure Mode Prediction:** "If this tool is broken, will it hang, crash, or return empty text?"
-* **Sanity Check:** If the tool takes 100x longer than your estimate, **STOP**. It is likely misconfigured or waiting on input.
-
-### Step 2: The Probe (Dry Run)
-Never run a complex or heavy command blind. Execute a **Probe** first:
-* **The Test:** Run the exact command structure on a trivial target (e.g., `print "test";`, `SELECT 1`, or a dummy file).
-* **Constraint:** If the Probe hangs, errors, or produces empty output, **STOP**. Do not proceed to the main task.
-
-### Step 3: Output Audit (Verification)
-
-Do not assume success based on exit codes.
-* **Physical Check:** verify the output artifact exists and has a file size > 0 bytes.
-* **Content Scan:** Read the first 5 lines/bytes of the output to ensure it is not an error message written to stdout (e.g., "Error: Command not found" saved inside `output.json`). Verify it's in the range of expected content and metrics. If it's to far off, **STOP**.
+1. Estimate: Look at the complexity of the code. Perform a "Fermi Calculation" to estimate the expected order of magnitude of allocations (e.g., "This acts on an array of 10k items, so I expect at least 10k allocations").
+2. Probe: Run the tool on a trivial input (e.g., a minimal program) to ensure it produces output quickly and correctly.
+3. Execute: Run the tool on the real target.
+4. Compare: If the tool output deviates from your Fermi Estimate by more than one order of magnitude (or is zero), treat the result as a failure and retry with different flags.
 
 ## How the Skill Works
 
@@ -76,7 +66,7 @@ Do not assume success based on exit codes.
 EXTRA_JAVA_ARGS="-Djdk.graal.Dump=Truffle:1 \
   -Djdk.graal.PrintGraph=File \
   -Djdk.graal.DumpPath=compiler_graphs" \
-  ./lox program.lox [script args]
+  <launcher> <program> [script args]
 ```
 - Dumps all Truffle compilations
 - Level 1: Basic graphs (After parsing, After TruffleTier)
@@ -87,9 +77,9 @@ EXTRA_JAVA_ARGS="-Djdk.graal.Dump=Truffle:1 \
 EXTRA_JAVA_ARGS="-Djdk.graal.Dump=Truffle:1 \
   -Djdk.graal.MethodFilter="*hotFunction*" \
   -Djdk.graal.DumpPath=compiler_graphs" \
-  ./lox --experimental-options \
+  <launcher> --experimental-options \
   --engine.CompileOnly=hotFunction \
-  program.lox [script args]
+  <program> [script args]
 ```
 - Dramatically reduces output
 - Focus on known problem method
@@ -100,9 +90,9 @@ EXTRA_JAVA_ARGS="-Djdk.graal.Dump=Truffle:1 \
 EXTRA_JAVA_ARGS="-Djdk.graal.Dump=Truffle:1 \
   -Djdk.graal.TrackNodeSourcePosition=true \
   -Djdk.graal.DumpPath=compiler_graphs" \
-  ./lox --experimental-options \
+  <launcher> --experimental-options \
   --engine.NodeSourcePositions \
-  program.lox [script args]
+  <program> [script args]
 ```
 - Enables source location tracking
 - Required for `seafoam source` command
@@ -113,7 +103,7 @@ EXTRA_JAVA_ARGS="-Djdk.graal.Dump=Truffle:1 \
 EXTRA_JAVA_ARGS="-Djdk.graal.Dump=Truffle:2 \
   -Djdk.graal.MethodFilter="*hotFunction*" \
   -Djdk.graal.DumpPath=compiler_graphs" \
-  ./lox program.lox [script args]
+  <launcher> <program> [script args]
 ```
 - Shows all optimization phases
 - Use only for investigating specific phase failures
@@ -274,7 +264,7 @@ CommitAllocationNode or NewInstanceNode found after PartialEscape
 - Identity operations (synchronization, ==)
 
 **Fix**: Keep object lifetime strictly local
-```lox
+```<your-language>
 // ❌ BAD: Object escapes
 var temp = Point(x, y);
 this.lastPoint = temp;  // Escapes!
@@ -353,7 +343,7 @@ DeoptimizeNode or UnreachedNode found in hot path
 
 ### Step 1: Profile to Identify Hot Function
 ```bash
-./lox --cpusampler --cpusampler.ShowTiers=true program.lox [script args]
+<launcher> --cpusampler --cpusampler.ShowTiers=true <program> [script args]
 ```
 **Identify**: Function consuming most time
 
@@ -365,9 +355,9 @@ rm -rf compiler_graphs/
 EXTRA_JAVA_ARGS="-Djdk.graal.Dump=Truffle:1 \
   -Djdk.graal.MethodFilter="*hotFunction*" \
   -Djdk.graal.DumpPath=compiler_graphs" \
-  ./lox --experimental-options \
+  <launcher> --experimental-options \
   --engine.CompileOnly=hotFunction \
-  program.lox [script args]
+  <program> [script args]
 ```
 
 ### Step 3: Convert to JSON
@@ -436,10 +426,10 @@ gzip compiler_graphs/*.bgv
 ```bash
 # Run together
 EXTRA_JAVA_ARGS="-Djdk.graal.Dump=Truffle:1 ..." \
-  ./lox --experimental-options \
+  <launcher> --experimental-options \
   --compiler.TracePerformanceWarnings=all \
   --engine.TraceCompilation \
-  program.lox [script args] 2>&1 | tee combined.log
+  <program> [script args] 2>&1 | tee combined.log
 ```
 
 ## Common Pitfalls

@@ -1,15 +1,15 @@
 ---
 name: Run and Analyze CPU Sampler
-description: Runs CPU sampling profiler on a Lox program to identify performance bottlenecks and analyzes the results to provide actionable insights
+description: Runs CPU sampling profiler on your language implementation to identify performance bottlenecks and analyzes the results to provide actionable insights
 ---
 
 # Skill: Run and Analyze CPU Sampler
 
-This skill runs the CPU Sampler profiling tool on a Lox program and provides detailed analysis of the results to help identify performance bottlenecks and optimization opportunities.
+This skill runs the CPU Sampler profiling tool on your language implementation and provides detailed analysis of the results to help identify performance bottlenecks and optimization opportunities.
 
 ## What This Skill Does
 
-1. **Runs CPU Sampler**: Executes the Lox program with CPU sampling enabled using appropriate options
+1. **Runs CPU Sampler**: Executes your language implementation with CPU sampling enabled using appropriate options
 2. **Analyzes Results**: Interprets the profiling output to identify:
    - Hot functions consuming most execution time
    - Compilation effectiveness (interpreter vs compiled code)
@@ -23,53 +23,43 @@ This skill runs the CPU Sampler profiling tool on a Lox program and provides det
 - Verifying that critical code paths are being compiled
 - Identifying deoptimization issues (functions stuck in interpreter mode)
 - Comparing performance before/after optimizations
-- Understanding execution patterns in Lox programs
+- Understanding execution patterns in your language implementation
 
 ## Prerequisites
 
 Before running this skill, you should know:
-- The path to the Lox program you want to profile
+- **Required**: Having benchmark baseline data for comparison
+- The path to the program you want to profile
 - Whether the program takes command-line arguments
 - Approximate runtime of the program (to set appropriate delay)
 
-## Reliability Protocol (MANDATORY)
+## Fermi Verification (MANDATORY)
 
 **Context:** Tools often fail due to environment issues, permissions, or misconfiguration. To avoid hallucinating results, misinterpreting output, or wasting resources, you must follow this 3-step verification loop.
 
-### Step 1: Pre-Execution Baseline
+**Mitigation Strategy**: Fermi Verification Before accepting the tool's output, you must:
 
-Before executing the primary task, establish a mental baseline:
-* **Complexity Estimate:** asking yourself what you expect from a run with a trivial input (i.e. "If I run this on trivial input, how fast should it be?").
-* **Failure Mode Prediction:** "If this tool is broken, will it hang, crash, or return empty text?"
-* **Sanity Check:** If the tool takes 100x longer than your estimate, **STOP**. It is likely misconfigured or waiting on input.
-
-### Step 2: The Probe (Dry Run)
-Never run a complex or heavy command blind. Execute a **Probe** first:
-* **The Test:** Run the exact command structure on a trivial target (e.g., `print "test";`, `SELECT 1`, or a dummy file).
-* **Constraint:** If the Probe hangs, errors, or produces empty output, **STOP**. Do not proceed to the main task.
-
-### Step 3: Output Audit (Verification)
-
-Do not assume success based on exit codes.
-* **Physical Check:** verify the output artifact exists and has a file size > 0 bytes.
-* **Content Scan:** Read the first 5 lines/bytes of the output to ensure it is not an error message written to stdout (e.g., "Error: Command not found" saved inside `output.json`). Verify it's in the range of expected content and metrics. If it's to far off, **STOP**.
+1. Estimate: Look at the complexity of the code. Perform a "Fermi Calculation" to estimate the expected order of magnitude of allocations (e.g., "This acts on an array of 10k items, so I expect at least 10k allocations").
+2. Probe: Run the tool on a trivial input (e.g., a minimal program) to ensure it produces output quickly and correctly.
+3. Execute: Run the tool on the real target.
+4. Compare: If the tool output deviates from your Fermi Estimate by more than one order of magnitude (or is zero), treat the result as a failure and retry with different flags.
 
 ## How the Skill Works
 
 The skill follows this workflow:
 
 ### 1. Initial Setup
-- Confirms the Lox program path and any arguments
+- Confirms the program path and any arguments
 - Determines appropriate profiling parameters (delay, output format)
 
 ### 2. Run CPU Sampler
 Executes the program with these recommended options:
 ```bash
-./lox --cpusampler \
+<launcher> --cpusampler \
   --cpusampler.Delay=<ms> \
   --cpusampler.ShowTiers=true \
   --cpusampler.Output=histogram \
-  <program.lox> [args...]
+  <program> [args...]
 ```
 
 Key options explained:
@@ -116,11 +106,11 @@ Based on the analysis, the skill suggests:
 
 ## Example Usage
 
-**User**: "Profile my benchmark.lox program"
+**User**: "Profile my <program> program"
 
 **Skill Actions**:
 1. Ask about runtime and arguments if not provided
-2. Run: `./lox --cpusampler --cpusampler.Delay=2000 --cpusampler.ShowTiers=true benchmark.lox`
+2. Run: `<launcher> --cpusampler --cpusampler.Delay=2000 --cpusampler.ShowTiers=true <program>`
 3. Analyze the histogram output
 4. Identify top 3 hotspots
 5. Check tier distribution (T0/T1/T2) for hot functions
@@ -134,9 +124,9 @@ The skill interprets CPU Sampler output formats:
 ```
 Name             || Total Time        || Self Time         || Location
 ---------------------------------------------------------------------------------
-accept           || 2150ms 86.0%      || 2150ms 86.0%      || primes.lox~13-22:191-419
-next             || 2470ms 98.8%      ||  320ms 12.8%      || primes.lox~31-37:537-737
-:program         || 2500ms 100.0%     ||   30ms  1.2%      || primes.lox~1-46:0-982
+accept           || 2150ms 86.0%      || 2150ms 86.0%      || primes~13-22:191-419
+next             || 2470ms 98.8%      ||  320ms 12.8%      || primes~31-37:537-737
+:program         || 2500ms 100.0%     ||   30ms  1.2%      || primes~1-46:0-982
 ```
 
 Analysis focuses on:
@@ -163,36 +153,36 @@ The skill can use additional options when needed:
 ### Flamegraph Generation
 For complex call patterns:
 ```bash
-./lox --cpusampler=flamegraph \
+<launcher> --cpusampler=flamegraph \
   --cpusampler.OutputFile=profile.svg \
   --cpusampler.Delay=2000 \
-  program.lox [script args]
+  <program> [script args]
 ```
 
 ### Call Tree Mode
 To understand call hierarchies:
 ```bash
-./lox --cpusampler --cpusampler.Output=calltree \
+<launcher> --cpusampler --cpusampler.Output=calltree \
   --cpusampler.Delay=2000 \
-  program.lox [script args]
+  <program> [script args]
 ```
 
 ### Include Inlined Functions
 For complete call picture:
 ```bash
-./lox --cpusampler --cpusampler.Mode=roots \
+<launcher> --cpusampler --cpusampler.Mode=roots \
   --cpusampler.ShowTiers=true \
   --cpusampler.Delay=2000 \
-  program.lox [script args]
+  <program> [script args]
 ```
 
 ### Sample Internal Sources
 When application code looks clean:
 ```bash
-./lox --cpusampler --cpusampler.SampleInternal=true \
+<launcher> --cpusampler --cpusampler.SampleInternal=true \
   --cpusampler.ShowTiers=true \
   --cpusampler.Delay=2000 \
-  program.lox [script args]
+  <program> [script args]
 ```
 
 ## Complementary Tools
@@ -201,17 +191,17 @@ The skill may recommend using these tools for deeper analysis:
 
 - **CPU Tracer**: Count execution frequencies (not time)
   ```bash
-  ./lox --cputracer --cputracer.TraceStatements program.lox [script args]
+  <launcher> --cputracer --cputracer.TraceStatements <program> [script args]
   ```
 
 - **Trace Compilation**: Understand compilation/deoptimization
   ```bash
-  ./lox --engine.TraceCompilation program.lox [script args]
+  <launcher> --engine.TraceCompilation <program> [script args]
   ```
 
 - **Trace Inlining**: See inlining decisions
   ```bash
-  ./lox --engine.TraceInlining program.lox [script args]
+  <launcher> --engine.TraceInlining <program> [script args]
   ```
 
 ## Best Practices
@@ -244,7 +234,7 @@ For detailed information, see:
 ## Implementation Notes
 
 This skill:
-- Uses the Lox launcher: `./lox`
+- Uses your language's launcher: `<launcher>`
 - Defaults to 2000ms delay for most programs
 - Prefers histogram output for initial analysis
 - Always enables tier information

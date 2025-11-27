@@ -5,11 +5,11 @@ description: Logs every compilation event with timing, tier (T1/T2), success/fai
 
 # Skill: Run and Analyze Compilation Tracer
 
-This skill runs the Trace Compilation tool on a Lox program and provides detailed analysis of compilation events to help verify optimization effectiveness and diagnose compilation issues.
+This skill runs the Trace Compilation tool on your language implementation and provides detailed analysis of compilation events to help verify optimization effectiveness and diagnose compilation issues.
 
 ## What This Skill Does
 
-1. **Runs Compilation Tracer**: Executes the Lox program with compilation tracing enabled
+1. **Runs Compilation Tracer**: Executes the program with compilation tracing enabled
 2. **Analyzes Compilation Events**: Interprets the output to identify:
    - Which methods are being compiled and when
    - Compilation tiers (T1 fast vs T2 optimized)
@@ -47,38 +47,28 @@ This skill runs the Trace Compilation tool on a Lox program and provides detaile
 ## Prerequisites
 
 Before running this skill, you should know:
-- The path to the Lox program to analyze
+- **Required**: Having benchmark baseline data for comparison
+- The path to the program to analyze
 - Ideally, CPU profiling results showing hot functions
 - Whether you want basic or detailed queue analysis
 
-## Reliability Protocol (MANDATORY)
+## Fermi Verification (MANDATORY)
 
 **Context:** Tools often fail due to environment issues, permissions, or misconfiguration. To avoid hallucinating results, misinterpreting output, or wasting resources, you must follow this 3-step verification loop.
 
-### Step 1: Pre-Execution Baseline
+**Mitigation Strategy**: Fermi Verification Before accepting the tool's output, you must:
 
-Before executing the primary task, establish a mental baseline:
-* **Complexity Estimate:** asking yourself what you expect from a run with a trivial input (i.e. "If I run this on trivial input, how fast should it be?").
-* **Failure Mode Prediction:** "If this tool is broken, will it hang, crash, or return empty text?"
-* **Sanity Check:** If the tool takes 100x longer than your estimate, **STOP**. It is likely misconfigured or waiting on input.
-
-### Step 2: The Probe (Dry Run)
-Never run a complex or heavy command blind. Execute a **Probe** first:
-* **The Test:** Run the exact command structure on a trivial target (e.g., `print "test";`, `SELECT 1`, or a dummy file).
-* **Constraint:** If the Probe hangs, errors, or produces empty output, **STOP**. Do not proceed to the main task.
-
-### Step 3: Output Audit (Verification)
-
-Do not assume success based on exit codes.
-* **Physical Check:** verify the output artifact exists and has a file size > 0 bytes.
-* **Content Scan:** Read the first 5 lines/bytes of the output to ensure it is not an error message written to stdout (e.g., "Error: Command not found" saved inside `output.json`). Verify it's in the range of expected content and metrics. If it's to far off, **STOP**.
+1. Estimate: Look at the complexity of the code. Perform a "Fermi Calculation" to estimate the expected order of magnitude of allocations (e.g., "This acts on an array of 10k items, so I expect at least 10k allocations").
+2. Probe: Run the tool on a trivial input (e.g., a minimal program) to ensure it produces output quickly and correctly.
+3. Execute: Run the tool on the real target.
+4. Compare: If the tool output deviates from your Fermi Estimate by more than one order of magnitude (or is zero), treat the result as a failure and retry with different flags.
 
 ## How the Skill Works
 
 The skill follows this workflow:
 
 ### 1. Initial Setup
-- Confirms the Lox program path and arguments
+- Confirms the program path and arguments
 - Determines whether detailed queue analysis needed
 - Optionally sets up function filtering
 
@@ -88,9 +78,9 @@ The skill follows this workflow:
 
 #### Basic Compilation Trace (Recommended)
 ```bash
-./lox --experimental-options \
+<launcher> --experimental-options \
   --engine.TraceCompilation \
-  program.lox [script args]
+  <program> [script args]
 ```
 - Shows compilation completion events
 - Includes deoptimizations and invalidations
@@ -98,10 +88,10 @@ The skill follows this workflow:
 
 #### Detailed Queue Analysis
 ```bash
-./lox --experimental-options \
+<launcher> --experimental-options \
   --engine.TraceCompilation \
   --engine.TraceCompilationDetails \
-  program.lox [script args]
+  <program> [script args]
 ```
 - Adds queue events (queued, start, unqueued)
 - Shows queue size, load, and timing
@@ -109,10 +99,10 @@ The skill follows this workflow:
 
 #### Focused on Specific Function
 ```bash
-./lox --experimental-options \
+<launcher> --experimental-options \
   --engine.TraceCompilation \
   --engine.CompileOnly=functionName \
-  program.lox [script args]
+  <program> [script args]
 ```
 - Restricts compilation to specific method
 - Dramatically reduces output volume
@@ -120,10 +110,10 @@ The skill follows this workflow:
 
 #### Synchronous Compilation (Debugging)
 ```bash
-./lox --experimental-options \
+<launcher> --experimental-options \
   --engine.TraceCompilation \
   --engine.BackgroundCompilation=false \
-  program.lox [script args]
+  <program> [script args]
 ```
 - Disables background compilation
 - Makes output deterministic
@@ -131,9 +121,9 @@ The skill follows this workflow:
 
 #### Redirect Output
 ```bash
-./lox --experimental-options \
+<launcher> --experimental-options \
   --engine.TraceCompilation \
-  program.lox [script args] > trace.log
+  <program> [script args] > trace.log
 
 # Later analysis
 tail -n 50 trace.log
@@ -146,7 +136,7 @@ grep "opt deopt" trace.log | tail -n 20
 
 #### Compilation Success (opt done)
 ```
-[engine] opt done id=244 innerLoop |Tier 1|Time 268( 220+47 )ms|AST 17|Inlined 0Y 2N|IR 238/ 437|CodeSize 1874|Src sieve.lox:42
+[engine] opt done id=244 innerLoop |Tier 1|Time 268( 220+47 )ms|AST 17|Inlined 0Y 2N|IR 238/ 437|CodeSize 1874|Src <source>:42
 ```
 
 **Field Breakdown**:
@@ -166,7 +156,7 @@ grep "opt deopt" trace.log | tail -n 20
   - 238 nodes after partial evaluation
   - 437 nodes after full compilation
 - **CodeSize 1874**: 1,874 bytes of machine code generated
-- **Src sieve.lox:42**: Source location
+- **Src <source>:42**: Source location
 
 #### Deoptimization Event (opt deopt)
 ```
@@ -188,7 +178,7 @@ grep "opt deopt" trace.log | tail -n 20
 
 #### Queue Events (with TraceCompilationDetails)
 ```
-[engine] opt queued id=237 processData |Tier 1|Count/Thres 25/ 25|Queue: Size 1 Change +1 Load 0.06|Src code.lox:42
+[engine] opt queued id=237 processData |Tier 1|Count/Thres 25/ 25|Queue: Size 1 Change +1 Load 0.06|Src <source>:42
 ```
 - **Count/Thres 25/ 25**: Reached threshold (25 invocations)
 - **Queue: Size 1**: One compilation in queue
@@ -218,7 +208,7 @@ grep "opt deopt" trace.log | tail -n 20
 - May happen dozens/hundreds of times
 
 **Root Cause**: Unstable type assumptions
-```lox
+```<your-language>
 fun hotFunction(value) {
   // Compiles assuming value is always int
   // Then encounters double → deoptimizes
@@ -231,16 +221,16 @@ fun hotFunction(value) {
 **Resolution**:
 1. **Enable deoptimization tracing**:
    ```bash
-   ./lox --experimental-options \
+   <launcher> --experimental-options \
      --engine.TraceCompilation \
      --engine.TraceTransferToInterpreter \
-     program.lox [script args] 2>&1 | tee trace.log
+     <program> [script args] 2>&1 | tee trace.log
    ```
 
 2. **Find exact deoptimization location** in stack traces
 
 3. **Fix type stability**:
-   ```lox
+   ```<your-language>
    // Ensure consistent types in hot paths
    // Don't mix Number() calls with literals
    // Avoid type instability
@@ -248,10 +238,10 @@ fun hotFunction(value) {
 
 4. **Use assumption tracing**:
    ```bash
-   ./lox --experimental-options \
+   <launcher> --experimental-options \
      --engine.TraceCompilation \
      --engine.TraceAssumptions \
-     program.lox [script args]
+     <program> [script args]
    ```
 
 **Verification**:
@@ -292,31 +282,31 @@ hotFunction    1500ms  75.0%  T0: 95%  <-- High interpreter time!
 1. **Verify compilation enabled**:
    ```bash
    # Should be enabled by default
-   ./lox --experimental-options \
+   <launcher> --experimental-options \
      --engine.Compilation=true \
      --engine.TraceCompilation \
-     program.lox [script args]
+     <program> [script args]
    ```
 
 2. **Check profiler tier information**:
    ```bash
-   ./lox --cpusampler \
+   <launcher> --cpusampler \
      --cpusampler.ShowTiers=true \
      --cpusampler.Delay=5000 \
-     program.lox [script args]
+     <program> [script args]
    ```
 
 3. **Lower thresholds for testing**:
    ```bash
-   ./lox --experimental-options \
+   <launcher> --experimental-options \
      --engine.FirstTierCompilationThreshold=100 \
      --engine.TraceCompilation \
-     program.lox [script args]
+     <program> [script args]
    ```
 
 4. **Verify method executes enough times**:
    ```bash
-   ./lox --cputracer program.lox [script args]
+   <launcher> --cputracer <program> [script args]
    # Check execution counts
    ```
 
@@ -349,11 +339,11 @@ hotFunction    1500ms  75.0%  T0: 95%  <-- High interpreter time!
 
 1. **Analyze inlining decisions**:
    ```bash
-   ./lox --experimental-options \
+   <launcher> --experimental-options \
      --engine.TraceCompilation \
      --engine.TraceInlining \
      --engine.CompileOnly=hugeFunction \
-     program.lox [script args]
+     <program> [script args]
    ```
 
 2. **Check if size limits hit**:
@@ -387,25 +377,25 @@ hotFunction    1500ms  75.0%  T0: 95%  <-- High interpreter time!
 
 1. **Detailed inlining analysis**:
    ```bash
-   ./lox --experimental-options \
+   <launcher> --experimental-options \
      --engine.TraceCompilation \
      --engine.TraceInlining \
      --engine.CompileOnly=caller \
-     program.lox [script args]
+     <program> [script args]
    ```
 
 2. **Check for polymorphism**:
    ```bash
-   ./lox --experimental-options \
+   <launcher> --experimental-options \
      --engine.TraceCompilationPolymorphism \
-     program.lox [script args]
+     <program> [script args]
    ```
 
 3. **Consider call target splitting**:
    ```bash
-   ./lox --experimental-options \
+   <launcher> --experimental-options \
      --engine.TraceSplitting \
-     program.lox [script args]
+     <program> [script args]
    ```
 
 **Note**: Not all failed inlines are problems
@@ -435,19 +425,19 @@ hotFunction    1500ms  75.0%  T0: 95%  <-- High interpreter time!
 
 1. **Check queue state**:
    ```bash
-   ./lox --experimental-options \
+   <launcher> --experimental-options \
      --engine.TraceCompilation \
      --engine.TraceCompilationDetails \
-     program.lox [script args] | grep "Queue: Load"
+     <program> [script args] | grep "Queue: Load"
    ```
 
 2. **If Load consistently >1.0**: Queue saturated
    ```bash
    # Increase compiler threads
-   ./lox --experimental-options \
+   <launcher> --experimental-options \
      --engine.CompilerThreads=4 \
      --engine.TraceCompilation \
-     program.lox [script args]
+     <program> [script args]
    ```
 
 3. **Check if T2 is actually needed**:
@@ -484,11 +474,11 @@ hotFunction    1500ms  75.0%  T0: 95%  <-- High interpreter time!
 
 1. **Increase compiler threads**:
    ```bash
-   ./lox --experimental-options \
+   <launcher> --experimental-options \
      --engine.CompilerThreads=4 \
      --engine.TraceCompilation \
      --engine.TraceCompilationDetails \
-     program.lox [script args]
+     <program> [script args]
    ```
 
 2. **Address long compilation times** (see Pattern 3)
@@ -504,15 +494,15 @@ hotFunction    1500ms  75.0%  T0: 95%  <-- High interpreter time!
 #### Trace Compilation + CPU Sampler (ESSENTIAL!)
 ```bash
 # Step 1: CPU Profile
-./lox --cpusampler \
+<launcher> --cpusampler \
   --cpusampler.ShowTiers=true \
   --cpusampler.Delay=5000 \
-  program.lox [script args] > cpu.txt
+  <program> [script args] > cpu.txt
 
 # Step 2: Compilation Trace
-./lox --experimental-options \
+<launcher> --experimental-options \
   --engine.TraceCompilation \
-  program.lox [script args] > compilation.txt
+  <program> [script args] > compilation.txt
 
 # Step 3: Correlate
 # Hot functions in CPU profile should have "opt done" events
@@ -527,10 +517,10 @@ hotFunction    1500ms  75.0%  T0: 95%  <-- High interpreter time!
 
 #### Trace Compilation + Transfer to Interpreter
 ```bash
-./lox --experimental-options \
+<launcher> --experimental-options \
   --engine.TraceCompilation \
   --engine.TraceTransferToInterpreter \
-  program.lox [script args] 2>&1 | tee full-trace.log
+  <program> [script args] 2>&1 | tee full-trace.log
 ```
 
 **Why combine**:
@@ -549,11 +539,11 @@ hotFunction    1500ms  75.0%  T0: 95%  <-- High interpreter time!
 
 #### Trace Compilation + Trace Inlining
 ```bash
-./lox --experimental-options \
+<launcher> --experimental-options \
   --engine.TraceCompilation \
   --engine.TraceInlining \
   --engine.CompileOnly=specificFunction \
-  program.lox [script args]
+  <program> [script args]
 ```
 
 **Why combine**:
@@ -563,10 +553,10 @@ hotFunction    1500ms  75.0%  T0: 95%  <-- High interpreter time!
 
 #### Trace Compilation + Trace Assumptions
 ```bash
-./lox --experimental-options \
+<launcher> --experimental-options \
   --engine.TraceCompilation \
   --engine.TraceAssumptions \
-  program.lox [script args] 2>&1
+  <program> [script args] 2>&1
 ```
 
 **Why combine**:
@@ -580,9 +570,9 @@ The skill follows these analysis best practices:
 
 ### 1. Start with Basic Trace
 ```bash
-./lox --experimental-options \
+<launcher> --experimental-options \
   --engine.TraceCompilation \
-  program.lox [script args]
+  <program> [script args]
 ```
 - Get overview before adding verbosity
 - Identify major patterns first
@@ -590,20 +580,20 @@ The skill follows these analysis best practices:
 ### 2. Add Details Only When Needed
 ```bash
 # Only add TraceCompilationDetails for queue analysis
-./lox --experimental-options \
+<launcher> --experimental-options \
   --engine.TraceCompilation \
   --engine.TraceCompilationDetails \
-  program.lox [script args]
+  <program> [script args]
 ```
 - High output volume
 - Only needed for queue debugging
 
 ### 3. Use CompileOnly for Focus
 ```bash
-./lox --experimental-options \
+<launcher> --experimental-options \
   --engine.TraceCompilation \
   --engine.CompileOnly=problemFunction \
-  program.lox [script args]
+  <program> [script args]
 ```
 - Dramatically reduces output
 - Makes patterns easier to see
@@ -611,8 +601,8 @@ The skill follows these analysis best practices:
 ### 4. Always Correlate with Profiling
 ```bash
 # Never analyze compilation in isolation
-./lox --cpusampler --cpusampler.ShowTiers=true program.lox [script args]
-./lox --experimental-options --engine.TraceCompilation program.lox [script args]
+<launcher> --cpusampler --cpusampler.ShowTiers=true <program> [script args]
+<launcher> --experimental-options --engine.TraceCompilation <program> [script args]
 ```
 - Profiler shows what's hot
 - Compilation trace shows what's optimized
@@ -668,18 +658,18 @@ The skill typically follows this analysis workflow:
 
 ### Step 1: CPU Profile First
 ```bash
-./lox --cpusampler \
+<launcher> --cpusampler \
   --cpusampler.ShowTiers=true \
   --cpusampler.Delay=5000 \
-  program.lox [script args] > cpu.txt
+  <program> [script args] > cpu.txt
 ```
 **Identify**: Hot functions and tier distribution
 
 ### Step 2: Basic Compilation Trace
 ```bash
-./lox --experimental-options \
+<launcher> --experimental-options \
   --engine.TraceCompilation \
-  program.lox [script args] > compilation.txt
+  <program> [script args] > compilation.txt
 ```
 **Verify**: Hot functions have "opt done" events
 
@@ -692,27 +682,27 @@ grep "opt deopt" compilation.txt | sort | uniq -c | sort -rn
 ### Step 4: Investigate Issues
 **If deoptimization loop**:
 ```bash
-./lox --experimental-options \
+<launcher> --experimental-options \
   --engine.TraceCompilation \
   --engine.TraceTransferToInterpreter \
-  program.lox [script args] 2>&1
+  <program> [script args] 2>&1
 ```
 
 **If poor inlining**:
 ```bash
-./lox --experimental-options \
+<launcher> --experimental-options \
   --engine.TraceCompilation \
   --engine.TraceInlining \
   --engine.CompileOnly=problemFunction \
-  program.lox [script args]
+  <program> [script args]
 ```
 
 **If queue issues**:
 ```bash
-./lox --experimental-options \
+<launcher> --experimental-options \
   --engine.TraceCompilation \
   --engine.TraceCompilationDetails \
-  program.lox [script args] | grep "Queue: Load"
+  <program> [script args] | grep "Queue: Load"
 ```
 
 ### Step 5: Verify Fixes
@@ -753,7 +743,7 @@ For detailed information, see:
 ## Implementation Notes
 
 This skill:
-- Uses the Lox launcher: `./lox`
+- Uses your language's launcher: `<launcher>`
 - Requires `--experimental-options` flag
 - Outputs to stdout with `[engine]` prefix
 - Low overhead, but high output volume
