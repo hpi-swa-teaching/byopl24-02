@@ -161,7 +161,7 @@ Optimization: [specific optimizations detected]
    - Ensure recent measurements available
 
 **Output**:
-- List of 2-4 comparable languages
+- List of 1-2 comparable languages
 - Rationale for each selection
 - URL to their Benchmarks Game measurement pages
 
@@ -202,7 +202,7 @@ Aspirational (if applicable):
 1. **Query Benchmarks Game for comparable languages**
    - Use WebFetch to retrieve measurement pages for each identified language
    - URLs format: `https://benchmarksgame-team.pages.debian.net/benchmarksgame/measurements/{language}.html`
-   - Examples: `lua.html`, `python3.html`, `mri.html` (Ruby), `java.html`
+   - Examples: `lua.html`, `python3.html`, `ruby.html`, `javavm.html`, `julia.html`, `node.html`
 
 2. **Extract available benchmark programs**
    - Parse benchmark categories from Benchmarks Game:
@@ -211,7 +211,9 @@ Aspirational (if applicable):
      - **Contentious**: binary-trees, pidigits, regex-redux
    - List all benchmarks that have implementations for selected languages
    - Note benchmark variants (#1, #2, etc.) and their characteristics
-   - Prioritize "insignificant I/O" benchmarks for pure computational comparison
+   - URLs format algorithm description: `https://benchmarksgame-team.pages.debian.net/benchmarksgame/description/{benchmark}.html`
+   - URLs format measurements: `https://benchmarksgame-team.pages.debian.net/benchmarksgame/performance/{benchmark}.html`
+   - Examples: `binarytrees.html`, `fannkuchredux.html`, `nbody.html`
 
 3. **Collect performance metrics**
 
@@ -277,53 +279,20 @@ Aspirational (if applicable):
    - Check if any already exist locally to avoid duplication
    - Prioritize "insignificant I/O" benchmarks for pure performance testing
 
-2. **Fetch reference implementations from comparable languages**
+2. **Fetch the implementation description from Benchmarks Game**
+   - Retrieve algorithm descriptions for selected benchmarks
+   - URLs format: `https://benchmarksgame-team.pages.debian.net/benchmarksgame/description/{benchmark}.html`
+   - Understand the computational pattern and requirements
+
+3. **Fetch reference implementations from comparable languages**
    - Retrieve source code from Benchmarks Game for selected benchmarks
    - Get implementations from comparable languages (identified in Phase 2)
    - Focus on "idiomatic" implementations (not heavily optimized variants)
    - Examine algorithm structure, data structures, and approach
-
-3. **Translate to target language syntax**
-
-   Analyze the target language's syntax and convert reference implementations accordingly:
-
-   **Key Translation Areas:**
-
-   - **Data Structures**: Convert arrays, hash tables, lists to target language equivalents
-     - Reference: `arr = []` or `arr[0] = 1`
-     - Target: Use language-specific array syntax (may be native arrays, library types, etc.)
-
-   - **Control Flow**: Adapt loops and conditionals to target syntax
-     - Reference: `for i in range(10):` or `while condition:`
-     - Target: Use language-specific loop syntax (C-style, iterator-based, etc.)
-
-   - **Object-Oriented Features**: Convert classes, methods, inheritance
-     - Reference: `class Foo(Base):` or `def method(self):`
-     - Target: Use language-specific OO syntax (if supported)
-
-   - **Function Definitions**: Adapt function/method declaration syntax
-     - Reference: `def func(x, y):` or `function func(x, y) {}`
-     - Target: Use language-specific function syntax
-
-   - **Type Annotations**: Add or remove type information as needed
-     - Static languages: Add type declarations where required
-     - Dynamic languages: Remove type annotations from references
-
-   - **Memory Management**: Adapt allocation/deallocation patterns
-     - Manual memory: Add explicit allocation/freeing
-     - GC languages: Remove explicit memory management
-
-   **Conversion Strategy:**
-   1. Identify core algorithm and data structures
-   2. Map reference language constructs to target language equivalents
-   3. Preserve algorithmic structure while adapting syntax
-   4. Handle language feature mismatches (e.g., no hash tables, no classes)
-   5. Maintain comparable complexity (don't over-optimize or under-implement)
-   6. **Important**: Don't change the algorithmic logic—only adapt syntax and constructs!
+   - URLs format: `https://benchmarksgame-team.pages.debian.net/benchmarksgame/programs/{benchmark}-{language}.html`
 
 4. **Structure according to project conventions**
-
-   Examine existing benchmarks in the project to understand:
+Examine existing benchmarks in the project to understand:
    - File organization and naming conventions
    - Benchmark harness or framework usage
    - Entry point patterns (main function, class, module export, etc.)
@@ -331,33 +300,30 @@ Aspirational (if applicable):
    - Result verification methods
    - Command-line argument handling
 
-   Follow the established patterns:
-   ```
-   [Language-specific imports or includes]
+5. **Implement Benchmarks Locally**
+   - Given the benchmark algorithm description and reference implementations, create local files in the target language
+   - Translate algorithms to target language syntax
+   - Adapt to target language features (data structures, control flow, libraries)
+   - Follow project conventions for structure and organization
 
-   [Benchmark class/function/module definition]
-       [Initialization/setup code]
-
-       [Main benchmark logic]
-
-       [Result verification]
-
-       [Cleanup if needed]
-
-   [Entry point following project conventions]
-   ```
-
-5. **Write to local file**
+6. **Write to local file**
    - Create file with appropriate extension in same location as existing benchmarks
    - Use descriptive filename matching benchmark purpose
    - Follow project naming conventions
+   - Include verification logic in benchmark to ensure correct results
+   - Compare output against known correct values from Benchmarks Game
    - Example: `fannkuch.ext`, `nbody.ext`, `binarytrees.ext`
+   - Create different files for each benchmark with different N parameter values
 
-6. **Prepare execution instructions**
+7. **Prepare execution instructions**
    - Document the command to run the benchmark
    - Specify appropriate iteration counts
    - Note the expected N parameter to match Benchmarks Game tests
-   - Differentiate N for a `DEV_N` (smaller for quick tests) vs. full N for performance runs
+
+8. **Run the benchmark**
+   - Test the benchmark locally to ensure it runs without errors
+   - Verify output correctness against expected results
+   - Fix any translation issues or bugs
 
 **Example Output for fannkuch-redux:**
 
@@ -405,119 +371,66 @@ File: `fannkuch.[ext]`
 
 **Report Structure:**
 
-#### 1. Language Analysis Summary
-   - Analyzed language characteristics
-   - Type system, execution model, platform
-   - Complexity level and feature set
-   - Runtime characteristics
+#### Language Analysis
 
-#### 2. Comparable Languages Selection
-   - List of 2-4 selected comparable languages
-   - Rationale for each selection
-   - Classification (primary comparison vs. aspirational target)
-   - Links to Benchmarks Game measurement pages
+- Analyzed language characteristics
+- Type system, execution model, platform
+- Complexity level and feature set
+- Runtime characteristics
+- Categories: Type system, Execution model, Platform, Paradigm, Complexity
 
-#### 3. Measurement Methodology Context
-   - How benchmarks are measured (from https://benchmarksgame-team.pages.debian.net/benchmarksgame/how-programs-are-measured.html)
-   - Test environment specifications
-   - Measurement protocol (12 runs, confidence intervals, etc.)
-   - Important caveats about isolated environment
+#### Comparable Languages Selection
 
-#### 4. Benchmark Performance Data
+- List of 1-2 selected comparable languages
+- Rationale for each selection
+- Classification (primary comparison vs. aspirational target)
+- Links to Benchmarks Game measurement pages
 
-   For each relevant benchmark:
+For each comparable language:
+
+   **Language Name**: [e.g., Lua, Python 3]
+   **Rationale**: Why this language was selected
+   **Url**: Link to Benchmarks Game measurement page
+
+#### 3. Benchmark Selected
+
+For each relevant benchmark:
 
    **Benchmark Name**: [e.g., binary-trees, fannkuch-redux, n-body]
+   **Rationale**: Why this benchmark was selected
+   **Url**: Link to Benchmarks Game description page
 
-   **Comparable Language Results**:
-   | Language | Elapsed Time (s) | CPU Time (s) | Memory (bytes) | N Parameter |
-   |----------|------------------|--------------|----------------|-------------|
-   | Lua      | X.XX             | Y.YY–Z.ZZ    | M              | N           |
-   | Python 3 | X.XX             | Y.YY–Z.ZZ    | M              | N           |
-   | Ruby     | X.XX             | Y.YY–Z.ZZ    | M              | N           |
-   | Java*    | X.XX             | Y.YY–Z.ZZ    | M              | N           |
+#### How to Execute Benchmarks
 
-   *Aspirational target
-
-   **Performance Range**: Minimum to maximum across comparable languages
-   **Expected Performance**: Realistic target range for the analyzed language
-
-#### 5. Benchmarks Selected from Benchmarks Game
-   - List of benchmarks chosen for implementation
-   - Rationale for each selection
-   - Computational patterns covered:
-     - Array operations
-     - Object allocation
-     - Numerical computation
-     - String manipulation
-     - Recursion
-   - Links to Benchmarks Game benchmark descriptions
-
-#### 6. Newly Created Local Implementations
-   - List of benchmark files created during this skill execution
-   - File locations and names (e.g., `fannkuch.[ext]`, `nbody.[ext]`)
-   - Verification logic included
-   - Test parameters (N values) matching Benchmarks Game tests
-
-#### 7. How to Execute Benchmarks
-
-   For each created benchmark, document:
+For each benchmark
 
    **Benchmark Name**: [e.g., fannkuch-redux]
-
    **File**: `[benchmark-name].[ext]`
-
-   **Run Command**:
-   ```bash
-   [project-specific command] [benchmark-name] [iterations]
-   ```
-
+   **Run Command**: `[project-specific command] [benchmark-name] [iterations]`
    **Test Parameter**: N=[value] (matches Benchmarks Game test size)
-
    **Verification**: [How to verify correctness, if applicable]
 
-   **Example**:
-   ```bash
-   # For fannkuch with N=12, run 10 iterations
-   [project-command] fannkuch 10
-   ```
+#### Reference Language Performance
 
-#### 8. Cached Reference Language Performance
+For each benchmark, provide cached baseline data:
 
-   For each benchmark, save baseline data for future comparison:
+   **Benchmark**: [benchmark-name] (N=[value])
 
-   **Benchmark**: [benchmark-name]
-
-   **Test Parameter**: N=[value]
-
-   **Reference Performance** (from Benchmarks Game):
-
-   | Language     | Elapsed Time (s) | CPU Time (s)   | Memory (bytes) | Date Retrieved |
+   | Language     | Elapsed Time (s) | CPU Time (s)   | Memory (bytes) |Url |
    |--------------|------------------|----------------|----------------|----------------|
-   | [Language A] | X.XX             | Y.YY–Z.ZZ      | M              | YYYY-MM-DD     |
-   | [Language B] | X.XX             | Y.YY–Z.ZZ      | M              | YYYY-MM-DD     |
-   | [Language C] | X.XX             | Y.YY–Z.ZZ      | M              | YYYY-MM-DD     |
+   | [Language A] | X.XX             | Y.YY–Z.ZZ      | M              | http://example.com/langA |
+   | [Language B] | X.XX             | Y.YY–Z.ZZ      | M              | http://example.com/langB |
+   | [Language C] | X.XX             | Y.YY–Z.ZZ      | M              | http://example.com/langC |
 
    **Source**: [URL to Benchmarks Game measurement page]
+   **Expected Performance**: [Estimated range based on comparable languages]
+      - Best Case: [Min] seconds
+      - Expected Case: [Avg] seconds
+      - Worst Case: [Max] seconds
 
-   **Performance Range**: [Min] - [Max] seconds across comparable languages
-
-   This cached data allows future performance comparisons without re-fetching from the web.
-
-#### 9. Performance Expectations
-   - **Best Case**: If optimizer works exceptionally well (approach aspirational targets)
-   - **Expected Case**: Typical performance for similar language category
-   - **Worst Case**: If optimization fails or significant issues present
-
-#### 10. Next Steps
-   - Test newly created benchmarks to verify correctness
-   - Run all benchmarks using documented commands
-   - Compare actual results against cached baseline ranges
-   - Use profiling skills if performance is below expected range
-   - Iterate on optimizations based on findings
-   - Update this report with actual results as you optimize
 
 **Output Format:**
+
 - Saved markdown file: `BENCHMARK_BASELINE.md` (or similar name)
 - Structured sections with clear headings
 - Performance comparison tables with cached data
@@ -525,370 +438,204 @@ File: `fannkuch.[ext]`
 - Links to all Benchmarks Game sources
 - Date-stamped baseline data for future reference
 
-## Example Usage Scenarios
+## Example Usage Scenarios: Initial Baseline Before Optimization
 
-### Scenario 1: Initial Baseline Before Any Optimization
-
-**User**: "I want to understand how fast my language implementation should be compared to other languages"
+**User**: "Create a baseline for future performance analysis of my language implementation"
 
 **Skill Actions**:
+
 1. Analyzes language implementation characteristics
 2. Identifies comparable languages from Benchmarks Game
-3. Fetches benchmark data for all available programs
-4. Creates comparison table showing expected performance ranges
-5. Generates report with realistic performance targets
+3. Discovers available benchmarks on Benchmarks Game website 
+4. Creates local benchmark files in project directory
+5. Saves comprehensive baseline report to `BENCHMARK_BASELINE.md`
 
-**Output Example**:
-```
-## Baseline Performance Expectations for [Language Name]
+### Phase 1: Language Analysis
 
-### Language Analysis
+**Detected Language Characteristics**:
+
 - Type System: Dynamic typing
-- Execution Model: Bytecode VM with JIT compilation
-- Platform: [Detected platform]
+- Execution Model: Bytecode VM with JIT compilation (Truffle/Graal)
+- Platform: JVM-based (GraalVM Truffle)
 - Paradigm: Object-oriented, imperative
+- Complexity: Moderate (OO, closures, arrays)
 
-### Comparable Languages Selected
-1. **[Language A]** - Most similar execution model and abstraction level
-2. **[Language B]** - Similar paradigm and type system
-3. **[Language C]** - Similar complexity level
-4. **[Language D]** (aspirational) - Shows optimization potential
+### Phase 2: Comparable Language Identification
 
-### Benchmark: [Local Benchmark Name]
+- Query Benchmarks Game for languages with similar characteristics
 
-**Benchmarks Game Equivalent**: binary-trees (tree allocation patterns)
+**Selected Comparable Languages**:
 
-**Performance Baselines**:
-- Language A: 47.56 seconds, 2.0 MB memory
-- Language B: 33-100 seconds, variable memory
-- Language C: 50-120 seconds, variable memory
-- Language D: 2.62-5.05 seconds (aspirational)
+1. **Lua** - Most similar execution model (bytecode VM + JIT, dynamic typing)
+   URL: https://benchmarksgame-team.pages.debian.net/benchmarksgame/measurements/lua.html
 
-**Expected Performance**: 30-100 seconds
-- Best case: 30-40s (if optimizer works well)
-- Expected: 50-80s (typical for similar languages)
+2. **Python 3** - Similar abstraction level and paradigm
+   URL: https://benchmarksgame-team.pages.debian.net/benchmarksgame/measurements/python3.html
+
+### Phase 3: Discover Benchmarks
+
+- Query Benchmarks Game for available benchmarks
+
+**Available Benchmarks on Benchmarks Game**:
+- Found 10 benchmarks with implementations:
+  - **Insignificant I/O**: fannkuch-redux, binary-trees, n-body, spectral-norm
+  - **Significant I/O**: mandelbrot, fasta, k-nucleotide, reverse-complement
+  - **Contentious**: pidigits, regex-redux
+
+- Select 4 benchmarks for implementation:
+  - 1. fannkuch-redux
+  - 2. binary-trees
+  - 3. n-body
+  - 4. spectral-norm
+
+### Phase 4: Create Benchmark Files
+
+- Fetch reference implementations from Lua
+- Fetch algorithm descriptions from Benchmarks Game
+- Analyse current benchmark structure in project -> harness script
+- Translate algorithms to target language syntax
+- Create files: `fannkuch.lox`, `binarytrees.lox`, `nbody.lox`, `spectralnorm.lox`
+- Run each benchmark to verify correctness, fix any issues (if needed query Benchmarks Game for clarification again)
+
+### Phase 5: Generate Baseline Report
+
+- Compile all findings into `BENCHMARK_BASELINE.md`
+
+```
+# Benchmark Baseline Report for my Language
+
+## Language Analysis
+
+- Type System: Dynamic typing
+- Execution Model: Bytecode VM with JIT compilation (Truffle/Graal)
+- Platform: JVM-based (GraalVM Truffle)
+- Paradigm: Object-oriented, imperative
+- Complexity: Moderate (OO, closures, arrays)
+
+## Comparable Languages Selected
+
+### 1. Lua
+   Rationale: Most similar execution model (bytecode VM + JIT, dynamic typing)
+   Url: https://benchmarksgame-team.pages.debian.net/benchmarksgame/measurements/lua.html
+
+### 2. Python 3
+   Rationale: Similar abstraction level and paradigm
+   Url: https://benchmarksgame-team.pages.debian.net/benchmarksgame/measurements/python3.html
+
+## Benchmarks Selected
+
+### 1. fannkuch-redux
+
+**Rationale**: Array-intensive computation
+Url: https://benchmarksgame-team.pages.debian.net/benchmarksgame/description/fannkuchredux.html
+
+### 2. binary-trees
+
+**Rationale**: Object allocation and recursion
+Url: https://benchmarksgame-team.pages.debian.net/benchmarksgame/description/binarytrees.html
+
+### 3. n-body
+
+**Rationale**: Numerical computation and floating-point operations
+Url: https://benchmarksgame-team.pages.debian.net/benchmarksgame/description/nbody.html
+
+### 4. spectral-norm
+
+**Rationale**: Matrix operations and numerical methods
+Url: https://benchmarksgame-team.pages.debian.net/benchmarksgame/description/spectralnorm.html
+
+## How to Execute Benchmarks
+
+### 1. fannkuch
+
+**File**: `fannkuch.lox``
+**Command**: `./lox harness.lox fannkuch 1 1`
+**Test Parameter**: N=12
+**Verification**: Compares output against known correct value for N=12
+
+### 2. binarytrees
+
+**File**: `binarytrees.lox`
+**Command**: `./lox harness.lox binarytrees 10 21`
+**Test Parameter**: N=21
+**Verification**: Compares output against known correct value for N=21
+
+### nbody
+
+**File**: `nbody.lox`
+**Command**: `./lox harness.lox nbody 1 50000000`
+**Test Parameter**: N=50000000
+**Verification**: Compares output against known correct value for N=50000000
+
+### spectralnorm
+**File**: `spectralnorm.lox`
+**Command**: `./lox harness.lox spectralnorm 10 5500`
+**Test Parameter**: N=5500
+**Verification**: Compares output against known correct value for N=5500
+
+## Reference Language Performance
+
+### Benchmark: fannkuch-redux (N=12)
+
+| Language  | Elapsed Time | CPU Time      | Memory   | Url       |
+|-----------|--------------|---------------|----------|------------|
+| Lua       | 24.15s       | 24.17-25.73s  | 3.6 KB   | [Link](https://benchmarksgame-team.pages.debian.net/benchmarksgame/measurements/lua.html) |
+| Python 3  | 311s         | 310-312s      | 8.2 KB   | [Link](https://benchmarksgame-team.pages.debian.net/benchmarksgame/measurements/python3.html) |
+
+**Url**: https://benchmarksgame-team.pages.debian.net/benchmarksgame/measurements/fannkuchredux.html
+**Expected Performance**: 50-300 seconds
+- Best case: 50-100s (approaching Lua)
+- Expected: 150-250s (typical for similar dynamic languages)
+- Worst case: >300s (optimization issues)
+
+### Benchmark: binary-trees (N=21)
+
+| Language  | Elapsed Time | CPU Time      | Memory    | Url       |
+|-----------|--------------|---------------|-----------|------------|
+| Lua       | 47.56s       | 47.60-48.52s  | 2.0 MB    | [Link](https://benchmarksgame-team.pages.debian.net/benchmarksgame/measurements/lua.html) |
+| Python 3  | 33-100s      | 95.12-101.34s | 52.3 MB   | [Link](https://benchmarksgame-team.pages.debian.net/benchmarksgame/measurements/python3.html) |
+
+**Url**: https://benchmarksgame-team.pages.debian.net/benchmarksgame/measurements/binarytrees.html
+**Expected Performance**: 40-100 seconds
+- Best case: 40-50s (approaching Lua performance)
+- Expected: 60-90s (typical for similar languages)
 - Worst case: 100-150s (if optimization struggles)
 
-**Key Insights**:
-- Tree allocation/GC pressure is main bottleneck
-- Object creation patterns affect performance significantly
-- Optimization potential depends on implementation quality
+### Benchmark: n-body (N=50000000)
 
-**Next Steps**:
-1. Run local benchmark to get actual time
-2. Compare against 50-80s expected range
-3. If above range, investigate with profiling tools
-4. If below range, optimization is working well
+| Language  | Elapsed Time | CPU Time      | Memory    | Url       |
+|-----------|--------------|---------------|-----------|------------|
+| Lua       | 12.34s       | 12.36-12.89s  | 1.5 MB    | [Link](https://benchmarksgame-team.pages.debian.net/benchmarksgame/measurements/lua.html) |
+| Python 3  | 150-200s     | 180-210s      | 30.2 MB   | [Link](https://benchmarksgame-team.pages.debian.net/benchmarksgame/measurements/python3.html) |
+
+**Url**: https://benchmarksgame-team.pages.debian.net/benchmarksgame/measurements/nbody.html
+**Expected Performance**: 20-100 seconds
+- Best case: 20-30s (approaching Lua)
+- Expected: 50-80s (typical for similar dynamic languages)
+- Worst case: >100s (optimization issues)
+
+### Benchmark: spectral-norm (N=5500)
+
+| Language  | Elapsed Time | CPU Time      | Memory    | Url       |
+|-----------|--------------|---------------|-----------|------------|
+| Lua       | 8.76s        | 8.78-9.12s    | 1.2 MB    | [Link](https://benchmarksgame-team.pages.debian.net/benchmarksgame/measurements/lua.html) |
+| Python 3  | 90-120s      | 95-130s       | 20.5 MB   | [Link](https://benchmarksgame-team.pages.debian.net/benchmarksgame/measurements/python3.html) |
+
+**Url**: https://benchmarksgame-team.pages.debian.net/benchmarksgame/measurements/spectralnorm.html
+**Expected Performance**: 10-50 seconds
+- Best case: 10-15s (approaching Lua)
+- Expected: 20-40s (typical for similar dynamic languages)
+- Worst case: >50s (optimization issues)
+
 ```
-
-### Scenario 2: Discovering and Creating Benchmarks from the Web
-
-**User**: "Create benchmark implementations from the Benchmarks Game"
-
-**Skill Actions**:
-1. Analyzes language implementation characteristics
-2. Identifies comparable languages from Benchmarks Game
-3. Lists available benchmarks on Benchmarks Game
-4. Selects 3-5 appropriate benchmarks (fannkuch-redux, binary-trees, n-body, etc.)
-5. Fetches reference implementations from comparable languages
-6. Translates algorithms to target language syntax
-7. Creates multiple benchmark files in project directory
-8. Provides run commands and expected performance for each
-
-```
-## Benchmarks Discovered and Created
-
-### Available Benchmarks on Benchmarks Game
-Found 10 benchmarks with implementations in comparable languages:
-- fannkuch-redux, binary-trees, n-body, spectral-norm (insignificant I/O)
-- mandelbrot, fasta, k-nucleotide, reverse-complement (significant I/O)
-- pidigits, regex-redux (contentious)
-
-### Selected for Implementation: 5 benchmarks
-
-**1. fannkuch-redux** (permutation generation, array operations)
-**2. binary-trees** (object allocation, tree structures)
-**3. n-body** (numerical computation, floating point)
-**4. spectral-norm** (array operations, mathematical computation)
-**5. fasta** (string generation, pseudo-random)
-
----
-
-## Created File: fannkuch.[ext]
-
-Successfully created fannkuch benchmark from Lua reference implementation.
-
-### Run Command:
-```bash
-[project-command] fannkuch [iterations]
-```
-
-### Performance Baselines:
-
-| Language  | Elapsed Time | N Parameter |
-|-----------|--------------|-------------|
-| Lua       | 24.15s       | N=12        |
-| Python 3  | 311-2,457s   | N=12        |
-| Ruby MRI  | ~500s        | N=12        |
-
-### Expected Performance: 50-250 seconds
-
-- Best case: ~50s (approaching Lua)
-- Expected: 100-200s (typical for language category)
-- Worst case: >250s (optimization issues)
-
-### Key Optimizations to Watch:
-- Array access patterns
-- Loop unrolling
-- Integer arithmetic
-
----
-
-## Created Files Summary:
-
-**Benchmark Implementations:**
-- `fannkuch.[ext]` - Array permutations (N=12)
-- `binarytrees.[ext]` - Tree allocation (N=21)
-- `nbody.[ext]` - N-body simulation (N=50M)
-- `spectralnorm.[ext]` - Matrix operations (N=5500)
-- `fasta.[ext]` - String generation (N=25M)
-
-**Baseline Report:**
-- `BENCHMARK_BASELINE.md` - Complete baseline report with:
-  - Language analysis
-  - Comparable languages selection
-  - Execution instructions for all benchmarks
-  - Cached performance data from Lua, Python, Ruby
-  - Performance expectations and next steps
-
----
-
-## Sample from BENCHMARK_BASELINE.md:
-
-### How to Execute: fannkuch
-
-**File**: `fannkuch.[ext]`
-
-**Run Command**:
-```bash
-[project-command] fannkuch 10
-```
-
-**Test Parameter**: N=12 (matches Benchmarks Game)
-
-### Cached Baseline Performance: fannkuch
-
-| Language  | Elapsed Time | CPU Time      | Memory   | Date       |
-|-----------|--------------|---------------|----------|------------|
-| Lua       | 24.15s       | 24.17–25.73s  | 3.6 KB   | 2025-11-25 |
-| Python 3  | 311s         | 310–312s      | 8.2 KB   | 2025-11-25 |
-| Ruby MRI  | 500s         | 498–502s      | 9.1 KB   | 2025-11-25 |
-
-**Source**: https://benchmarksgame-team.pages.debian.net/benchmarksgame/measurements/lua.html
-
-**Expected Performance**: 50-250 seconds
-
----
-
-### Next Steps:
-1. Review `BENCHMARK_BASELINE.md` for complete execution instructions
-2. Test each benchmark for correctness
-3. Run full benchmark suite using documented commands
-4. Compare results against cached baseline data
-5. Profile any benchmarks outside expected range
-```
-
-### Scenario 3: Interpreting Benchmark Results
-
-**User**: "I ran my benchmark and got 75 seconds. Is this good?"
-
-**Skill Actions**:
-1. Analyzes language implementation characteristics
-2. Identifies comparable languages
-3. Fetches baseline data for equivalent Benchmarks Game program
-4. Compares 75s against established ranges
-5. Provides interpretation and recommendations
-
-**Output Example**:
-```
-## Benchmark Analysis: 75 Seconds
-
-### Language Characteristics
-- Type System: [Detected]
-- Execution Model: [Detected]
-- Platform: [Detected]
-- Paradigm: [Detected]
-
-### Comparable Languages Selected
-1. [Language A] (primary) - Similar execution model
-2. [Language B] (primary) - Similar abstraction level
-3. [Language C] (primary) - Similar paradigm
-4. [Language D] (aspirational) - Optimization potential
-
-### Benchmarks Game Equivalent: binary-trees
-(Closest match - allocation patterns)
-
-| Language  | Elapsed Time | Memory    | Test Parameter |
-|-----------|--------------|-----------|----------------|
-| Lang A    | 47.56s       | 2.0 MB    | N=21           |
-| Lang B    | 33-100s      | Variable  | N=21           |
-| Lang C    | 50-120s      | Variable  | N=21           |
-| Lang D    | 2.62-5.05s   | Low       | N=21           |
-
-### Your Result: 75 seconds
-
-**Performance Assessment**: GOOD ✓
-
-- Within Language B range (33-100s)
-- Within Language C range (50-120s)
-- 58% slower than Language A (acceptable)
-- Significantly slower than Language D (expected, aspirational target)
-
-### Interpretation
-Your implementation performs comparably to similar languages.
-Optimization appears to be working reasonably well.
-
-### Next Steps
-1. Profile to verify optimization is active
-2. Check for performance barriers or deoptimization
-3. If optimization metrics look good, 75s is a solid baseline
-4. To improve further, analyze allocation patterns and hot paths
-```
-
-## Data Sources and URLs
-
-### Main Entry Points
-- **Homepage**: https://benchmarksgame-team.pages.debian.net/benchmarksgame/
-- **Summary Charts**: https://benchmarksgame-team.pages.debian.net/benchmarksgame/box-plot-summary-charts.html
-
-### Language Measurement Pages
-Format: `https://benchmarksgame-team.pages.debian.net/benchmarksgame/measurements/{language}.html`
-
-**Primary Comparable Languages**:
-- Lua: https://benchmarksgame-team.pages.debian.net/benchmarksgame/measurements/lua.html
-- Python 3: https://benchmarksgame-team.pages.debian.net/benchmarksgame/measurements/python3.html
-- Ruby (MRI): https://benchmarksgame-team.pages.debian.net/benchmarksgame/measurements/mri.html
-
-**Secondary Languages**:
-- Node.js: https://benchmarksgame-team.pages.debian.net/benchmarksgame/measurements/node.html
-- PHP: https://benchmarksgame-team.pages.debian.net/benchmarksgame/measurements/php.html
-
-**Aspirational Targets**:
-- Java: https://benchmarksgame-team.pages.debian.net/benchmarksgame/measurements/java.html
-- Scala: https://benchmarksgame-team.pages.debian.net/benchmarksgame/measurements/scala.html
-
-### Language Comparison Pages
-Format: `https://benchmarksgame-team.pages.debian.net/benchmarksgame/fastest/{lang1}-{lang2}.html`
-
-**Key Comparisons**:
-- Python vs Lua: https://benchmarksgame-team.pages.debian.net/benchmarksgame/fastest/python3-lua.html
-- Ruby vs Lua: https://benchmarksgame-team.pages.debian.net/benchmarksgame/fastest/ruby-lua.html
-- Ruby vs Python: https://benchmarksgame-team.pages.debian.net/benchmarksgame/fastest/ruby-python3.html
-- Node.js vs Ruby: https://benchmarksgame-team.pages.debian.net/benchmarksgame/fastest/node-ruby.html
-
-### Benchmark-Specific Data
-
-Individual benchmark results include:
-- Multiple implementations per language
-- Elapsed time (seconds)
-- CPU time (with confidence intervals)
-- Memory usage (bytes)
-- Source code links
-- Compiler flags and build information
-
-## Understanding the Data
-
-### Metrics Explained
-
-**Elapsed Time**:
-- Wall-clock time for program execution
-- Most relevant for comparing overall performance
-- Can include system delays, I/O wait
-
-**CPU Time**:
-- Actual CPU cycles consumed
-- Often shown with confidence intervals (mean ± margin)
-- More stable metric for CPU-bound benchmarks
-
-**Memory Usage**:
-- Peak memory consumption during execution
-- Important for understanding allocation pressure
-- Can indicate GC overhead
-
-**Source Code Size**:
-- Compressed (gzip) size of implementation
-- Useful for understanding code complexity
-- Not directly relevant for runtime performance
-
-### Interpreting Variance
-
-Benchmark results often show multiple implementations per language:
-- Different algorithms or approaches
-- Various optimization levels
-- Trade-offs between speed and memory
-
-**Example**: Lua mandelbrot benchmark has 4 variants with times ranging from fast to slow implementations.
-
-**Implication**: There's often significant room for algorithmic optimization beyond language-level performance.
-
-### Caveats and Limitations
-
-From the Benchmarks Game documentation:
-
-1. **"How the programs are written matters!"**
-   - Implementation quality significantly affects results
-   - Not just language speed, but programmer skill
-
-2. **"Micro benchmarks"**
-   - These are small, focused programs
-   - Not representative of real-world applications
-   - Good for comparing language performance, not predicting app performance
-
-3. **Contentious Benchmarks**
-   - Some benchmarks (pidigits, regex-redux) depend heavily on libraries
-   - May not reflect language performance accurately
-   - Focus on "insignificant I/O" benchmarks for purer comparisons
-
-4. **Multiple Implementations**
-   - Each language may have several implementations per benchmark
-   - Some use "unsafe" features or hand-written optimizations
-   - Look for "idiomatic" implementations for fairest comparison
 
 ## Integration with Other Skills
 
 This skill works best in combination with:
 
 ### Before This Skill
+
 - **None required** - This is typically the first skill to use
-
-### After This Skill
-
-Use profiling and analysis skills appropriate to your language implementation:
-
-1. **Profiling Tools** (if available)
-   - Run CPU profiler on benchmarks
-   - Compare hotspots against baseline implementations
-   - Identify where implementation is slower than comparable languages
-
-2. **Execution Analysis** (if available)
-   - Get exact execution counts or timing breakdowns
-   - Verify optimization effectiveness
-   - Compare execution patterns to baseline algorithms
-
-3. **Optimization Diagnostics** (if available)
-   - Check for optimization barriers
-   - Compare warnings against patterns in baseline implementations
-   - Identify platform-specific optimization opportunities
-
-4. **Compilation Analysis** (if JIT/AOT compiled)
-   - Verify critical code paths are compiling
-   - Compare compilation success rate to expected behavior
-   - Diagnose compilation failures
-
-5. **Deep Optimization Analysis** (if advanced tools available)
-   - Deep-dive into specific optimization failures
-   - Understand why implementation isn't matching baseline performance
-   - Identify missing optimizations
 
 ### Workflow Example
 
@@ -908,6 +655,7 @@ Use profiling and analysis skills appropriate to your language implementation:
 ## Important Notes
 
 ### Skill Workflow
+
 1. **Run this skill FIRST** before any performance analysis
 2. Skill analyzes language characteristics automatically
 3. Skill fetches comparison data from Benchmarks Game
