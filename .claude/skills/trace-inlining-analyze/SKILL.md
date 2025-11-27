@@ -52,7 +52,11 @@ Before running this skill, you should know:
 1. Estimate: Look at the complexity of the code. Perform a "Fermi Calculation" to estimate the expected order of magnitude of allocations (e.g., "This acts on an array of 10k items, so I expect at least 10k allocations").
 2. Probe: Run the tool on a trivial input (e.g., a minimal program) to ensure it produces output quickly and correctly.
 3. Execute: Run the tool on the real target.
-4. Compare: If the tool output deviates from your Fermi Estimate by more than one order of magnitude (or is zero), treat the result as a failure and retry with different flags.
+4. Compare: If the tool output deviates from your Fermi Estimate by more than one order of magnitude (or is zero):
+   - **STOP - The tool is broken or misconfigured**
+   - **Do NOT rationalize unexpected results** (e.g., "maybe optimizations eliminated everything")
+   - Verify tool prerequisites are met before proceeding
+   - Invalid tool output = invalid analysis
 
 ## How the Skill Works
 
