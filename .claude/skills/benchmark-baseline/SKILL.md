@@ -1,6 +1,6 @@
 ---
 name: Establish Benchmark Baseline
-description: Analyzes the current language implementation to determine its complexity and abstraction level, then queries the Computer Language Benchmarks Game to find comparable languages and retrieve their benchmark results for establishing performance baselines
+description: Analyzes the current language implementation to determine its complexity and abstraction level, then queries the Computer Language Benchmarks Game and AreWeFastYet to find comparable languages and retrieve their benchmark results for establishing performance baselines
 ---
 
 # Skill: Establish Benchmark Baseline
@@ -18,6 +18,8 @@ This skill establishes performance baselines for any language implementation by:
 10. Providing baseline data and context for performance comparison
 
 **Important**: This skill should be run BEFORE any performance analysis to establish realistic expectations and create the benchmarks to measure.
+
+**Side Note**: Phases 1-2 must complete first, then 3-4 and 5-6 can run independently in parallel.
 
 ## What This Skill Does
 
@@ -55,7 +57,6 @@ This skill establishes performance baselines for any language implementation by:
 - Including verification logic and test parameters
 
 ### Phase 5: AreWeFastYet Benchmark Discovery and Data Retrieval
-
 **Queries AreWeFastYet** to:
 - Discover available benchmarks relevant to the target language
 - Fetch execution times and memory usage for each benchmark
@@ -195,15 +196,6 @@ Primary Comparisons:
 2. [Language B] - [Characteristics matching target language]
    Rationale: Similar paradigm and complexity
    URL: https://benchmarksgame-team.pages.debian.net/benchmarksgame/measurements/[lang-b].html
-
-3. [Language C] - [Characteristics matching target language]
-   Rationale: Similar feature set and runtime characteristics
-   URL: https://benchmarksgame-team.pages.debian.net/benchmarksgame/measurements/[lang-c].html
-
-Aspirational (if applicable):
-4. [Language D] - [Same platform or highly optimized]
-   Rationale: Shows optimization potential or platform capabilities
-   URL: https://benchmarksgame-team.pages.debian.net/benchmarksgame/measurements/[lang-d].html
 ```
 
 **Common Comparison Patterns**:
@@ -215,7 +207,7 @@ Aspirational (if applicable):
 
 ### Phase 3: Retrieve Benchmark Data from Benchmarks Game
 
-**Objective**: Fetch performance measurements and source code from the Computer Language Benchmarks Game
+**Objective**: Fetch performance measurements and source code from the Computer Language Benchmarks Game.
 
 **Process**:
 
@@ -261,8 +253,8 @@ Aspirational (if applicable):
      - Language feature coverage (arrays, objects, recursion, etc.)
      - Relevance to language's intended use cases
      - Availability of good reference implementations
-   - Typically select 3-5 benchmarks covering different computational patterns
-   - Check if any already exist locally (to avoid duplicates)
+   - Typically select minimum 3, maximum 5 benchmarks covering different computational patterns
+   - If Benchmark Game benchmark implementations already exist, count them toward the 3-5 total. Only implement missing ones from your selection.
 
 5. **Handle measurement methodology**
 
@@ -291,13 +283,6 @@ Aspirational (if applicable):
 
 1. **Select benchmarks from Benchmarks Game**
    - Use the list of benchmarks identified in Phase 3
-   - Select 3-5 benchmarks to implement covering different patterns:
-     - Array-intensive (fannkuch-redux, spectral-norm)
-     - Object/allocation-heavy (binary-trees)
-     - Numerical computation (n-body, mandelbrot)
-     - String manipulation (reverse-complement, fasta)
-   - Check if any already exist locally to avoid duplication
-   - Prioritize "insignificant I/O" benchmarks for pure performance testing
 
 2. **Fetch the implementation description from Benchmarks Game**
    - Retrieve algorithm descriptions for selected benchmarks
@@ -333,7 +318,6 @@ Examine existing benchmarks in the project to understand:
    - Include verification logic in benchmark to ensure correct results
    - Compare output against known correct values from Benchmarks Game
    - Example: `fannkuch.ext`, `nbody.ext`, `binarytrees.ext`
-   - Create different files for each benchmark with different N parameter values
 
 7. **Prepare execution instructions**
    - Document the command to run the benchmark
@@ -344,6 +328,7 @@ Examine existing benchmarks in the project to understand:
    - Test the benchmark locally to ensure it runs without errors
    - Verify output correctness against expected results
    - Fix any translation issues or bugs
+   - If cannot be fixed, document in baseline report and skip
 
 **Example Output for fannkuch-redux:**
 
@@ -390,8 +375,9 @@ File: `fannkuch.[ext]`
 **Process**:
 1. **Query available benchmarks from AreWeFastYet**
    - Use WebFetch to retrieve the list of benchmarks
-   - Look for micro benchmarks
-   - Ignore macro benchmarks and benchmarks from Benchmarks Game
+   - AreWeFastYet differentiates between micro and macro benchmarks
+   - Focus on micro benchmarks
+   - Ignore macro benchmarks and benchmarks from Benchmarks Game (same name)
    - URL README: `https://raw.githubusercontent.com/smarr/are-we-fast-yet/refs/heads/master/README.md`
    - URL Guidelines: `https://raw.githubusercontent.com/smarr/are-we-fast-yet/refs/heads/master/docs/guidelines.md`
 
@@ -410,16 +396,28 @@ File: `fannkuch.[ext]`
 1. **Extract available benchmark programs**
    - Look for available benchmark implementations
    - Select the implementation for the comparable languages identified in Phase 2
-   - URL format for benchmarks: `https://raw.githubusercontent.com/smarr/are-we-fast-yet/refs/heads/master/benchmarks/{language}/{benchmark}.md`
+   - Extract verification logic and test parameters from implementations
+   - URL format for benchmarks: `https://raw.githubusercontent.com/smarr/are-we-fast-yet/refs/heads/master/benchmarks/{language}/{benchmark}.{ext}`
 
-2. **Create local benchmark files**
+2. **Implement the harness structure according to project conventions**
+   - Examine existing benchmarks in the project to understand:
+      - File organization and naming conventions
+      - Benchmark harness or framework usage
+      - Entry point patterns (main function, class, module export, etc.)
+      - Setup/teardown patterns
+      - Result verification methods
+      - Command-line argument handling
+
+3. **Create local benchmark files**
    - Translate algorithms to target language syntax
-   - Translate ALL benchmarks from AreWeFastYet
+   - Translate ALL  micro benchmarks from AreWeFastYet (AreWeFastYet specifically designed for language implementation analysis)
    - Adapt to target language's features and conventions
    - Write benchmark files ready to execute
    - Include verification logic and test parameters
    - Don't implement macro benchmarks or benchmarks already from Benchmarks Game
    - Don't change the algorithms, only translate them to the target language
+   - Run each benchmark to verify correctness, fix any issues (if needed query AreWeFastYet for clarification again)
+   - If cannot be fixed, document in baseline report and skip
 
 ### Phase 7: Generate and Save Baseline Report
 
@@ -429,7 +427,7 @@ File: `fannkuch.[ext]`
 
 **Report Structure:**
 
-#### Language Analysis
+#### 1. Language Analysis
 
 - Analyzed language characteristics
 - Type system, execution model, platform
@@ -437,7 +435,7 @@ File: `fannkuch.[ext]`
 - Runtime characteristics
 - Categories: Type system, Execution model, Platform, Paradigm, Complexity
 
-#### Comparable Languages Selection from Benchmarks Game
+#### 2. Comparable Languages Selection from Benchmarks Game
 
 - List of 1-2 selected comparable languages
 - Rationale for each selection
@@ -475,7 +473,7 @@ For each benchmark form both Benchmarks Game and AreWeFastYet:
    **Test Parameter**: N=[value] (matches Benchmarks Game test size)
    **Verification**: [How to verify correctness, if applicable]
 
-#### Reference Language Performance from Benchmarks Game
+#### 6. Reference Language Performance from Benchmarks Game
 
 For each benchmark from Benchmarks Game, provide cached baseline data:
 
@@ -667,7 +665,7 @@ Url: https://benchmarksgame-team.pages.debian.net/benchmarksgame/description/spe
 
 ### 1. fannkuch
 
-**File**: `fannkuch.lox``
+**File**: `fannkuch.lox`
 **Command**: `./lox harness.lox fannkuch 1 1`
 **Test Parameter**: N=12
 **Verification**: Compares output against known correct value for N=12
@@ -792,10 +790,10 @@ This skill works best in combination with:
 ```
 1. [benchmark-baseline] → Establish expected performance range (50-80s) with both Benchmarks Game and AreWeFastYet data
 2. [Run benchmark]       → Actually get 120s (slower than expected)
-3. [Profile]             → Identify hot code paths with AreWeFastYet benchmarks
+3. [Profile]             → Identify hot code paths primarily with AreWeFastYet benchmarks
 4. [Diagnose]            → Find optimization barriers
 5. [Fix code]            → Address identified issues
-6. [Run benchmark]       → Now get 75s (within expected range!) with AreWeFastYet benchmarks
+6. [Run benchmark]       → Now get 75s (within expected range!) primarily with AreWeFastYet benchmarks
 7. [Verify]              → Confirm optimizations are working
 8. [Deep analysis]       → Understand remaining opportunities
 9. [Optimize further]    → Improve implementation
@@ -814,6 +812,8 @@ This skill works best in combination with:
 - Use the Benchmarks Game data to compare with other languages
 - Don't use AreWeFastYet to compare with other languages
 - Use AreWeFastYet benchmarks to analyze specific performance characteristics of your own language implementation
+- Benchmark Game runs longer, while AreWeFastYet focuses on quick micro-benchmarks
+- AreWeFastYet benchmarks specifically designed for language implementation analysis
 
 ### Skill Workflow
 
