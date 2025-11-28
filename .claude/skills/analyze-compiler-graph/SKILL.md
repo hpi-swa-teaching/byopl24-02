@@ -43,16 +43,18 @@ Before using this skill:
 - **Required**: Having benchmark baseline data for comparison
 - **Required**: Profiling data showing specific hot functions
 - **Required**: bgv2json or Seafoam installed
+  - `which bgv2json || echo "Install: gem install bgv2json"`
+  - `which seafoam || echo "Install: gem install seafoam"`
 - **Recommended**: Performance warning output
 - **Recommended**: Compilation trace output
 
 ## Fermi Verification (MANDATORY)
 
-**Context:** Tools often fail due to environment issues, permissions, or misconfiguration. To avoid hallucinating results, misinterpreting output, or wasting resources, you must follow this 3-step verification loop.
+**Context:** Tools often fail due to environment issues, permissions, or misconfiguration. To avoid hallucinating results, misinterpreting output, or wasting resources, you must follow this 4-step verification loop.
 
 **Mitigation Strategy**: Fermi Verification Before accepting the tool's output, you must:
 
-1. Estimate: Look at the complexity of the code. Perform a "Fermi Calculation" to estimate the expected order of magnitude of allocations (e.g., "This acts on an array of 10k items, so I expect at least 10k allocations").
+1. Estimate: Look at the complexity of the code. Perform a "Fermi Calculation" to estimate the expected order of magnitude of nodes or metric of interests (e.g., "This acts on an array of 10k items, so I expect at least 10k nodes").
 2. Probe: Run the tool on a trivial input (e.g., a minimal program) to ensure it produces output quickly and correctly.
 3. Execute: Run the tool on the real target.
 4. Compare: If the tool output deviates from your Fermi Estimate by more than one order of magnitude (or is zero):
@@ -62,6 +64,8 @@ Before using this skill:
    - Invalid tool output = invalid analysis
 
 ## How the Skill Works
+
+In all examples, `<launcher>` refers to your programming language launcher script.
 
 ### 1. Dump Compiler Graphs
 
@@ -82,9 +86,12 @@ EXTRA_JAVA_ARGS="-Djdk.graal.Dump=Truffle:1 \
   -Djdk.graal.MethodFilter="*hotFunction*" \
   -Djdk.graal.DumpPath=compiler_graphs" \
   <launcher> --experimental-options \
-  --engine.CompileOnly=hotFunction \
+  --engine.CompileOnly="*hotFunction*" \
   <program> [script args]
 ```
+- Level 1: Basic graphs (After parsing, After TruffleTier)
+- After TruffleTier is the phase showing Truffle-specific optimizations
+- `--engine.CompileOnly` ensures only this function is compiled, reducing output
 - Dramatically reduces output
 - Focus on known problem method
 - Essential for manageable analysis
@@ -110,6 +117,7 @@ EXTRA_JAVA_ARGS="-Djdk.graal.Dump=Truffle:2 \
   <launcher> <program> [script args]
 ```
 - Shows all optimization phases
+- Level 2: Full detail
 - Use only for investigating specific phase failures
 - 5-10x more output than level 1
 
@@ -360,7 +368,7 @@ EXTRA_JAVA_ARGS="-Djdk.graal.Dump=Truffle:1 \
   -Djdk.graal.MethodFilter="*hotFunction*" \
   -Djdk.graal.DumpPath=compiler_graphs" \
   <launcher> --experimental-options \
-  --engine.CompileOnly=hotFunction \
+  --engine.CompileOnly="*hotFunction*" \
   <program> [script args]
 ```
 
@@ -476,10 +484,10 @@ EXTRA_JAVA_ARGS="-Djdk.graal.Dump=Truffle:1 ..." \
 ## Reference Documentation
 
 For detailed information, see:
-- `/Users/antonykamp/Projects/hpi-ma/byopl24-02/docs/commands/analyze-compiler-graph.md` - Complete documentation with node reference
 - Seafoam: https://github.com/Shopify/seafoam
 - BGV format: https://github.com/Shopify/seafoam/blob/main/docs/bgv.md
 - GraalVM Debugging: https://github.com/oracle/graal/blob/master/compiler/docs/Debugging.md
+- Use Graal Truffle Docs skill
 
 ## Implementation Notes
 

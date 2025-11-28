@@ -49,14 +49,14 @@ This skill runs the Memory Tracer profiling tool on your language implementation
 ## Prerequisites
 
 Before running this skill, you should know:
-- **Required**: Having benchmark baseline data for comparison
+- **Required**: Having benchmark baseline data for comparison from the benchmark baseline skill
 - The path to the program to analyze
 - Whether you want to focus on specific functions (reduces overhead)
 - Ideally, CPU profiling results showing hot functions
 
 ## Fermi Verification (MANDATORY)
 
-**Context:** Tools often fail due to environment issues, permissions, or misconfiguration. To avoid hallucinating results, misinterpreting output, or wasting resources, you must follow this 3-step verification loop.
+**Context:** Tools often fail due to environment issues, permissions, or misconfiguration. To avoid hallucinating results, misinterpreting output, or wasting resources, you must follow this 4-step verification loop.
 
 **Mitigation Strategy**: Fermi Verification Before accepting the tool's output, you must:
 
@@ -70,6 +70,8 @@ Before running this skill, you should know:
    - Invalid tool output = invalid analysis
 
 ## How the Skill Works
+
+In all examples, `<launcher>` refers to your programming language launcher script.
 
 The skill follows this workflow:
 
@@ -86,7 +88,7 @@ The skill follows this workflow:
 ```
 - Default histogram output
 - Shows allocations by source location
-- Root-level granularity (function-level)
+- Root-level granularity (equals function-level)
 
 #### Type Histogram (What Object Types)
 ```bash
@@ -163,6 +165,7 @@ Primes              | 1     0.0%    | 1     0.0%    | <source>~25-38:424-739
 - **Total Count**: Allocations including all functions called by this element
   - Shows total allocation impact including downstream effects
   - Difference from self count = allocations in callees
+  - Total Count = Self Count + Allocations in all called functions
 
 - **Percentage**: Proportion relative to total allocations
   - High percentages = optimization targets
@@ -170,6 +173,7 @@ Primes              | 1     0.0%    | 1     0.0%    | <source>~25-38:424-739
 - **Location**: Source file and position
   - Format: `file~line-range:character-range`
   - Enables precise navigation to source
+  - Example: `sieve.lox~31-37:537-737` means lines 31-37, characters 537-737 in sieve.lox
 
 ### 4. Identify Common Patterns
 
@@ -366,8 +370,10 @@ CustomClass         | 100   2.0%   | User objects
    var parts = 👉👈;
    for (var i = 0; i < 100; i = i + 1) {
      // Add to array
+      parts.push(String(i));
    }
    // Join once at end
+   
    ```
 
 3. **Boxed Primitives**:
@@ -532,6 +538,7 @@ The skill follows these profiling best practices:
 <launcher> --experimental-options --memtracer <program> [script args]
 ```
 - Default histogram with root-level granularity
+- Rool level granularity equals function-level detail (not statement-level)
 - Identify top allocation sources
 - Get overall picture before drilling down
 
@@ -561,7 +568,7 @@ The skill follows these profiling best practices:
 - Allocation reduction here has compounding benefit
 
 ### 4. Progressive Investigation
-1. **High-level**: Histogram mode, root-level
+1. **High-level**: Histogram mode, root-level (equals function-level)
 2. **Type analysis**: Typehistogram to understand object types
 3. **Detailed**: TraceStatements on specific hotspots
 4. **Context**: TraceCalls to understand calling patterns
@@ -703,9 +710,9 @@ time <launcher> <program> [script args]
 ## Reference Documentation
 
 For detailed information, see:
-- `/Users/antonykamp/Projects/hpi-ma/byopl24-02/docs/commands/memory-tracer.md` - Complete documentation
 - Official GraalVM docs: https://www.graalvm.org/latest/tools/profiling/
 - AllocationReporter API: https://www.graalvm.org/truffle/javadoc/com/oracle/truffle/api/instrumentation/AllocationReporter.html
+- Use Graal Truffle Docs skill
 
 ## Implementation Notes
 
@@ -719,3 +726,7 @@ This skill:
 - Output appears at program termination
 - Substantial overhead - not for production
 - Emphasizes: **Verify actual performance impact, not just allocation counts**
+- Differentiate between Hot-loops vs. hot-paths vs. hotspots
+  - Hot-loops: loops executing many times
+  - Hot-paths: frequently executed code paths
+  - Hotspots: functions consuming most resources

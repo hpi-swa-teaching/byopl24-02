@@ -54,11 +54,11 @@ Before running this skill, you should know:
 
 ## Fermi Verification (MANDATORY)
 
-**Context:** Tools often fail due to environment issues, permissions, or misconfiguration. To avoid hallucinating results, misinterpreting output, or wasting resources, you must follow this 3-step verification loop.
+**Context:** Tools often fail due to environment issues, permissions, or misconfiguration. To avoid hallucinating results, misinterpreting output, or wasting resources, you must follow this 4-step verification loop.
 
 **Mitigation Strategy**: Fermi Verification Before accepting the tool's output, you must:
 
-1. Estimate: Look at the complexity of the code. Perform a "Fermi Calculation" to estimate the expected order of magnitude of allocations (e.g., "This acts on an array of 10k items, so I expect at least 10k allocations").
+1. Estimate: Look at the complexity of the code. Perform a "Fermi Calculation" to estimate the expected order of magnitude of compilations (e.g., "This has 5 hot functions, I expect 5-15 compilation events (including T1 and T2)").
 2. Probe: Run the tool on a trivial input (e.g., a minimal program) to ensure it produces output quickly and correctly.
 3. Execute: Run the tool on the real target.
 4. Compare: If the tool output deviates from your Fermi Estimate by more than one order of magnitude (or is zero):
@@ -68,6 +68,8 @@ Before running this skill, you should know:
    - Invalid tool output = invalid analysis
 
 ## How the Skill Works
+
+In all examples, `<launcher>` refers to your programming language launcher script.
 
 The skill follows this workflow:
 
@@ -105,11 +107,12 @@ The skill follows this workflow:
 ```bash
 <launcher> --experimental-options \
   --engine.TraceCompilation \
-  --engine.CompileOnly=functionName \
+  --engine.CompileOnly="*functionName*" \
   <program> [script args]
 ```
 - Restricts compilation to specific method
 - Dramatically reduces output volume
+- Pattern matching
 - Ideal for investigating specific issues
 
 #### Synchronous Compilation (Debugging)
@@ -188,6 +191,7 @@ grep "opt deopt" trace.log | tail -n 20
 - **Queue: Size 1**: One compilation in queue
 - **Change +1**: Queue size increased by 1
 - **Load 0.06**: Queue load (1.0 = normal, >1.0 = overloaded)
+- Load = queue growth rate; 1.0 = steady state, >1.0 = queue growing faster than processing
 
 ### 4. Identify Critical Patterns
 
@@ -740,9 +744,9 @@ grep "opt deopt" compilation.txt | sort | uniq -c | sort -rn
 ## Reference Documentation
 
 For detailed information, see:
-- `/Users/antonykamp/Projects/hpi-ma/byopl24-02/docs/commands/trace-compilation.md` - Complete documentation
 - Official GraalVM docs: https://www.graalvm.org/latest/graalvm-as-a-platform/language-implementation-framework/Optimizing/
 - Truffle options: https://www.graalvm.org/latest/graalvm-as-a-platform/language-implementation-framework/Options/
+- Use Graal Truffle Docs skill
 
 ## Implementation Notes
 

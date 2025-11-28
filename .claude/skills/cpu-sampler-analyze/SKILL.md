@@ -35,11 +35,11 @@ Before running this skill, you should know:
 
 ## Fermi Verification (MANDATORY)
 
-**Context:** Tools often fail due to environment issues, permissions, or misconfiguration. To avoid hallucinating results, misinterpreting output, or wasting resources, you must follow this 3-step verification loop.
+**Context:** Tools often fail due to environment issues, permissions, or misconfiguration. To avoid hallucinating results, misinterpreting output, or wasting resources, you must follow this 4-step verification loop.
 
 **Mitigation Strategy**: Fermi Verification Before accepting the tool's output, you must:
 
-1. Estimate: Look at the complexity of the code. Perform a "Fermi Calculation" to estimate the expected order of magnitude of allocations (e.g., "This acts on an array of 10k items, so I expect at least 10k allocations").
+1. Estimate: Look at the complexity of the code. Perform a "Fermi Calculation" to estimate the expected runtime in milliseconds or seconds (e.g., 'This loops 10k times with O(n) work, I expect ~100-1000ms runtime').
 2. Probe: Run the tool on a trivial input (e.g., a minimal program) to ensure it produces output quickly and correctly.
 3. Execute: Run the tool on the real target.
 4. Compare: If the tool output deviates from your Fermi Estimate by more than one order of magnitude (or is zero):
@@ -49,6 +49,8 @@ Before running this skill, you should know:
    - Invalid tool output = invalid analysis
 
 ## How the Skill Works
+
+In all examples, `<launcher>` refers to your programming language launcher script.
 
 The skill follows this workflow:
 
@@ -70,6 +72,7 @@ Key options explained:
 - `--cpusampler.Delay`: Skip warmup phase to profile steady-state performance
 - `--cpusampler.ShowTiers=true`: Show compilation tier information (T0/T1/T2)
 - `--cpusampler.Output=histogram`: Default output format (can be changed to calltree or flamegraph)
+- "Warmup phase" = JIT compilation happening; profiling it skews results
 
 ### 3. Analyze Output
 
@@ -149,6 +152,7 @@ Analysis focuses on:
 - **T0** (Interpreter): High values indicate compilation issues
 - **T1** (Tier-1 Compiled): Basic optimizations applied
 - **T2** (Tier-2 Compiled): Full optimizations - target for hot code
+- Target: >80% T2 for hot functions, <10% T0
 
 ## Advanced Options
 
@@ -157,11 +161,14 @@ The skill can use additional options when needed:
 ### Flamegraph Generation
 For complex call patterns:
 ```bash
-<launcher> --cpusampler=flamegraph \
+<launcher> --cpusampler \
+  --cpusampler.Output=flamegraph \
   --cpusampler.OutputFile=profile.svg \
   --cpusampler.Delay=2000 \
   <program> [script args]
 ```
+
+- Open profile.svg in a web browser to visualize the flamegraph
 
 ### Call Tree Mode
 To understand call hierarchies:
@@ -231,9 +238,9 @@ The skill warns about these common mistakes:
 ## Reference Documentation
 
 For detailed information, see:
-- `/Users/antonykamp/Projects/hpi-ma/byopl24-02/docs/commands/cpu-sampler.md` - Complete CPU Sampler documentation
 - Official GraalVM docs: https://www.graalvm.org/latest/tools/profiling/
 - Optimization guide: https://github.com/oracle/graal/blob/master/truffle/docs/Optimizing.md
+- Use Graal Truffle Docs skill
 
 ## Implementation Notes
 

@@ -235,6 +235,8 @@ The skill knows these common documentation locations:
 - `/truffle/docs/Optimizing.md` - Optimization guide
 - `/truffle/docs/BytecodeDSL.md` - Bytecode DSL documentation
 
+Paths as of GraalVM 24.x; use GitHub search if structure changes.
+
 ### Compiler Documentation
 - `/compiler/docs/` - Compiler architecture and options
 - `/sdk/docs/` - SDK and embedding documentation
@@ -274,6 +276,7 @@ This skill works well with other skills:
 
 This skill:
 - Fetches publicly available documentation (requires internet access)
+- Skill cannot be used offline
 - May not have access to pre-release or internal documentation
 - Provides information as of the documentation's last update
 - Cannot access private repositories or internal Oracle documentation
@@ -314,8 +317,8 @@ Example:
 ## Implementation Notes
 
 This skill:
-- Uses WebFetch for direct documentation page access
-- Uses WebSearch for finding relevant pages
+- Uses WebFetch tool for direct documentation page access
+- Uses WebSearch tool for finding relevant pages
 - Prioritizes official documentation over third-party sources
 - Cites sources for all information
 - Provides links for deeper exploration

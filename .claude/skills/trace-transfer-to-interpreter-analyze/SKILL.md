@@ -45,11 +45,11 @@ Before running this skill, you should know:
 
 ## Fermi Verification (MANDATORY)
 
-**Context:** Tools often fail due to environment issues, permissions, or misconfiguration. To avoid hallucinating results, misinterpreting output, or wasting resources, you must follow this 3-step verification loop.
+**Context:** Tools often fail due to environment issues, permissions, or misconfiguration. To avoid hallucinating results, misinterpreting output, or wasting resources, you must follow this 4-step verification loop.
 
 **Mitigation Strategy**: Fermi Verification Before accepting the tool's output, you must:
 
-1. Estimate: Look at the complexity of the code. Perform a "Fermi Calculation" to estimate the expected order of magnitude of allocations (e.g., "This acts on an array of 10k items, so I expect at least 10k allocations").
+1. Estimate: Look at the complexity of the code. Perform a "Fermi Calculation" to estimate the expected order of magnitude of transfers to interpreter (e.g., "For a program with 3 hot functions, I expect 0-50 transfers during warmup (as the system profiles types and specializes nodes), then zero transfers in steady-state").
 2. Probe: Run the tool on a trivial input (e.g., a minimal program) to ensure it produces output quickly and correctly.
 3. Execute: Run the tool on the real target.
 4. Compare: If the tool output deviates from your Fermi Estimate by more than one order of magnitude (or is zero):
@@ -58,13 +58,9 @@ Before running this skill, you should know:
    - Verify tool prerequisites are met before proceeding
    - Invalid tool output = invalid analysis
 
-### Step 3: Output Audit (Verification)
-
-Do not assume success based on exit codes.
-* **Physical Check:** verify the output artifact exists and has a file size > 0 bytes.
-* **Content Scan:** Read the first 5 lines/bytes of the output to ensure it is not an error message written to stdout (e.g., "Error: Command not found" saved inside `output.json`). Verify it's in the range of expected content and metrics. If it's to far off, **STOP**.
-
 ## How the Skill Works
+
+In all examples, `<launcher>` refers to your programming language launcher script.
 
 The skill follows this workflow:
 
@@ -728,9 +724,9 @@ time <launcher> <program> [script args]
 ## Reference Documentation
 
 For detailed information, see:
-- `/Users/antonykamp/Projects/hpi-ma/byopl24-02/docs/commands/trace-transfer-to-interpreter.md` - Complete documentation
 - Official GraalVM docs: https://www.graalvm.org/latest/graalvm-as-a-platform/language-implementation-framework/Optimizing/
 - CompilerDirectives API: https://www.graalvm.org/truffle/javadoc/com/oracle/truffle/api/CompilerDirectives.html
+- Use Graal Truffle Docs skill
 
 ## Implementation Notes
 

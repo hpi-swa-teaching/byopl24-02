@@ -19,21 +19,6 @@ This skill runs the Performance Warning tracer on your language implementation a
    - Compilation bailouts
 3. **Provides Fix Recommendations**: Suggests specific code changes to eliminate barriers
 
-## Fermi Verification (MANDATORY)
-
-**Context:** Tools often fail due to environment issues, permissions, or misconfiguration. To avoid hallucinating results, misinterpreting output, or wasting resources, you must follow this 3-step verification loop.
-
-**Mitigation Strategy**: Fermi Verification Before accepting the tool's output, you must:
-
-1. Estimate: Look at the complexity of the code. Perform a "Fermi Calculation" to estimate the expected order of magnitude of allocations (e.g., "This acts on an array of 10k items, so I expect at least 10k allocations").
-2. Probe: Run the tool on a trivial input (e.g., a minimal program) to ensure it produces output quickly and correctly.
-3. Execute: Run the tool on the real target.
-4. Compare: If the tool output deviates from your Fermi Estimate by more than one order of magnitude (or is zero):
-   - **STOP - The tool is broken or misconfigured**
-   - **Do NOT rationalize unexpected results** (e.g., "maybe optimizations eliminated everything")
-   - Verify tool prerequisites are met before proceeding
-   - Invalid tool output = invalid analysis
-
 ## Critical Understanding: Use This FIRST!
 
 **Performance warnings identify WHY optimization fails**
@@ -119,11 +104,11 @@ Before running this skill, you should know:
 
 ## Fermi Verification (MANDATORY)
 
-**Context:** Tools often fail due to environment issues, permissions, or misconfiguration. To avoid hallucinating results, misinterpreting output, or wasting resources, you must follow this 3-step verification loop.
+**Context:** Tools often fail due to environment issues, permissions, or misconfiguration. To avoid hallucinating results, misinterpreting output, or wasting resources, you must follow this 4-step verification loop.
 
 **Mitigation Strategy**: Fermi Verification Before accepting the tool's output, you must:
 
-1. Estimate: Look at the complexity of the code. Perform a "Fermi Calculation" to estimate the expected order of magnitude of allocations (e.g., "This acts on an array of 10k items, so I expect at least 10k allocations").
+1. Estimate: Look at the complexity of the code. Perform a "Fermi Calculation" to estimate the expected order of magnitude of warnings (e.g., "This has 5 hot functions with 3 call sites each → expect ~5-15 virtual call warnings if optimization fails").
 2. Probe: Run the tool on a trivial input (e.g., a minimal program) to ensure it produces output quickly and correctly.
 3. Execute: Run the tool on the real target.
 4. Compare: If the tool output deviates from your Fermi Estimate by more than one order of magnitude (or is zero):
@@ -133,6 +118,8 @@ Before running this skill, you should know:
    - Invalid tool output = invalid analysis
 
 ## How the Skill Works
+
+In all examples, `<launcher>` refers to your programming language launcher script.
 
 The skill follows this workflow:
 
@@ -145,7 +132,7 @@ The skill follows this workflow:
 
 #### All Warnings (Recommended for Initial Analysis)
 ```bash
-<launcher> --compiler.TracePerformanceWarnings=all <program> [script args]
+<launcher> --experimental-options --compiler.TracePerformanceWarnings=all <program> [script args]
 ```
 - Enables all warning types
 - Comprehensive coverage
@@ -153,7 +140,7 @@ The skill follows this workflow:
 
 #### Specific Warning Types
 ```bash
-<launcher> --compiler.TracePerformanceWarnings=call,instanceof,store <program> [script args]
+<launcher> --experimental-options --compiler.TracePerformanceWarnings=call,instanceof,store <program> [script args]
 ```
 - Focus on specific issues
 - Reduces output volume
@@ -197,7 +184,7 @@ Approximated stack trace for [167 | MethodCallTarget]:
 - **[engine] perf warn**: Warning identifier
 - **myFunction**: Compilation unit (root method being compiled)
 - **Message**: Describes what optimization failed
-- **(167|MethodCallTarget)**: Graal IR node ID (searchable in IGV)
+- **(167|MethodCallTarget)**: Graal IR node ID (searchable in compiler graph dumps)
 - **Stack trace**: Path through Truffle AST nodes
 - **File:line**: Source locations (when available)
 
@@ -239,7 +226,7 @@ class MyNode extends Node {
 }
 ```
 
-**For users**: This is typically a language implementation issue, not user code
+**For developer**: This is typically a language implementation issue, not user code
 
 **Verification**:
 ```bash
@@ -284,7 +271,7 @@ double doDouble(double value) { return value + 1; }
 int doString(Object value) { return 0; }
 ```
 
-**For users**: Avoid mixing types in hot paths
+**For program developers**: Avoid mixing types in hot paths
 ```<your-language>
 // ❌ BAD: Mixing types
 for (var i = 0; i < 1000; i = i + 1) {
@@ -332,7 +319,7 @@ public class ReadLocalNode extends Node {
 }
 ```
 
-**For users**: This is language implementation issue
+**For program developer**: This is language implementation issue
 
 #### Problem 4: Compilation Bailout
 ```
@@ -380,7 +367,7 @@ public class ReadLocalNode extends Node {
 
 #### Step 2: Check for Warnings in Hot Functions
 ```bash
-<launcher> --compiler.TracePerformanceWarnings=all \
+<launcher> --experimental-options --compiler.TracePerformanceWarnings=all \
   <program> [script args] 2>&1 | tee warnings.txt
 
 # Check if hot functions have warnings
@@ -408,7 +395,7 @@ grep "perf warn" warnings.txt | \
 #### Step 6: Verify Fixes
 ```bash
 # Re-run warnings check
-<launcher> --compiler.TracePerformanceWarnings=all \
+<launcher> --experimental-options --compiler.TracePerformanceWarnings=all \
   <program> [script args] 2>&1 | grep "problematicFunction"
 
 # Should see fewer or no warnings
@@ -435,7 +422,7 @@ The skill follows these analysis best practices:
 ### 1. Use Performance Warnings First
 ```bash
 # Start optimization workflow here
-<launcher> --compiler.TracePerformanceWarnings=all <program> [script args]
+<launcher> --experimental-options --compiler.TracePerformanceWarnings=all <program> [script args]
 ```
 - Most targeted diagnostic
 - Identifies exact problems
@@ -445,7 +432,7 @@ The skill follows these analysis best practices:
 ```bash
 # Identify hot + warnings
 <launcher> --cpusampler <program> [script args] > cpu.txt
-<launcher> --compiler.TracePerformanceWarnings=all <program> [script args] > warn.txt
+<launcher> --experimental-options --compiler.TracePerformanceWarnings=all <program> [script args] > warn.txt
 
 # Find hot functions with warnings
 ```
@@ -507,7 +494,7 @@ The skill warns about these mistakes:
 
 - ❌ **Misinterpreting approximated stack traces**:
   - Stack traces are approximations
-  - Use IGV for precise node identification
+  - Dump and analyze compiler graph for precise node identification
 
 - ❌ **Combining too many diagnostics**:
   - Overwhelming output obscures relevant info
@@ -531,7 +518,7 @@ The skill typically follows this workflow:
 
 ### Step 2: Check for Warnings
 ```bash
-<launcher> --compiler.TracePerformanceWarnings=all \
+<launcher> --experimental-options --compiler.TracePerformanceWarnings=all \
   <program> [script args] 2>&1 | tee warnings.txt
 ```
 **Look for**: Warnings in hot functions
@@ -559,7 +546,7 @@ grep "perf warn hotFunction" warnings.txt
 ### Step 6: Verify Fixes
 ```bash
 # No more warnings for this function
-<launcher> --compiler.TracePerformanceWarnings=all \
+<launcher> --experimental-options --compiler.TracePerformanceWarnings=all \
   --engine.CompileOnly=hotFunction \
   <program> [script args]
 
@@ -598,9 +585,9 @@ time <launcher> <program> [script args]  # Should be faster
 ## Reference Documentation
 
 For detailed information, see:
-- `/Users/antonykamp/Projects/hpi-ma/byopl24-02/docs/commands/trace-performance-warnings.md` - Complete documentation
 - Official GraalVM docs: https://www.graalvm.org/latest/graalvm-as-a-platform/language-implementation-framework/Optimizing/
 - Truffle options: https://www.graalvm.org/latest/graalvm-as-a-platform/language-implementation-framework/Options/
+- Use Graal Truffle Docs skill
 
 ## Implementation Notes
 

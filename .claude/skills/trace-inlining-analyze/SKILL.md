@@ -45,11 +45,11 @@ Before running this skill, you should know:
 
 ## Fermi Verification (MANDATORY)
 
-**Context:** Tools often fail due to environment issues, permissions, or misconfiguration. To avoid hallucinating results, misinterpreting output, or wasting resources, you must follow this 3-step verification loop.
+**Context:** Tools often fail due to environment issues, permissions, or misconfiguration. To avoid hallucinating results, misinterpreting output, or wasting resources, you must follow this 4-step verification loop.
 
 **Mitigation Strategy**: Fermi Verification Before accepting the tool's output, you must:
 
-1. Estimate: Look at the complexity of the code. Perform a "Fermi Calculation" to estimate the expected order of magnitude of allocations (e.g., "This acts on an array of 10k items, so I expect at least 10k allocations").
+1. Estimate: Look at the complexity of the code. Perform a "Fermi Calculation" to estimate the expected order of magnitude of inlining decisions (e.g., "This function has 5 callees, compiles 2x (T1 + T2) → expect ~10-20 inlining decisions").
 2. Probe: Run the tool on a trivial input (e.g., a minimal program) to ensure it produces output quickly and correctly.
 3. Execute: Run the tool on the real target.
 4. Compare: If the tool output deviates from your Fermi Estimate by more than one order of magnitude (or is zero):
@@ -59,6 +59,8 @@ Before running this skill, you should know:
    - Invalid tool output = invalid analysis
 
 ## How the Skill Works
+
+In all examples, `<launcher>` refers to your programming language launcher script.
 
 The skill follows this workflow:
 
@@ -175,6 +177,7 @@ Each trace line contains these key metrics:
 - **State**: `Inlined` - Successfully inlined
 - **Function Name**: `FindMaxSeparation` - Target being inlined
 - **call diff**: `-8.99` - Negative = good! Reduces net calls by ~9
+  - Call diff = (calls added by inlining body) - (1 call eliminated by inlining)
   - Negative: Inlining eliminates more calls than it adds (excellent)
   - Zero: Neutral impact
   - Positive: Inlining adds calls (usually bad, but sometimes acceptable)
@@ -293,7 +296,7 @@ Each trace line contains these key metrics:
 - Mark problematic loops with boundaries
 - Restructure recursion to enable inlining limits
 
-#### Pattern 4: Good Inlining (Target Pattern!)
+#### Pattern 4: Good Inlining
 ```
 [engine] inline start optimizedFunction |IR Nodes 8500 |Truffle Callees 5 |...
 [engine] Inlined helper1 |call diff -5.00 |IR Nodes 1200 |...  ✅ Great!
@@ -325,10 +328,12 @@ The root function shows overall metrics:
   - Close to 1.0 = balanced budget usage (good)
   - Much higher = exploration dominated (may need more inlining budget)
   - Much lower = inlining dominated (may need more exploration budget)
+  - If ratio >1.5: increase InliningExpansionBudget; if ratio <0.7: increase InliningBudget
 - **IR Nodes**: Total compilation unit size (27,149 nodes)
   - Default budget: 12,000 nodes per function
   - This is cumulative after inlining
 - **Truffle Callees**: Number of potential calls to analyze
+
 
 ### 7. Budget Tuning
 
@@ -345,7 +350,7 @@ The skill can help tune two critical budgets:
 
 #### Inlining Budget (Default: 12,000)
 ```bash
---engine.InliningInliningBudget=<N>
+--engine.InliningBudget=<N>
 ```
 - Controls total compilation unit size after inlining
 - Exhaustion → Expanded states
@@ -419,19 +424,6 @@ Recursive functions show Recursion Depth > 0:
 - CPU Sampler: Identifies hot functions consuming time
 - TraceInlining: Shows if hot functions inline properly
 - Focus optimization on actual bottlenecks
-
-### Trace Inlining + IGV (Visual Analysis)
-```bash
-<launcher> --experimental-options \
-  --engine.TraceInlining \
-  --vm.Djdk.graal.Dump=Truffle:1 \
-  --vm.Djdk.graal.PrintGraph=Network \
-  <program> [script args]
-```
-**Why combine**:
-- TraceInlining: Text-based decision log
-- IGV: Visual call tree and IR graphs
-- Visual graphs reveal patterns hard to spot in text
 
 ## Advanced Options
 
@@ -619,9 +611,9 @@ The skill typically follows this analysis workflow:
 ## Reference Documentation
 
 For detailed information, see:
-- `/Users/antonykamp/Projects/hpi-ma/byopl24-02/docs/commands/trace-inlining.md` - Complete Trace Inlining documentation
 - Official GraalVM docs: https://www.graalvm.org/latest/graalvm-as-a-platform/language-implementation-framework/Inlining/
 - Optimization guide: https://www.graalvm.org/latest/graalvm-as-a-platform/language-implementation-framework/Optimizing/
+- Use Graal Truffle Docs skill
 
 ## Implementation Notes
 

@@ -43,11 +43,11 @@ Before running this skill, you should know:
 
 ## Fermi Verification (MANDATORY)
 
-**Context:** Tools often fail due to environment issues, permissions, or misconfiguration. To avoid hallucinating results, misinterpreting output, or wasting resources, you must follow this 3-step verification loop.
+**Context:** Tools often fail due to environment issues, permissions, or misconfiguration. To avoid hallucinating results, misinterpreting output, or wasting resources, you must follow this 4-step verification loop.
 
 **Mitigation Strategy**: Fermi Verification Before accepting the tool's output, you must:
 
-1. Estimate: Look at the complexity of the code. Perform a "Fermi Calculation" to estimate the expected order of magnitude of allocations (e.g., "This acts on an array of 10k items, so I expect at least 10k allocations").
+1. Estimate: Look at the complexity of the code. Perform a "Fermi Calculation" to estimate the expected order of magnitude of executions (e.g., "This acts on an array of 10k items, so I expect at least 10k executions").
 2. Probe: Run the tool on a trivial input (e.g., a minimal program) to ensure it produces output quickly and correctly.
 3. Execute: Run the tool on the real target.
 4. Compare: If the tool output deviates from your Fermi Estimate by more than one order of magnitude (or is zero):
@@ -57,6 +57,8 @@ Before running this skill, you should know:
    - Invalid tool output = invalid analysis
 
 ## How the Skill Works
+
+In all examples, `<launcher>` refers to your programming language launcher script.
 
 The skill follows this workflow:
 
@@ -237,7 +239,7 @@ accept     | 234117338 50.0%  | 365660 0.2%      | 233751678 99.8%  | <source>~1
         {
             "source_section": {
                 "path": "/Users/antonykamp/Projects/hpi-ma/byopl24-02/<program>",
-                "language": "<guest-language>",
+                "language": "<language>",
                 "end_column": 1,
                 "end_line": 16,
                 "start_column": 1,
@@ -252,7 +254,7 @@ accept     | 234117338 50.0%  | 365660 0.2%      | 233751678 99.8%  | <source>~1
         {
             "source_section": {
                 "path": "<path>",
-                "language": "<guest-language>",
+                "language": "<language>",
                 "end_column": 1,
                 "end_line": 52,
                 "start_column": 1,
@@ -267,7 +269,7 @@ accept     | 234117338 50.0%  | 365660 0.2%      | 233751678 99.8%  | <source>~1
         {
             "source_section": {
                 "path": "<path>",
-                "language": "<guest-language>",
+                "language": "<language>",
                 "end_column": 11,
                 "end_line": 10,
                 "start_column": 1,
@@ -282,7 +284,7 @@ accept     | 234117338 50.0%  | 365660 0.2%      | 233751678 99.8%  | <source>~1
         {
             "source_section": {
                 "path": "<path>",
-                "language": "<guest-language>",
+                "language": "<language>",
                 "end_column": 33,
                 "end_line": 57,
                 "start_column": 1,
@@ -389,9 +391,9 @@ accept     | 234117338 50.0%  | 365660 0.2%      | 233751678 99.8%  | <source>~1
 The skill follows these profiling best practices:
 
 1. **Progressive Granularity**
-   - Start with `--cputracer` only (function-level)
-   - Add `--cputracer.TraceCalls` for hot functions
-   - Add `--cputracer.TraceStatements` with filters for deep dive
+   1. Start with `--cputracer` only (function-level)
+   2. Add `--cputracer.TraceCalls` for hot functions
+   3. Add `--cputracer.TraceStatements` with filters for deep dive
 
 2. **Always Filter with TraceStatements**
    ```bash
@@ -430,8 +432,6 @@ The skill warns about these common mistakes:
 
 - ❌ **Confusing with CPUSampler**: CPU Tracer counts executions, doesn't measure time
 - ❌ **TraceStatements without filters**: Overwhelming overhead and output on large codebases
-- ❌ **Misreading percentages**: Interpreted % is relative to that element's total, not program total
-  - Example: "5% interpreted" means 5% of that function's executions, not 5% of program
 - ❌ **Ignoring multiple entries**: Same function name with different locations = specializations, not duplicates
 - ❌ **Expecting real-time output**: Output appears only at program completion
 - ❌ **Parsing histogram text**: Use `--cputracer.Output=json` for programmatic analysis
@@ -503,9 +503,9 @@ setup         |        10 0.0%   | 10 100.0%        |         0 0.0%    | <sourc
 ## Reference Documentation
 
 For detailed information, see:
-- `/Users/antonykamp/Projects/hpi-ma/byopl24-02/docs/commands/cpu-tracer.md` - Complete CPU Tracer documentation
 - Official GraalVM docs: https://www.graalvm.org/latest/tools/profiling/
 - CPUTracer JavaDoc: https://www.graalvm.org/tools/javadoc/com/oracle/truffle/tools/profiler/CPUTracer.html
+- Use Graal Truffle Docs skill
 
 ## Implementation Notes
 
