@@ -121,6 +121,18 @@ EXTRA_JAVA_ARGS="-Djdk.graal.Dump=Truffle:2 \
 - Use only for investigating specific phase failures
 - 5-10x more output than level 1
 
+#### Side Note: Dump Level Argument
+
+The numbers after the colon (`:1`, `:2`, `:3`, etc.) control the **verbosity** of graph dumps - essentially how many compilation phases are dumped.
+
+The dump levels control how many compiler phases are captured. A typical usage for low-level IR visualization is `:3`, which provides detailed dumps suitable for the C1 Visualizer. While the documentation doesn't specify exact phase counts for each level, the pattern is:
+
+- **`:1`** - Fewer phases (basic dumps)
+- **`:2`** - More phases (intermediate detail)  
+- **`:3`** - Most phases (comprehensive dumps for low-level debugging)
+
+Using `Truffle:1` with `PrintGraph=Network` shows Truffle ASTs, guest-language call graphs, and Graal graphs as they leave the Truffle phase. `Truffle:2` dumps Graal graphs between each compiler phase, providing more granular detail during the Truffle compilation pipeline.
+
 ### 2. Convert BGV to JSON
 
 #### Using bgv2json (Recommended)
