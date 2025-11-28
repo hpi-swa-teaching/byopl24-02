@@ -152,7 +152,115 @@ seafoam compiler_graphs/file.bgv.gz list
 seafoam --json file.bgv.gz:0 props > graph.json
 ```
 
-### 3. Analyze with jq
+### 3. Understanding the JSON Structure
+
+The converted JSON has a specific structure that's important to understand for effective analysis.
+
+#### File Format
+- **JSON Lines format**: Each line is a complete JSON object representing one compilation phase/graph
+- Multiple graphs per BGV file (one for each compilation phase)
+
+#### Top-Level Structure
+Each graph object has these keys:
+```json
+{
+  "name": ["function_name", "phase_name"],
+  "props": { /* graph metadata */ },
+  "nodes": [ /* IR nodes */ ],
+  "edges": [ /* data/control flow */ ],
+  "blocks": [ /* basic blocks */ ]
+}
+```
+
+#### Graph Metadata
+```json
+{
+  "name": ["TruffleIR.Tier1.root_sieve()", "After TruffleTier"],
+  "props": {
+    "compilationIdentifier": "TruffleHotSpotCompilation-2793[root sieve]",
+    "graph": "StructuredGraph:696145{...}",
+    "scope": "TruffleCompilerThread-31.Truffle.TruffleFinal"
+  }
+}
+```
+- `name[0]`: Function/method name
+- `name[1]`: Compilation phase (e.g., "After TruffleTier", "After PartialEscape")
+- `props.compilationIdentifier`: Unique ID for this compilation
+
+#### Node Structure
+Each node represents a compiler IR operation:
+```json
+{
+  "id": 5,
+  "props": {
+    "label": "AddNode",              // Node type (for filtering)
+    "category": "arithmetic",         // Category: floating, arithmetic, state, etc.
+    "stamp": "i32",                   // Type information
+    "nodeToBlock": "B0",              // Basic block ID
+    "node_class": {
+      "node_class": "jdk.graal.compiler.nodes.calc.AddNode"
+    }
+  }
+}
+```
+
+**Key properties:**
+- `id`: Unique identifier (used in edges)
+- `props.label`: Human-readable node type (e.g., "AddNode", "UnboxNode")
+- `props.category`: Node category (arithmetic, floating, state, control)
+- `props.stamp`: Type/value information
+- `props.node_class.node_class`: Fully qualified Java class name
+
+#### Edge Structure
+Edges connect nodes to show data and control flow:
+```json
+{
+  "from": 5,
+  "to": 1,
+  "props": {
+    "direct": true,
+    "name": "x",               // Input name (e.g., "x", "y" for binary ops)
+    "type": "Value",           // Edge type: Value, State, Association
+    "index": 0
+  }
+}
+```
+
+#### Common Node Types
+
+**Arithmetic Operations:**
+- `AddNode`, `SubNode`, `MulNode`, `DivNode`
+- `IntegerLessThanNode`, `IntegerEqualsNode`
+
+**Constants & Parameters:**
+- `ConstantNode` - Compile-time constants
+- `ParameterNode` - Method parameters
+
+**Conversions (Performance Critical):**
+- `BoxNode` / `BoxNode$AllocatingBoxNode` - Boxing primitives ⚠️
+- `UnboxNode` - Unboxing objects ⚠️
+
+**Memory Operations:**
+- `LoadFieldNode`, `StoreFieldNode` - Object field access
+- `LoadIndexedNode`, `StoreIndexedNode` - Array access
+
+**Allocations (Escape Analysis):**
+- `TruffleNew` - Object allocation ⚠️
+- `CommitAllocationNode`, `NewInstanceNode` - Failed escape analysis ⚠️
+- `AllocatedObjectNode` - Allocation tracking
+
+**Call Operations:**
+- `OptimizedDirectCallNode` - Specialized direct call ✅
+- `OptimizedIndirectCallNode` - Dynamic call ⚠️
+- `InvokeNode`, `InvokeWithExceptionNode` - Method calls ⚠️
+
+**Control Flow:**
+- `IfNode` - Conditional branch
+- `LoopBeginNode`, `LoopEndNode` - Loop structure
+- `MergeNode`, `BeginNode`, `EndNode` - Control merge points
+- `ReturnNode` - Method return
+
+### 4. Analyze with jq
 
 #### Query 1: Find Indirect Calls (Performance Problem!)
 ```bash
@@ -246,7 +354,7 @@ seafoam --json file.bgv.gz:2 describe | jq '.node_counts' | jq 'to_entries | sor
 seafoam file.bgv.gz:2 render > graph.svg
 ```
 
-### 4. Common Problem Patterns
+### 5. Common Problem Patterns
 
 #### Problem 1: Indirect Calls (Critical!)
 ```
@@ -340,7 +448,7 @@ DeoptimizeNode or UnreachedNode found in hot path
 
 **Correlation**: Use with `--engine.TraceTransferToInterpreter` to find exact location
 
-### 5. Key Graph Phases to Check
+### 6. Key Graph Phases to Check
 
 #### "After parsing"
 - Shows initial IR from AST
