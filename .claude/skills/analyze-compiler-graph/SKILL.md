@@ -138,9 +138,14 @@ The dump levels control how many compiler phases are captured. A typical usage f
 
 Using `Truffle:1` with `PrintGraph=Network` shows Truffle ASTs, guest-language call graphs, and Graal graphs as they leave the Truffle phase. `Truffle:2` dumps Graal graphs between each compiler phase, providing more granular detail during the Truffle compilation pipeline.
 
-### 2. Convert BGV to JSON
+### 2. Use seafoam to analyze BGV
 
-#### Using bgv2json (Recommended)
+- Call `seafoam help` for full command list
+- Analyze the BGV files dumped in output directory
+- Continue with step 3 if you need more control to analyze JSON directly
+
+### 3. Convert BGV to JSON
+
 ```bash
 bgv2json compiler_graphs/*.bgv > graphs.json
 ```
@@ -148,16 +153,7 @@ bgv2json compiler_graphs/*.bgv > graphs.json
 - Produces JSON Lines format (one graph per line)
 - Works with compressed files (.bgv.gz)
 
-#### Using Seafoam
-```bash
-# List graphs in file
-seafoam compiler_graphs/file.bgv.gz list
-
-# Convert specific graph to JSON
-seafoam --json file.bgv.gz:0 props > graph.json
-```
-
-### 3. Understanding the JSON Structure
+### 4. Understanding the JSON Structure
 
 The converted JSON has a specific structure that's important to understand for effective analysis.
 
@@ -265,7 +261,7 @@ Edges connect nodes to show data and control flow:
 - `MergeNode`, `BeginNode`, `EndNode` - Control merge points
 - `ReturnNode` - Method return
 
-### 4. Analyze with jq
+### 6. Analyze with jq
 
 #### Query 1: Find Indirect Calls (Performance Problem!)
 ```bash
