@@ -64,10 +64,15 @@ Before running this skill, you should know:
 2. Probe: Run the tool on a trivial input (e.g., a minimal program) to ensure it produces output quickly and correctly.
 3. Execute: Run the tool on the real target.
 4. Compare: If the tool output deviates from your Fermi Estimate by more than one order of magnitude (or is zero):
-   - **STOP - The tool is broken or misconfigured**
-   - **Do NOT rationalize unexpected results** (e.g., "maybe optimizations eliminated everything")
-   - Verify tool prerequisites are met before proceeding
-   - Invalid tool output = invalid analysis
+    - **STOP - The tool is broken or misconfigured**
+      - Do NOT theorize
+      - Test the tool itself first
+      - Assume tool is broken until proven otherwise
+      - Only after tool is verified, consider other explanations
+    - **Do NOT rationalize unexpected results** (e.g., "maybe optimizations eliminated everything")
+    - Prefer uncertainty over false certainty
+    - Explicitly ask "What would disprove my hypothesis?"
+    - Write down my estimate BEFORE running the tool
 
 ## How the Skill Works
 
