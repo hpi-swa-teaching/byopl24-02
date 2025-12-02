@@ -1,0 +1,15 @@
+load benchmark: queens.lox
+Starting queens benchmark ...
+queens: innerIterations=8 runtime: 123457us
+queens: innerIterations=8 runtime: 7287us
+queens: innerIterations=8 runtime: 8805us
+queens: innerIterations=8 runtime: 19935us
+queens: innerIterations=8 runtime: 8853us
+queens: innerIterations=8 runtime: 9824us
+queens: innerIterations=8 runtime: 7525us
+queens: innerIterations=8 runtime: 7244us
+queens: innerIterations=8 runtime: 7098us
+queens: innerIterations=8 runtime: 3564us
+queens: iterations=10 average: 20359.2us total: 203592us
+
+Total Runtime: 203592us

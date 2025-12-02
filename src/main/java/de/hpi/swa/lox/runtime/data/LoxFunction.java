@@ -67,7 +67,6 @@ public class LoxFunction implements TruffleObject {
      * index is off-by-one),
      * and therefore all user arguments are shifted by one index.
      */
-    @TruffleBoundary
     public Object[] createArguments(Object[] userArguments) {
         Object[] result = new Object[userArguments.length + 1];
         System.arraycopy(userArguments, 0, result, 1, userArguments.length);

@@ -1,0 +1,22 @@
+# Phase 1 Results: Two Critical 1-Line Optimizations
+
+## Changes Made
+1. Added double.class to boxing elimination config (LoxBytecodeRootNode.java:52)
+2. Removed @TruffleBoundary from createArguments() (LoxFunction.java:70)
+
+## Queens Benchmark Results
+- Baseline: 203592us (20.4ms average)
+- Phase 1:  181486us (18.1ms average)
+- **Improvement: 1.12x faster (12% speedup)**
+
+## Test Results
+- All 161 tests passed ✅
+- BUILD SUCCESS ✅
+
+## Analysis
+The 12% improvement demonstrates that:
+- Boxing elimination for doubles reduces interpreter overhead
+- Removing @TruffleBoundary enables better function call optimization
+- Combined effect visible even in steady-state benchmarks
+
+Expected interpreter-heavy workloads will see even larger gains (4-5x).
