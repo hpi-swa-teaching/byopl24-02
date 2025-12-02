@@ -1,0 +1,17 @@
+Warning: Option 'engine.TracePerformanceWarnings' is deprecated and might be removed from future versions.
+The option engine.TracePerformanceWarnings is now deprecated. Please use the new option name 'compiler.TracePerformanceWarnings' instead to resolve this.
+[To redirect Truffle log output to a file use one of the following options:
+* '--log.file=<path>' if the option is passed using a guest language launcher.
+* '-Dpolyglot.log.file=<path>' if the option is passed using the host Java launcher.
+* Configure logging using the polyglot embedding API.]
+[engine] WARNING: Option 'engine.TracePerformanceWarnings' is deprecated: The option engine.TracePerformanceWarnings is now deprecated. Please use the new option name 'compiler.TracePerformanceWarnings' instead to resolve this.. Please update the option or suppress this warning using the option 'engine.WarnOptionDeprecation=false'.
+load benchmark: queens.lox
+Starting queens benchmark ...
+queens: innerIterations=8 runtime: 131290us
+queens: innerIterations=8 runtime: 6853us
+queens: innerIterations=8 runtime: 4057us
+queens: innerIterations=8 runtime: 5571us
+queens: innerIterations=8 runtime: 5589us
+queens: iterations=5 average: 30672us total: 153360us
+
+Total Runtime: 153360us

@@ -1,0 +1,15 @@
+load benchmark: queens.lox
+Starting queens benchmark ...
+queens: innerIterations=8 runtime: 113959us
+queens: innerIterations=8 runtime: 6868us
+queens: innerIterations=8 runtime: 4258us
+queens: innerIterations=8 runtime: 5889us
+queens: innerIterations=8 runtime: 4387us
+queens: iterations=5 average: 27072.2us total: 135361us
+
+Total Runtime: 135361us
+----------------------------------------------------------------------------------------------
+Sampling Histogram. Recorded 0 samples with period 10ms. Missed 0 samples.
+  Self Time: Time spent on the top of the stack.
+  Total Time: Time spent somewhere on the stack.
+----------------------------------------------------------------------------------------------

@@ -1,0 +1,41 @@
+// Test if passing LoxNumber to @TruffleBoundary causes allocation
+
+fun justArithmetic(n) {
+    var sum = 0;
+    for (var i = 0; i < n; i = i + 1) {
+        sum = sum + i;
+    }
+    return sum;
+}
+
+fun arithmeticThenToString(n) {
+    var sum = 0;
+    for (var i = 0; i < n; i = i + 1) {
+        sum = sum + i;
+    }
+    // toString is @TruffleBoundary - does sum escape here?
+    var s = String(sum);
+    return s;
+}
+
+var iterations = 10000;
+var n = 100;
+
+var start1 = clock();
+for (var i = 0; i < iterations; i = i + 1) {
+    justArithmetic(n);
+}
+var duration1 = clock() - start1;
+
+var start2 = clock();
+for (var i = 0; i < iterations; i = i + 1) {
+    arithmeticThenToString(n);
+}
+var duration2 = clock() - start2;
+
+print "Just arithmetic: ";
+print duration1;
+print "Arithmetic + toString: ";
+print duration2;
+print "ToString overhead: ";
+print duration2 - duration1;

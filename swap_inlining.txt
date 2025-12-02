@@ -1,0 +1,28 @@
+Warning: Option 'engine.TraceInlining' is deprecated and might be removed from future versions.
+The option engine.TraceInlining is now deprecated. Please use the new option name 'compiler.TraceInlining' instead to resolve this.
+[To redirect Truffle log output to a file use one of the following options:
+* '--log.file=<path>' if the option is passed using a guest language launcher.
+* '-Dpolyglot.log.file=<path>' if the option is passed using the host Java launcher.
+* Configure logging using the polyglot embedding API.]
+[engine] WARNING: Option 'engine.TraceInlining' is deprecated: The option engine.TraceInlining is now deprecated. Please use the new option name 'compiler.TraceInlining' instead to resolve this.. Please update the option or suppress this warning using the option 'engine.WarnOptionDeprecation=false'.
+load benchmark: permute.lox
+Starting permute benchmark ...
+[engine] Inline start root swap                                                   |Recursion Depth      0|Explore/inline ratio     1.00|IR Nodes    326|Graph Size     -1|Frequency     1.00|Truffle Callees      0|Forced false|Depth      0
+[engine] Inline done  root swap                                                   |Recursion Depth      0|Explore/inline ratio     1.00|IR Nodes    326|Graph Size     -1|Frequency     1.00|Truffle Callees      0|Forced false|Depth      0
+[engine] opt done   engine=2  id=21    root swap                                          |Tier 1|Time    45(  41+4   )ms|AST    2|Inlined   0Y   0N|IR    326/   765|CodeSize    4180|Addr 0x00011d185e80|UTC 2025-11-29T06:06:07.021|Src permute.lox:32 0xb29b129a
+[engine] Inline start root swap                                                   |Recursion Depth      0|Subtree Call Nodes      1|Leaf cluster false|Cluster false|Depth      0|Explore/inline ratio     1.00|Expansion Priority     3.73|IR Nodes    254|Inline BpC 0.0|Graph Size     -1|Enhanced false|Frequency     1.00|Expansion Benefit    50.99|Subtree IR Nodes    254|Subtree Cutoffs      0|Cost Benefit bpc:          NaN, b:          NaN, c:          NaN|Truffle Callees      0|Forced false|Threshold 0.0
+[engine] Inline done  root swap                                                   |Recursion Depth      0|Subtree Call Nodes      1|Leaf cluster false|Cluster false|Depth      0|Explore/inline ratio     1.00|Expansion Priority     3.73|IR Nodes    254|Inline BpC 0.0|Graph Size     -1|Enhanced false|Frequency     1.00|Expansion Benefit    50.99|Subtree IR Nodes    254|Subtree Cutoffs      0|Cost Benefit bpc:          NaN, b:          NaN, c:          NaN|Truffle Callees      0|Forced false|Threshold 0.0
+[engine] opt done   engine=2  id=21    root swap                                          |Tier 2|Time    28(  23+4   )ms|AST    2|Inlined   0Y   0N|IR    254/   244|CodeSize    1488|Addr 0x00011d18c600|UTC 2025-11-29T06:06:07.052|Src permute.lox:32 0xb29b129a
+permute: innerIterations=6 runtime: 138923us
+permute: innerIterations=6 runtime: 79237us
+permute: innerIterations=6 runtime: 59346us
+permute: innerIterations=6 runtime: 49383us
+permute: innerIterations=6 runtime: 9525us
+permute: innerIterations=6 runtime: 8363us
+permute: innerIterations=6 runtime: 8092us
+permute: innerIterations=6 runtime: 7779us
+permute: innerIterations=6 runtime: 38367us
+permute: innerIterations=6 runtime: 53534us
+permute: iterations=10 average: 45254.9us total: 452549us
+
+Total Runtime: 452549us

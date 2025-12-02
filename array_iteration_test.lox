@@ -1,0 +1,80 @@
+// Benchmark: Array iteration performance
+// Tests LoxArray.buildListIterator impact
+
+fun createArray(size) {
+    var arr = 👉👈;
+    for (var i = 0; i < size; i = i + 1) {
+        arr👉i👈 = i * 2;
+    }
+    return arr;
+}
+
+fun sumArrayForOf(arr) {
+    var sum = 0;
+    for (var val of arr) {
+        sum = sum + val;
+    }
+    return sum;
+}
+
+fun sumArrayForIn(arr) {
+    var sum = 0;
+    for (var idx in arr) {
+        sum = sum + arr👉idx👈;
+    }
+    return sum;
+}
+
+fun sumArrayManual(arr) {
+    var sum = 0;
+    var len = arr.length;
+    for (var i = 0; i < len; i = i + 1) {
+        sum = sum + arr👉i👈;
+    }
+    return sum;
+}
+
+// Test
+var arraySize = 1000;
+var iterations = 100;
+
+print "Array iteration benchmark (size=";
+print arraySize;
+print ", iterations=";
+print iterations;
+print ")";
+
+var testArray = createArray(arraySize);
+
+// Test for-of
+var start1 = clock();
+for (var i = 0; i < iterations; i = i + 1) {
+    sumArrayForOf(testArray);
+}
+var duration1 = clock() - start1;
+
+// Test for-in
+var start2 = clock();
+for (var i = 0; i < iterations; i = i + 1) {
+    sumArrayForIn(testArray);
+}
+var duration2 = clock() - start2;
+
+// Test manual indexing
+var start3 = clock();
+for (var i = 0; i < iterations; i = i + 1) {
+    sumArrayManual(testArray);
+}
+var duration3 = clock() - start3;
+
+print "";
+print "for-of duration: ";
+print duration1;
+print "for-in duration: ";
+print duration2;
+print "Manual indexing duration: ";
+print duration3;
+print "";
+print "for-of vs manual: ";
+print duration1 / duration3;
+print "x slower";

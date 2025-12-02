@@ -1,0 +1,32 @@
+Warning: Option 'engine.TraceInlining' is deprecated and might be removed from future versions.
+The option engine.TraceInlining is now deprecated. Please use the new option name 'compiler.TraceInlining' instead to resolve this.
+[To redirect Truffle log output to a file use one of the following options:
+* '--log.file=<path>' if the option is passed using a guest language launcher.
+* '-Dpolyglot.log.file=<path>' if the option is passed using the host Java launcher.
+* Configure logging using the polyglot embedding API.]
+[engine] WARNING: Option 'engine.TraceInlining' is deprecated: The option engine.TraceInlining is now deprecated. Please use the new option name 'compiler.TraceInlining' instead to resolve this.. Please update the option or suppress this warning using the option 'engine.WarnOptionDeprecation=false'.
+load benchmark: permute.lox
+Starting permute benchmark ...
+[engine] Inline start root permute                                                |Recursion Depth      0|Explore/inline ratio     1.00|IR Nodes   1048|Graph Size     -1|Frequency     1.00|Truffle Callees      0|Forced false|Depth      0
+[engine] Cutoff         root swap                                                 |Recursion Depth      0|Explore/inline ratio      NaN|IR Nodes      0|Graph Size      0|Frequency     0.97|Truffle Callees      0|Forced false|Depth      1
+[engine] Cutoff         root permute                                              |Recursion Depth      1|Explore/inline ratio      NaN|IR Nodes      0|Graph Size      0|Frequency     0.97|Truffle Callees      0|Forced false|Depth      1
+[engine] Cutoff         root swap                                                 |Recursion Depth      0|Explore/inline ratio      NaN|IR Nodes      0|Graph Size      0|Frequency     0.97|Truffle Callees      0|Forced false|Depth      1
+[engine] Inline done  root permute                                                |Recursion Depth      0|Explore/inline ratio     1.00|IR Nodes   1048|Graph Size     -1|Frequency     1.00|Truffle Callees      0|Forced false|Depth      0
+[engine] Inline start root permute                                                |Recursion Depth      0|Explore/inline ratio     1.00|IR Nodes   1048|Graph Size     -1|Frequency     1.00|Truffle Callees      0|Forced false|Depth      0
+[engine] Cutoff         root swap                                                 |Recursion Depth      0|Explore/inline ratio      NaN|IR Nodes      0|Graph Size      0|Frequency     0.99|Truffle Callees      0|Forced false|Depth      1
+[engine] Cutoff         root permute                                              |Recursion Depth      1|Explore/inline ratio      NaN|IR Nodes      0|Graph Size      0|Frequency     0.99|Truffle Callees      0|Forced false|Depth      1
+[engine] Cutoff         root swap                                                 |Recursion Depth      0|Explore/inline ratio      NaN|IR Nodes      0|Graph Size      0|Frequency     0.99|Truffle Callees      0|Forced false|Depth      1
+[engine] Inline done  root permute                                                |Recursion Depth      0|Explore/inline ratio     1.00|IR Nodes   1048|Graph Size     -1|Frequency     1.00|Truffle Callees      0|Forced false|Depth      0
+permute: innerIterations=6 runtime: 163175us
+permute: innerIterations=6 runtime: 36943us
+permute: innerIterations=6 runtime: 38774us
+permute: innerIterations=6 runtime: 44434us
+permute: innerIterations=6 runtime: 9351us
+permute: innerIterations=6 runtime: 7651us
+permute: innerIterations=6 runtime: 7880us
+permute: innerIterations=6 runtime: 6204us
+permute: innerIterations=6 runtime: 6223us
+permute: innerIterations=6 runtime: 7678us
+permute: iterations=10 average: 32831.3us total: 328313us
+
+Total Runtime: 328313us

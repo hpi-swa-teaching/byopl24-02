@@ -1,0 +1,32 @@
+Array iteration benchmark (size=
+1000
+, iterations=
+100
+)
+
+for-of duration: 
+0.006738666910678148
+for-in duration: 
+0.007482041139155626
+Manual indexing duration: 
+0.04706095810979605
+
+for-of vs manual: 
+0.1431901767693814
+x slower
+--------------------------------------------------------------------------------------------------------------------------------------
+Sampling Histogram. Recorded 9 samples with period 10ms. Missed 7 samples.
+  Self Time: Time spent on the top of the stack.
+  Total Time: Time spent somewhere on the stack.
+  T0: Percent of time spent in interpreter.
+  T1: Percent of time spent in code compiled by tier 1 compiler.
+--------------------------------------------------------------------------------------------------------------------------------------
+Thread[#1,main,5,main]
+ Name           ||             Total Time    |   T0   |   T1   ||              Self Time    |   T0   |   T1   || Location             
+--------------------------------------------------------------------------------------------------------------------------------------
+ sumArrayManual ||               50ms  55.6% |  80.0% |  20.0% ||               50ms  55.6% |  80.0% |  20.0% || array_iteration_test.lox~25-34:463-624
+ createArray    ||               30ms  33.3% | 100.0% |   0.0% ||               30ms  33.3% | 100.0% |   0.0% || array_iteration_test.lox~4-9:86-217
+ sumArrayForIn  ||               10ms  11.1% | 100.0% |   0.0% ||               10ms  11.1% | 100.0% |   0.0% || array_iteration_test.lox~17-25:339-460
+ program        ||               90ms 100.0% | 100.0% |   0.0% ||                0ms   0.0% |   0.0% |   0.0% || array_iteration_test.lox~4-80:86-1525
+ program        ||               90ms 100.0% | 100.0% |   0.0% ||                0ms   0.0% |   0.0% |   0.0% || array_iteration_test.lox~1:0-36
+--------------------------------------------------------------------------------------------------------------------------------------

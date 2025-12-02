@@ -1,0 +1,50 @@
+{
+  "servers": {
+    // The "servers" section defines the MCP servers you want to use.
+    "mcp-graal-only-resources-v4": {
+      // v4
+      "command": "uv",
+      "args": ["--directory", "~/Projects/hpi-ma/mcp-graal-cli", "run", "mcp"],
+      "env": {
+        "WORKING_DIR": "${workspaceFolder}",
+        "EXECUTABLE_NAME": "lox",
+        "SERVER_PROFILE": "only-resources",
+        "RAG_CONFIG": "ollama_default"
+      }
+    },
+
+    "mcp-graal-resources-and-tools-v5": {
+      // v5
+      "command": "uv",
+      "args": ["--directory", "~/Projects/hpi-ma/mcp-graal-cli", "run", "mcp"],
+      "env": {
+        "WORKING_DIR": "${workspaceFolder}",
+        "EXECUTABLE_NAME": "lox",
+        "SERVER_PROFILE": "resources-and-tools",
+        "RAG_CONFIG": "ollama_default"
+      }
+    },
+    "mcp-graal-rag-v7": {
+      // v7
+      "command": "uv",
+      "args": ["--directory", "~/Projects/hpi-ma/mcp-graal-cli", "run", "mcp"],
+      "env": {
+        "WORKING_DIR": "${workspaceFolder}",
+        "EXECUTABLE_NAME": "lox",
+        "SERVER_PROFILE": "rag",
+        "RAG_CONFIG": "ollama_default"
+      }
+    },
+    "mcp-graal-subagent-v8": {
+      // v8
+      "command": "uv",
+      "args": ["--directory", "~/Projects/hpi-ma/mcp-graal-cli", "run", "mcp"],
+      "env": {
+        "WORKING_DIR": "${workspaceFolder}",
+        "EXECUTABLE_NAME": "lox",
+        "SERVER_PROFILE": "subagent",
+        "RAG_CONFIG": "ollama_default"
+      }
+    }
+  }
+}

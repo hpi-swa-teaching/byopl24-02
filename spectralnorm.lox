@@ -1,0 +1,85 @@
+load("benchmark.lox");
+
+class SpectralNorm 🤝 Benchmark {
+    A(i, j) {
+        var ij = i + j - 1;
+        return 1.0 / (ij * (ij - 1) * 0.5 + i);
+    }
+
+    Av(x, y, N) {
+        for (var i = 1; i <= N; i = i + 1) {
+            var a = 0;
+            for (var j = 1; j <= N; j = j + 1) {
+                a = a + x👉j - 1👈 * self.A(i, j);
+            }
+            y👉i - 1👈 = a;
+        }
+    }
+
+    Atv(x, y, N) {
+        for (var i = 1; i <= N; i = i + 1) {
+            var a = 0;
+            for (var j = 1; j <= N; j = j + 1) {
+                a = a + x👉j - 1👈 * self.A(j, i);
+            }
+            y👉i - 1👈 = a;
+        }
+    }
+
+    AtAv(x, y, t, N) {
+        self.Av(x, t, N);
+        self.Atv(t, y, N);
+    }
+
+    sqrt(x) {
+        var guess = x / 2;
+        var prev = 0;
+        var epsilon = 0.0000000001;
+
+        while ((guess - prev > epsilon) or (prev - guess > epsilon)) {
+            prev = guess;
+            guess = (guess + x / guess) / 2;
+        }
+
+        return guess;
+    }
+
+    benchmark() {
+        var N = 100;
+        var u = 👉👈;
+        var v = 👉👈;
+        var t = 👉👈;
+
+        for (var i = 0; i < N; i = i + 1) {
+            u👉i👈 = 1;
+        }
+
+        for (var i = 0; i < 10; i = i + 1) {
+            self.AtAv(u, v, t, N);
+            self.AtAv(v, u, t, N);
+        }
+
+        var vBv = 0;
+        var vv = 0;
+
+        for (var i = 0; i < N; i = i + 1) {
+            var ui = u👉i👈;
+            var vi = v👉i👈;
+            vBv = vBv + ui * vi;
+            vv = vv + vi * vi;
+        }
+
+        return self.sqrt(vBv / vv);
+    }
+
+    verifyResult(result) {
+        var expected = 1.274219991;
+        var diff = result - expected;
+        if (diff < 0) {
+            diff = 0 - diff;
+        }
+        return diff < 0.00001;
+    }
+}
+
+return SpectralNorm();

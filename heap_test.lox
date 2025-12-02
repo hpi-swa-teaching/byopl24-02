@@ -1,0 +1,12 @@
+// Minimal program - should show baseline heap
+print "Starting";
+
+// Do arithmetic that would create many LoxNumbers
+var sum = 0;
+for (var i = 0; i < 1000000; i = i + 1) {
+    sum = sum + i;  // Creates LoxNumber if boxing happens
+}
+
+print "Sum: ";
+print sum;
+print "Done";

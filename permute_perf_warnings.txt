@@ -1,0 +1,15 @@
+load benchmark: permute.lox
+Starting permute benchmark ...
+[To redirect Truffle log output to a file use one of the following options:
+* '--log.file=<path>' if the option is passed using a guest language launcher.
+* '-Dpolyglot.log.file=<path>' if the option is passed using the host Java launcher.
+* Configure logging using the polyglot embedding API.]
+[engine] opt done   engine=2  id=21    root swap                                          |Tier 1|Time    53(  48+5   )ms|AST    2|Inlined   0Y   0N|IR    326/   765|CodeSize    4172|Addr 0x000119a30800|UTC 2025-11-29T06:04:50.138|Src permute.lox:32 0xb29b129a
+[engine] opt done   engine=2  id=21    root swap                                          |Tier 2|Time    25(  21+4   )ms|AST    2|Inlined   0Y   0N|IR    254/   244|CodeSize    1480|Addr 0x000119a36100|UTC 2025-11-29T06:04:50.164|Src permute.lox:32 0xb29b129a
+[engine] opt done   engine=2  id=20    root permute                                       |Tier 1|Time    49(  38+11  )ms|AST    2|Inlined   0Y   3N|IR    674/  1634|CodeSize    8900|Addr 0x000119a38000|UTC 2025-11-29T06:04:50.201|Src permute.lox:20 0xb29b129a
+permute: innerIterations=6 runtime: 136781us
+permute: innerIterations=6 runtime: 1420us
+permute: innerIterations=6 runtime: 2031us
+permute: iterations=3 average: 46744us total: 140232us
+
+Total Runtime: 140232us

@@ -1,0 +1,12 @@
+var global = nil;
+
+fun makeArray() {
+    return 👉1, 2, 3👈;
+}
+
+for (var i = 0; i < 100; i = i + 1) {
+    global = makeArray();
+}
+
+print "Done - global should contain array";
+print global;

@@ -8,6 +8,7 @@ import com.oracle.truffle.api.TruffleLanguage.ContextReference;
 import com.oracle.truffle.api.TruffleLanguage.Env;
 import com.oracle.truffle.api.dsl.Bind;
 import com.oracle.truffle.api.nodes.Node;
+import com.oracle.truffle.api.object.DynamicObjectLibrary;
 import com.oracle.truffle.api.strings.TruffleString;
 
 import de.hpi.swa.lox.LoxLanguage;
@@ -28,9 +29,12 @@ public final class LoxContext {
         this.env = env;
         this.globalObject = new GlobalObject();
 
+        // Use uncached library for initialization (not on hot path)
+        DynamicObjectLibrary objectLibrary = DynamicObjectLibrary.getFactory().getUncached();
+
         // Load arguments into ARGV
         var ARGV = new LoxArray();
-        this.globalObject.set("ARGV", ARGV);
+        objectLibrary.put(this.globalObject, "ARGV", ARGV);
         var args = env.getApplicationArguments();
         for (int i = 0; i < args.length; i++) {
             ARGV.set(i, TruffleString.fromJavaStringUncached(args[i], TruffleString.Encoding.UTF_8));
@@ -38,7 +42,7 @@ public final class LoxContext {
 
         // Load builtins
         for (var e : builtins.entrySet()) {
-            this.globalObject.set(e.getKey(), new LoxFunction(e.getKey(), e.getValue(), null));
+            objectLibrary.put(this.globalObject, e.getKey(), new LoxFunction(e.getKey(), e.getValue(), null));
         }
     }
 

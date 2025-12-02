@@ -1,0 +1,13 @@
+Arithmetic benchmark:
+iterations=
+10000
+duration=
+0.09263354213908315
+----------------------------------------------------
+ Location Histogram with Allocation Counts. Recorded a total of 0 allocations.
+   Total Count: Number of allocations during the execution of this element.
+   Self Count: Number of allocations in this element alone (excluding sub calls). 
+----------------------------------------------------
+ Name |      Self Count |     Total Count | Location
+----------------------------------------------------
+----------------------------------------------------

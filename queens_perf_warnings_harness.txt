@@ -1,0 +1,19 @@
+load benchmark: queens.lox
+Starting queens benchmark ...
+[To redirect Truffle log output to a file use one of the following options:
+* '--log.file=<path>' if the option is passed using a guest language launcher.
+* '-Dpolyglot.log.file=<path>' if the option is passed using the host Java launcher.
+* Configure logging using the polyglot embedding API.]
+[engine] opt done   engine=2  id=22    root getRowColumn                                  |Tier 1|Time    63(  57+6   )ms|AST    2|Inlined   0Y   0N|IR    608/  1098|CodeSize    4812|Addr 0x00011901a9c0|UTC 2025-11-29T06:04:36.884|Src queens.lox:1 0xa6844845
+[engine] opt done   engine=2  id=23    root setRowColumn                                  |Tier 1|Time    56(  50+6   )ms|AST    2|Inlined   0Y   0N|IR    266/   768|CodeSize    4224|Addr 0x000119018f80|UTC 2025-11-29T06:04:36.884|Src queens.lox:52 0xa6844845
+[engine] opt done   engine=2  id=23    root setRowColumn                                  |Tier 2|Time    15(  11+4   )ms|AST    2|Inlined   0Y   0N|IR    195/   316|CodeSize    1880|Addr 0x000119023780|UTC 2025-11-29T06:04:36.906|Src queens.lox:52 0xa6844845
+[engine] opt done   engine=2  id=21    root placeQueen                                    |Tier 1|Time   102(  89+13  )ms|AST    2|Inlined   0Y   4N|IR    855/  1909|CodeSize   10740|Addr 0x000119025400|UTC 2025-11-29T06:04:36.911|Src queens.lox:1 0xa6844845
+[engine] opt done   engine=2  id=22    root getRowColumn                                  |Tier 2|Time    16(   9+7   )ms|AST    2|Inlined   0Y   0N|IR    536/   504|CodeSize    2420|Addr 0x000119029a00|UTC 2025-11-29T06:04:36.923|Src queens.lox:1 0xa6844845
+queens: innerIterations=8 runtime: 140218us
+[engine] opt done   engine=2  id=19    root benchmark                                     |Tier 1|Time    20(  16+4   )ms|AST    2|Inlined   0Y   1N|IR    355/   666|CodeSize    3156|Addr 0x00011902b0c0|UTC 2025-11-29T06:04:36.943|Src queens.lox:1 0xa6844845
+[engine] opt done   engine=2  id=20    root queens                                        |Tier 1|Time    54(  34+20  )ms|AST    2|Inlined   0Y   1N|IR    924/  2688|CodeSize   14356|Addr 0x00011902d100|UTC 2025-11-29T06:04:36.946|Src queens.lox:1 0xa6844845
+queens: innerIterations=8 runtime: 16368us
+queens: innerIterations=8 runtime: 6231us
+queens: iterations=3 average: 54272.333333333336us total: 162817us
+
+Total Runtime: 162817us

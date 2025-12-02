@@ -1,0 +1,43 @@
+// Test global variable access overhead
+// Every access goes through @TruffleBoundary
+
+var globalCounter = 0;
+var globalSum = 0;
+
+fun useGlobals(n) {
+    for (var i = 0; i < n; i = i + 1) {
+        globalCounter = globalCounter + 1;
+        globalSum = globalSum + i;
+    }
+}
+
+fun useLocals(n) {
+    var localCounter = 0;
+    var localSum = 0;
+    for (var i = 0; i < n; i = i + 1) {
+        localCounter = localCounter + 1;
+        localSum = localSum + i;
+    }
+    return localSum;
+}
+
+var iterations = 1000;
+
+var start1 = clock();
+for (var i = 0; i < iterations; i = i + 1) {
+    useGlobals(100);
+}
+var duration1 = clock() - start1;
+
+var start2 = clock();
+for (var i = 0; i < iterations; i = i + 1) {
+    useLocals(100);
+}
+var duration2 = clock() - start2;
+
+print "Global access duration: ";
+print duration1;
+print "Local access duration: ";
+print duration2;
+print "Slowdown factor: ";
+print duration1 / duration2;

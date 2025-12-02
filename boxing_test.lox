@@ -1,0 +1,23 @@
+// Test LoxNumber boxing overhead
+// Heavy arithmetic should reveal allocation pressure
+
+fun arithmetic(n) {
+    var sum = 0;
+    for (var i = 0; i < n; i = i + 1) {
+        sum = sum + i * 2 - 1;
+    }
+    return sum;
+}
+
+var start = clock();
+var iterations = 10000;
+for (var i = 0; i < iterations; i = i + 1) {
+    arithmetic(100);
+}
+var duration = clock() - start;
+
+print "Arithmetic benchmark:";
+print "iterations=";
+print iterations;
+print "duration=";
+print duration;

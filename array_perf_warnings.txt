@@ -1,0 +1,53 @@
+Array iteration benchmark (size=
+1000
+, iterations=
+100
+)
+[To redirect Truffle log output to a file use one of the following options:
+* '--log.file=<path>' if the option is passed using a guest language launcher.
+* '-Dpolyglot.log.file=<path>' if the option is passed using the host Java launcher.
+* Configure logging using the polyglot embedding API.]
+[engine] perf warn    root sumArrayForIn                                          |Partial evaluation could not inline the virtual runtime call Interface to HotSpotMethod<ListIterator.hasNext()> (132|MethodCallTarget).
+  Approximated stack trace for [132|MethodCallTarget] (append --vm.XX:+UnlockDiagnosticVMOptions --vm.XX:+DebugNonSafepoints for more precise approximation):
+    at de.hpi.swa.lox.bytecode.LoxBytecodeRootNode$LoxArrayHasNext.hasNext(LoxBytecodeRootNode.java:482)
+    at de.hpi.swa.lox.bytecode.LoxBytecodeRootNodeGen$LoxArrayHasNext_Node.execute(LoxBytecodeRootNodeGen.java:17221)
+    at de.hpi.swa.lox.bytecode.LoxBytecodeRootNodeGen$CachedBytecodeNode.doLoxArrayHasNext_(LoxBytecodeRootNodeGen.java:5233)
+    at de.hpi.swa.lox.bytecode.LoxBytecodeRootNodeGen$CachedBytecodeNode.continueAt(LoxBytecodeRootNodeGen.java:4371)
+    at de.hpi.swa.lox.bytecode.LoxBytecodeRootNodeGen.continueAt(LoxBytecodeRootNodeGen.java:750)
+    at de.hpi.swa.lox.bytecode.LoxBytecodeRootNodeGen.execute(LoxBytecodeRootNodeGen.java:743)
+    at com.oracle.truffle.runtime.OptimizedCallTarget.executeRootNode(OptimizedCallTarget.java:818)
+    at com.oracle.truffle.runtime.OptimizedCallTarget.profiledPERoot(OptimizedCallTarget.java:742)
+[engine] perf warn    root sumArrayForOf                                          |Partial evaluation could not inline the virtual runtime call Interface to HotSpotMethod<ListIterator.hasNext()> (134|MethodCallTarget).
+  Approximated stack trace for [134|MethodCallTarget] (append --vm.XX:+UnlockDiagnosticVMOptions --vm.XX:+DebugNonSafepoints for more precise approximation):
+    at de.hpi.swa.lox.bytecode.LoxBytecodeRootNode$LoxArrayHasNext.hasNext(LoxBytecodeRootNode.java:482)
+    at de.hpi.swa.lox.bytecode.LoxBytecodeRootNodeGen$LoxArrayHasNext_Node.execute(LoxBytecodeRootNodeGen.java:17221)
+    at de.hpi.swa.lox.bytecode.LoxBytecodeRootNodeGen$CachedBytecodeNode.doLoxArrayHasNext_(LoxBytecodeRootNodeGen.java:5233)
+    at de.hpi.swa.lox.bytecode.LoxBytecodeRootNodeGen$CachedBytecodeNode.continueAt(LoxBytecodeRootNodeGen.java:4371)
+    at de.hpi.swa.lox.bytecode.LoxBytecodeRootNodeGen.continueAt(LoxBytecodeRootNodeGen.java:750)
+    at de.hpi.swa.lox.bytecode.LoxBytecodeRootNodeGen.execute(LoxBytecodeRootNodeGen.java:743)
+    at com.oracle.truffle.runtime.OptimizedCallTarget.executeRootNode(OptimizedCallTarget.java:818)
+    at com.oracle.truffle.runtime.OptimizedCallTarget.profiledPERoot(OptimizedCallTarget.java:742)
+[engine] perf warn    root sumArrayForOf                                          |Partial evaluation could not inline the virtual runtime call Interface to HotSpotMethod<ListIterator.next()> (171|MethodCallTarget).
+  Approximated stack trace for [171|MethodCallTarget] (append --vm.XX:+UnlockDiagnosticVMOptions --vm.XX:+DebugNonSafepoints for more precise approximation):
+    at de.hpi.swa.lox.bytecode.LoxBytecodeRootNode$LoxArrayGetNext.getNext(LoxBytecodeRootNode.java:500)
+    at de.hpi.swa.lox.bytecode.LoxBytecodeRootNodeGen$LoxArrayGetNext_Node.execute(LoxBytecodeRootNodeGen.java:17302)
+    at de.hpi.swa.lox.bytecode.LoxBytecodeRootNodeGen$CachedBytecodeNode.doLoxArrayGetNext_(LoxBytecodeRootNodeGen.java:5239)
+    at de.hpi.swa.lox.bytecode.LoxBytecodeRootNodeGen$CachedBytecodeNode.continueAt(LoxBytecodeRootNodeGen.java:4377)
+    at de.hpi.swa.lox.bytecode.LoxBytecodeRootNodeGen.continueAt(LoxBytecodeRootNodeGen.java:750)
+    at de.hpi.swa.lox.bytecode.LoxBytecodeRootNodeGen.execute(LoxBytecodeRootNodeGen.java:743)
+    at com.oracle.truffle.runtime.OptimizedCallTarget.executeRootNode(OptimizedCallTarget.java:818)
+    at com.oracle.truffle.runtime.OptimizedCallTarget.profiledPERoot(OptimizedCallTarget.java:742)
+[engine] opt done   engine=2  id=8     root sumArrayForIn                                 |Tier 1|Time    29(  27+2   )ms|AST    2|Inlined   0Y   0N|IR    153/   201|CodeSize     956|Addr 0x00011a910cc0|UTC 2025-11-29T06:04:59.841|Src array_iteration_test.lox:17 0xef3725eb
+[engine] opt done   engine=2  id=7     root sumArrayForOf                                 |Tier 1|Time    43(  39+3   )ms|AST    2|Inlined   0Y   0N|IR    278/   508|CodeSize    2376|Addr 0x00011a911800|UTC 2025-11-29T06:04:59.841|Src array_iteration_test.lox:9 0xef3725eb
+[engine] opt done   engine=2  id=9     root sumArrayManual                                |Tier 1|Time    32(  28+4   )ms|AST    2|Inlined   0Y   0N|IR    308/   640|CodeSize    2168|Addr 0x00011a914140|UTC 2025-11-29T06:04:59.846|Src array_iteration_test.lox:25 0xef3725eb
+
+for-of duration: 
+0.015094999922439456
+for-in duration: 
+0.0033251249697059393
+Manual indexing duration: 
+0.04958041710779071
+
+for-of vs manual: 
+0.30445487962761686
+x slower

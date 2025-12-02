@@ -1,0 +1,67 @@
+load("benchmark.lox");
+
+class TreeNode {
+    init(left, right) {
+        self.left = left;
+        self.right = right;
+    }
+}
+
+class BinaryTrees 🤝 Benchmark {
+    bottomUpTree(depth) {
+        if (depth > 0) {
+            var d = depth - 1;
+            var left = self.bottomUpTree(d);
+            var right = self.bottomUpTree(d);
+            return TreeNode(left, right);
+        } {
+            return TreeNode(nil, nil);
+        }
+    }
+
+    itemCheck(tree) {
+        if (tree.left == nil) {
+            return 1;
+        }
+        return 1 + self.itemCheck(tree.left) + self.itemCheck(tree.right);
+    }
+
+    benchmark() {
+        var n = 10;
+        var minDepth = 4;
+        var maxDepth = minDepth + 2;
+        if (maxDepth < n) {
+            maxDepth = n;
+        }
+
+        var stretchDepth = maxDepth + 1;
+        var stretchTree = self.bottomUpTree(stretchDepth);
+        var stretchCheck = self.itemCheck(stretchTree);
+
+        var longLivedTree = self.bottomUpTree(maxDepth);
+
+        var depth = minDepth;
+        while (depth <= maxDepth) {
+            var iterations = 1;
+            var temp = maxDepth - depth + minDepth;
+            for (var i = 0; i < temp; i = i + 1) {
+                iterations = iterations * 2;
+            }
+
+            var check = 0;
+            for (var i = 1; i <= iterations; i = i + 1) {
+                check = check + self.itemCheck(self.bottomUpTree(depth));
+            }
+
+            depth = depth + 2;
+        }
+
+        return self.itemCheck(longLivedTree);
+    }
+
+    verifyResult(result) {
+        return result == 2047;
+    }
+}
+
+return BinaryTrees();

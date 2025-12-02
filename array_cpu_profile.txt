@@ -1,0 +1,21 @@
+Array iteration benchmark (size=
+1000
+, iterations=
+100
+)
+
+for-of duration: 
+0.006938959006220102
+for-in duration: 
+0.006057292222976685
+Manual indexing duration: 
+0.04392641596496105
+
+for-of vs manual: 
+0.15796779349708676
+x slower
+----------------------------------------------------------------------------------------------
+Sampling Histogram. Recorded 0 samples with period 10ms. Missed 0 samples.
+  Self Time: Time spent on the top of the stack.
+  Total Time: Time spent somewhere on the stack.
+----------------------------------------------------------------------------------------------

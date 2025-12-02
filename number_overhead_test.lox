@@ -1,0 +1,32 @@
+// Test if LoxNumber wrapper causes measurable overhead
+// Compare arithmetic-heavy code
+
+fun heavyArithmetic(n) {
+    var sum = 0;
+    var product = 1;
+    for (var i = 1; i < n; i = i + 1) {
+        sum = sum + i;
+        product = product * 2;
+        sum = sum - 1;
+        sum = sum + product;
+        product = product / 2;
+    }
+    return sum;
+}
+
+var iterations = 10000;
+var n = 100;
+
+var start = clock();
+for (var i = 0; i < iterations; i = i + 1) {
+    heavyArithmetic(n);
+}
+var duration = clock() - start;
+
+print "Heavy arithmetic test";
+print "Operations per call: ~500 (5 ops × 100 iterations)";
+print "Total operations: ~5,000,000";
+print "Duration: ";
+print duration;
+print "Time per operation (ns): ";
+print (duration * 1000000000) / 5000000;

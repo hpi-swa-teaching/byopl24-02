@@ -1,0 +1,84 @@
+load benchmark: permute.lox
+Starting permute benchmark ...
+permute: innerIterations=6 runtime: 119849us
+permute: innerIterations=6 runtime: 2552us
+permute: innerIterations=6 runtime: 2381us
+permute: innerIterations=6 runtime: 2432us
+permute: innerIterations=6 runtime: 3218us
+permute: innerIterations=6 runtime: 2334us
+permute: innerIterations=6 runtime: 2005us
+permute: innerIterations=6 runtime: 2993us
+permute: innerIterations=6 runtime: 2060us
+permute: innerIterations=6 runtime: 1357us
+permute: innerIterations=6 runtime: 1689us
+permute: innerIterations=6 runtime: 1743us
+permute: innerIterations=6 runtime: 3153us
+permute: innerIterations=6 runtime: 3508us
+permute: innerIterations=6 runtime: 1295us
+permute: innerIterations=6 runtime: 1834us
+permute: innerIterations=6 runtime: 1705us
+permute: innerIterations=6 runtime: 2670us
+permute: innerIterations=6 runtime: 2301us
+permute: innerIterations=6 runtime: 1107us
+permute: innerIterations=6 runtime: 1151us
+permute: innerIterations=6 runtime: 1181us
+permute: innerIterations=6 runtime: 1110us
+permute: innerIterations=6 runtime: 1122us
+permute: innerIterations=6 runtime: 2289us
+permute: innerIterations=6 runtime: 2592us
+permute: innerIterations=6 runtime: 2406us
+permute: innerIterations=6 runtime: 2340us
+permute: innerIterations=6 runtime: 2356us
+permute: innerIterations=6 runtime: 2256us
+permute: innerIterations=6 runtime: 3665us
+permute: innerIterations=6 runtime: 1219us
+permute: innerIterations=6 runtime: 1192us
+permute: innerIterations=6 runtime: 1045us
+permute: innerIterations=6 runtime: 580us
+permute: innerIterations=6 runtime: 578us
+permute: innerIterations=6 runtime: 1700us
+permute: innerIterations=6 runtime: 1352us
+permute: innerIterations=6 runtime: 1957us
+permute: innerIterations=6 runtime: 1396us
+permute: innerIterations=6 runtime: 1427us
+permute: innerIterations=6 runtime: 703us
+permute: innerIterations=6 runtime: 1515us
+permute: innerIterations=6 runtime: 1167us
+permute: innerIterations=6 runtime: 1145us
+permute: innerIterations=6 runtime: 1681us
+permute: innerIterations=6 runtime: 1128us
+permute: innerIterations=6 runtime: 1415us
+permute: innerIterations=6 runtime: 1317us
+permute: innerIterations=6 runtime: 2183us
+permute: iterations=50 average: 4187.08us total: 209354us
+
+Total Runtime: 209354us
+------------------------------------------------------------------------------------------------------------------------------------------------------------
+Sampling Histogram. Recorded 27 samples with period 10ms. Missed 8 samples.
+  Self Time: Time spent on the top of the stack.
+  Total Time: Time spent somewhere on the stack.
+  T0: Percent of time spent in interpreter.
+  T1: Percent of time spent in code compiled by tier 1 compiler.
+  T2: Percent of time spent in code compiled by tier 2 compiler.
+------------------------------------------------------------------------------------------------------------------------------------------------------------
+Thread[#1,main,5,main]
+ Name               ||             Total Time    |   T0   |   T1   |   T2   ||              Self Time    |   T0   |   T1   |   T2   || Location             
+------------------------------------------------------------------------------------------------------------------------------------------------------------
+ swap               ||              170ms  63.0% |  35.3% |  17.6% |  47.1% ||              170ms  63.0% |  35.3% |  17.6% |  47.1% || permute.lox~32-36:737-839
+ printResult        ||               40ms  14.8% | 100.0% |   0.0% |   0.0% ||               40ms  14.8% | 100.0% |   0.0% |   0.0% || run.lox~21-23:559-705
+ program            ||               10ms   3.7% | 100.0% |   0.0% |   0.0% ||               10ms   3.7% | 100.0% |   0.0% |   0.0% || run.lox~1-52:0-1471
+ permute            ||              180ms  66.7% |  66.7% |  33.3% |   0.0% ||               10ms   3.7% | 100.0% |   0.0% |   0.0% || permute.lox~20-31:444-731
+ benchmark          ||              190ms  70.4% |  78.9% |  21.1% |   0.0% ||               10ms   3.7% | 100.0% |   0.0% |   0.0% || permute.lox~1-39:0-859
+ program            ||               10ms   3.7% | 100.0% |   0.0% |   0.0% ||               10ms   3.7% | 100.0% |   0.0% |   0.0% || benchmark.lox~1-16:0-313
+ init               ||               10ms   3.7% | 100.0% |   0.0% |   0.0% ||               10ms   3.7% | 100.0% |   0.0% |   0.0% || benchmark.lox~11:260-268
+ printTotal         ||               10ms   3.7% | 100.0% |   0.0% |   0.0% ||               10ms   3.7% | 100.0% |   0.0% |   0.0% || run.lox~42-44:1211-1291
+ runBenchmark       ||              230ms  85.2% | 100.0% |   0.0% |   0.0% ||                0ms   0.0% |   0.0% |   0.0% |   0.0% || run.lox~46-51:1298-1469
+ doRuns             ||              230ms  85.2% | 100.0% |   0.0% |   0.0% ||                0ms   0.0% |   0.0% |   0.0% |   0.0% || run.lox~36-40:1080-1204
+ innerBenchmarkLoop ||              190ms  70.4% |  73.7% |  26.3% |   0.0% ||                0ms   0.0% |   0.0% |   0.0% |   0.0% || benchmark.lox~1-16:0-313
+ init               ||               10ms   3.7% | 100.0% |   0.0% |   0.0% ||                0ms   0.0% |   0.0% |   0.0% |   0.0% || permute.lox~3-8:55-156
+ init               ||               20ms   7.4% | 100.0% |   0.0% |   0.0% ||                0ms   0.0% |   0.0% |   0.0% |   0.0% || run.lox~2-8:16-201
+ processArguments   ||               20ms   7.4% | 100.0% |   0.0% |   0.0% ||                0ms   0.0% |   0.0% |   0.0% |   0.0% || harness.lox~2-10:17-260
+ program            ||              270ms 100.0% | 100.0% |   0.0% |   0.0% ||                0ms   0.0% |   0.0% |   0.0% |   0.0% || harness.lox~1:0-23
+ loadBenchmark      ||               20ms   7.4% | 100.0% |   0.0% |   0.0% ||                0ms   0.0% |   0.0% |   0.0% |   0.0% || run.lox~1-52:0-1471
+ measure            ||              230ms  85.2% |  87.0% |  13.0% |   0.0% ||                0ms   0.0% |   0.0% |   0.0% |   0.0% || run.lox~1-52:0-1471
+------------------------------------------------------------------------------------------------------------------------------------------------------------

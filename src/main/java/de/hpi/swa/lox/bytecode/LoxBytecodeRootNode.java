@@ -283,12 +283,13 @@ public abstract class LoxBytecodeRootNode extends LoxRootNode implements Bytecod
         }
     }
 
-    @TruffleBoundary
-    static Object checkDeclared(String variableName, GlobalObject globalObject, @Bind Node node) {
-        if (!globalObject.hasKey(variableName)) {
+    static Object checkDeclared(String variableName, GlobalObject globalObject,
+            @Bind Node node,
+            DynamicObjectLibrary objectLibrary) {
+        if (!objectLibrary.containsKey(globalObject, variableName)) {
             throw new LoxRuntimeError("Variable " + variableName + " was not declared", node);
         }
-        return globalObject.get(variableName);
+        return objectLibrary.getOrDefault(globalObject, variableName, Nil.INSTANCE);
     }
 
     @Operation
@@ -298,10 +299,11 @@ public abstract class LoxBytecodeRootNode extends LoxRootNode implements Bytecod
         static void doDefault(String variableName,
                 Object value,
                 @Bind LoxContext loxContext,
-                @Bind Node node) {
+                @Bind Node node,
+                @CachedLibrary(limit = "3") DynamicObjectLibrary objectLibrary) {
             GlobalObject globalObject = loxContext.getGlobalObject();
-            checkDeclared(variableName, globalObject, node);
-            globalObject.set(variableName, value);
+            checkDeclared(variableName, globalObject, node, objectLibrary);
+            objectLibrary.put(globalObject, variableName, value);
         }
     }
 
@@ -312,11 +314,12 @@ public abstract class LoxBytecodeRootNode extends LoxRootNode implements Bytecod
         static Object doDefault(
                 String variableName,
                 @Bind LoxContext loxContext,
-                @Bind Node node) {
+                @Bind Node node,
+                @CachedLibrary(limit = "3") DynamicObjectLibrary objectLibrary) {
             GlobalObject globalObject = loxContext.getGlobalObject();
             // if not declared --> RuntimeError thrown
-            var declaredResult = checkDeclared(variableName, globalObject, node);
-            if (declaredResult == null) {
+            var declaredResult = checkDeclared(variableName, globalObject, node, objectLibrary);
+            if (declaredResult == Nil.INSTANCE) {
                 // if not defined --> also RuntimeError
                 throw createNotDefinedError(variableName, node);
             }
@@ -335,12 +338,14 @@ public abstract class LoxBytecodeRootNode extends LoxRootNode implements Bytecod
         @Specialization
         static void doDefault(String variableName,
                 @Bind LoxContext loxContext,
-                @Bind Node node) {
+                @Bind Node node,
+                @CachedLibrary(limit = "3") DynamicObjectLibrary objectLibrary) {
             GlobalObject globalObject = loxContext.getGlobalObject();
-            if (globalObject.get(variableName) != null) {
+            Object existing = objectLibrary.getOrDefault(globalObject, variableName, Nil.INSTANCE);
+            if (existing != Nil.INSTANCE) {
                 printWarning(variableName, loxContext);
             }
-            globalObject.set(variableName, null);
+            objectLibrary.put(globalObject, variableName, Nil.INSTANCE);
         }
 
         @TruffleBoundary

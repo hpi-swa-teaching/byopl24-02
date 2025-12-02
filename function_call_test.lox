@@ -1,0 +1,44 @@
+// Test function call overhead
+// createArguments is called on every function call with @TruffleBoundary
+
+fun simpleAdd(a, b) {
+    return a + b;
+}
+
+fun testFunctionCalls(n) {
+    var sum = 0;
+    for (var i = 0; i < n; i = i + 1) {
+        sum = sum + simpleAdd(i, 1);
+    }
+    return sum;
+}
+
+fun testInline(n) {
+    var sum = 0;
+    for (var i = 0; i < n; i = i + 1) {
+        sum = sum + (i + 1);
+    }
+    return sum;
+}
+
+var iterations = 1000;
+var n = 100;
+
+var start1 = clock();
+for (var i = 0; i < iterations; i = i + 1) {
+    testFunctionCalls(n);
+}
+var duration1 = clock() - start1;
+
+var start2 = clock();
+for (var i = 0; i < iterations; i = i + 1) {
+    testInline(n);
+}
+var duration2 = clock() - start2;
+
+print "Function calls duration: ";
+print duration1;
+print "Inline duration: ";
+print duration2;
+print "Overhead factor: ";
+print duration1 / duration2;

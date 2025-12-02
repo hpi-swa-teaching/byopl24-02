@@ -1,0 +1,20 @@
+load benchmark: permute.lox
+Starting permute benchmark ...
+permute: innerIterations=6 runtime: 123488us
+permute: innerIterations=6 runtime: 3241us
+permute: innerIterations=6 runtime: 1892us
+permute: innerIterations=6 runtime: 1564us
+permute: innerIterations=6 runtime: 2675us
+permute: innerIterations=6 runtime: 2020us
+permute: innerIterations=6 runtime: 3179us
+permute: innerIterations=6 runtime: 2299us
+permute: innerIterations=6 runtime: 2430us
+permute: innerIterations=6 runtime: 1349us
+permute: iterations=10 average: 14413.7us total: 144137us
+
+Total Runtime: 144137us
+----------------------------------------------------------------------------------------------
+Sampling Histogram. Recorded 0 samples with period 10ms. Missed 0 samples.
+  Self Time: Time spent on the top of the stack.
+  Total Time: Time spent somewhere on the stack.
+----------------------------------------------------------------------------------------------

@@ -1,0 +1,6 @@
+// Ultra-simple loop for compiler graph analysis
+var sum = 0.0;
+for (var i = 0.0; i < 1000.0; i = i + 1.0) {
+    sum = sum + i;
+}
+print sum;

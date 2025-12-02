@@ -1,0 +1,113 @@
+load("benchmark.lox");
+
+class Random {
+    init() {
+        self.seed = 74755;
+    }
+
+    floor(x) {
+        var r = round(x);
+        if (r > x) {
+            return r - 1;
+        } else {
+            return r;
+        }
+    }
+
+    mod(a, b) {
+        var result = a - self.floor(a / b) * b;
+        return result;
+    }
+
+    next() {
+        self.seed = self.mod((self.seed * 1309) + 13849, 65536);
+        return self.seed;
+    }
+}
+
+class Ball {
+    init(random) {
+        self.random = random;
+        self.x = random.mod(random.next(), 500);
+        self.y = random.mod(random.next(), 500);
+        self.x_vel = random.mod(random.next(), 300) - 150;
+        self.y_vel = random.mod(random.next(), 300) - 150;
+    }
+
+    bounce() {
+        var x_limit = 500;
+        var y_limit = 500;
+        var bounced = false;
+
+        self.x = self.x + self.x_vel;
+        self.y = self.y + self.y_vel;
+
+        if (self.x > x_limit) {
+            self.x = x_limit;
+            if (self.x_vel < 0) {
+                self.x_vel = self.x_vel;
+            } else {
+                self.x_vel = 0 - self.x_vel;
+            }
+            bounced = true;
+        }
+
+        if (self.x < 0) {
+            self.x = 0;
+            if (self.x_vel < 0) {
+                self.x_vel = 0 - self.x_vel;
+            }
+            bounced = true;
+        }
+
+        if (self.y > y_limit) {
+            self.y = y_limit;
+            if (self.y_vel < 0) {
+                self.y_vel = self.y_vel;
+            } else {
+                self.y_vel = 0 - self.y_vel;
+            }
+            bounced = true;
+        }
+
+        if (self.y < 0) {
+            self.y = 0;
+            if (self.y_vel < 0) {
+                self.y_vel = 0 - self.y_vel;
+            }
+            bounced = true;
+        }
+
+        return bounced;
+    }
+}
+
+class Bounce 🤝 Benchmark {
+    benchmark() {
+        var random = Random();
+        var ball_count = 100;
+        var bounces = 0;
+        var balls = 👉👈;
+
+        for (var i = 0; i < ball_count; i = i + 1) {
+            balls👉i👈 = Ball(random);
+        }
+
+        for (var i = 0; i < 50; i = i + 1) {
+            for (var j = 0; j < ball_count; j = j + 1) {
+                var ball = balls👉j👈;
+                if (ball.bounce()) {
+                    bounces = bounces + 1;
+                }
+            }
+        }
+
+        return bounces;
+    }
+
+    verifyResult(result) {
+        return 1331 == result;
+    }
+}
+
+return Bounce();

@@ -1,0 +1,11 @@
+// Force LoxNumber to escape by storing in array
+var numbers = 👉👈;
+
+for (var i = 0; i < 10000; i = i + 1) {
+    var n = i + 1;  // Creates LoxNumber
+    numbers👉i👈 = n;  // Store it - MUST allocate!
+}
+
+print "Created array with ";
+print numbers.length;
+print " numbers";

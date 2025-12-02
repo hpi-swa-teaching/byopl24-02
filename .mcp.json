@@ -1,0 +1,71 @@
+{
+  "mcpServers": {
+    "context7": {
+      "url": "https://mcp.context7.com/mcp",
+      "type": "http",
+      "headers": {
+        "CONTEXT7_API_KEY": "ctx7sk-512cf0eb-23e4-488f-98b5-84096f7260f1"
+      }
+    },
+    "mcp-graal-only-resources-v4": {
+      "type": "stdio",
+      "command": "/Users/antonykamp/.local/bin/uv",
+      "args": [
+        "--directory",
+        "/Users/antonykamp/Projects/hpi-ma/mcp-graal-cli",
+        "run",
+        "mcp"
+      ],
+      "env": {
+        "WORKING_DIR": "/Users/antonykamp/Projects/hpi-ma/byopl24-02",
+        "EXECUTABLE_NAME": "lox",
+        "SERVER_PROFILE": "only-resources"
+      }
+    },
+    "mcp-graal-resources-and-tools-v5": {
+      "type": "stdio",
+      "command": "/Users/antonykamp/.local/bin/uv",
+      "args": [
+        "--directory",
+        "/Users/antonykamp/Projects/hpi-ma/mcp-graal-cli",
+        "run",
+        "mcp"
+      ],
+      "env": {
+        "WORKING_DIR": "/Users/antonykamp/Projects/hpi-ma/byopl24-02",
+        "EXECUTABLE_NAME": "lox",
+        "SERVER_PROFILE": "resources-and-tools"
+      }
+    },
+    "mcp-graal-rag-v7": {
+      "type": "stdio",
+      "command": "/Users/antonykamp/.local/bin/uv",
+      "args": [
+        "--directory",
+        "/Users/antonykamp/Projects/hpi-ma/mcp-graal-cli",
+        "run",
+        "mcp"
+      ],
+      "env": {
+        "WORKING_DIR": "/Users/antonykamp/Projects/hpi-ma/byopl24-02",
+        "EXECUTABLE_NAME": "lox",
+        "SERVER_PROFILE": "rag"
+      }
+    },
+    "mcp-graal-subagent-v8": {
+      "type": "stdio",
+      "command": "/Users/antonykamp/.local/bin/uv",
+      "args": [
+        "--directory",
+        "/Users/antonykamp/Projects/hpi-ma/mcp-graal-cli",
+        "run",
+        "mcp"
+      ],
+      "env": {
+        "WORKING_DIR": "/Users/antonykamp/Projects/hpi-ma/byopl24-02",
+        "EXECUTABLE_NAME": "lox",
+        "SERVER_PROFILE": "subagent"
+      }
+    }
+  }
+}

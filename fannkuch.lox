@@ -1,0 +1,107 @@
+load("benchmark.lox");
+
+class Fannkuch 🤝 Benchmark {
+    fannkuchLoop(n) {
+        var p = 👉👈;
+        var q = 👉👈;
+        var s = 👉👈;
+
+        for (var i = 0; i < n; i = i + 1) {
+            p👉i👈 = i + 1;
+            q👉i👈 = i + 1;
+            s👉i👈 = i + 1;
+        }
+
+        var sign = 1;
+        var maxflips = 0;
+        var sum = 0;
+        var mainDone = false;
+
+        while (!mainDone) {
+            var q1 = p👉0👈;
+
+            if (q1 != 1) {
+                for (var i = 1; i < n; i = i + 1) {
+                    q👉i👈 = p👉i👈;
+                }
+
+                var flips = 1;
+                var flipDone = false;
+                while (!flipDone) {
+                    var qq = q👉q1 - 1👈;
+                    if (qq == 1) {
+                        sum = sum + sign * flips;
+                        if (flips > maxflips) {
+                            maxflips = flips;
+                        }
+                        flipDone = true;
+                    } else {
+                        q👉q1 - 1👈 = q1;
+                        if (q1 >= 4) {
+                            var i = 1;
+                            var j = q1 - 2;
+                            while (i < j) {
+                                var tmp = q👉i👈;
+                                q👉i👈 = q👉j👈;
+                                q👉j👈 = tmp;
+                                i = i + 1;
+                                j = j - 1;
+                            }
+                        }
+                        q1 = qq;
+                        flips = flips + 1;
+                    }
+                }
+            }
+
+            if (sign == 1) {
+                var tmp = p👉1👈;
+                p👉1👈 = p👉0👈;
+                p👉0👈 = tmp;
+                sign = -1;
+            } else {
+                var tmp = p👉2👈;
+                p👉2👈 = p👉1👈;
+                p👉1👈 = tmp;
+                sign = 1;
+
+                var i = 2;
+                while (i < n) {
+                    var sx = s👉i👈;
+                    if (sx != 1) {
+                        s👉i👈 = sx - 1;
+                        i = n;
+                    } else {
+                        if (i == n - 1) {
+                            mainDone = true;
+                            i = n;
+                        } else {
+                            s👉i👈 = i + 1;
+                            var t = p👉0👈;
+                            for (var j = 0; j <= i; j = j + 1) {
+                                var tmp = p👉j + 1👈;
+                                p👉j👈 = tmp;
+                            }
+                            p👉i + 1👈 = t;
+                            i = i + 1;
+                        }
+                    }
+                }
+            }
+        }
+
+        return 👉sum, maxflips👈;
+    }
+
+    benchmark() {
+        return self.fannkuchLoop(7);
+    }
+
+    verifyResult(result) {
+        var checksum = result👉0👈;
+        var maxFlips = result👉1👈;
+        return checksum == 228 and maxFlips == 16;
+    }
+}
+
+return Fannkuch();

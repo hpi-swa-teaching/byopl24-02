@@ -1,0 +1,48 @@
+load benchmark: permute.lox
+Starting permute benchmark ...
+permute: innerIterations=6 runtime: 118085us
+permute: innerIterations=6 runtime: 1112us
+permute: innerIterations=6 runtime: 1293us
+permute: innerIterations=6 runtime: 959us
+permute: innerIterations=6 runtime: 2672us
+permute: innerIterations=6 runtime: 2297us
+permute: innerIterations=6 runtime: 3260us
+permute: innerIterations=6 runtime: 2804us
+permute: innerIterations=6 runtime: 2103us
+permute: innerIterations=6 runtime: 2988us
+permute: innerIterations=6 runtime: 2451us
+permute: innerIterations=6 runtime: 1788us
+permute: innerIterations=6 runtime: 2326us
+permute: innerIterations=6 runtime: 2259us
+permute: innerIterations=6 runtime: 3482us
+permute: innerIterations=6 runtime: 1711us
+permute: innerIterations=6 runtime: 2152us
+permute: innerIterations=6 runtime: 835us
+permute: innerIterations=6 runtime: 877us
+permute: innerIterations=6 runtime: 1035us
+permute: innerIterations=6 runtime: 1053us
+permute: innerIterations=6 runtime: 1193us
+permute: innerIterations=6 runtime: 1808us
+permute: innerIterations=6 runtime: 1323us
+permute: innerIterations=6 runtime: 2426us
+permute: innerIterations=6 runtime: 2669us
+permute: innerIterations=6 runtime: 2464us
+permute: innerIterations=6 runtime: 2355us
+permute: innerIterations=6 runtime: 2450us
+permute: innerIterations=6 runtime: 1414us
+permute: iterations=30 average: 5854.8us total: 175644us
+
+Total Runtime: 175644us
+---------------------------------------------------------------------------------------------------
+Tracing Histogram. Counted a total of 1056879 element executions.
+  Total Count: Number of times the element was executed and percentage of total executions.
+  Interpreted Count: Number of times the element was interpreted and percentage of total executions of this element.
+  Compiled Count: Number of times the compiled element was executed and percentage of total executions of this element.
+---------------------------------------------------------------------------------------------------
+ Name               |          Total Count |    Interpreted Count |       Compiled Count | Location
+---------------------------------------------------------------------------------------------------
+ init               |       1056781 100.0% |          9495   0.9% |       1047286  99.1% | permute.lox~1-39:0-859
+ init               |            66   0.0% |            66 100.0% |             0   0.0% | run.lox~1-52:0-1471
+ init               |            31   0.0% |            12  38.7% |            19  61.3% | benchmark.lox~1-16:0-313
+ processArguments   |             1   0.0% |             1 100.0% |             0   0.0% | harness.lox~2-10:17-260
+---------------------------------------------------------------------------------------------------
