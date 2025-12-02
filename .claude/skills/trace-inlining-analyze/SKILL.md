@@ -43,25 +43,33 @@ Before running this skill, you should know:
 - Whether you have specific functions to focus on (reduces output volume)
 - Ideally, profiling results showing hot functions
 
-## Fermi Verification (MANDATORY)
+## Fermi Verification: The Sanity Gate (MANDATORY)
 
-**Context:** Tools often fail due to environment issues, permissions, or misconfiguration. To avoid hallucinating results, misinterpreting output, or wasting resources, you must follow this 4-step verification loop.
+**Principle:**  
+The Tool Output is the highest authority for *data*, but your Fermi Estimate is the highest authority for *pipeline integrity*.
 
-**Mitigation Strategy**: Fermi Verification Before accepting the tool's output, you must:
+**The Logic:**
+- **Small Deviation:** Tool works correctly. Update your mental model.
+- **Massive Deviation (>1 Order of Magnitude):** Tool is likely **malfunctioning** (silent failure, misconfiguration, or wrong target).
 
-1. Estimate: Look at the complexity of the code. Perform a "Fermi Calculation" to estimate the expected order of magnitude of inlining decisions (e.g., "This function has 5 callees, compiles 2x (T1 + T2) → expect ~10-20 inlining decisions").
-2. Probe: Run the tool on a trivial input (e.g., a minimal program) to ensure it produces output quickly and correctly.
-3. Execute: Run the tool on the real target.
-4. Compare: If the tool output deviates from your Fermi Estimate by more than one order of magnitude (or is zero):
-    - **STOP - The tool is broken or misconfigured**
-      - Do NOT theorize
-      - Test the tool itself first
-      - Assume tool is broken until proven otherwise
-      - Only after tool is verified, consider other explanations
-    - **Do NOT rationalize unexpected results** (e.g., "maybe optimizations eliminated everything")
-    - Prefer uncertainty over false certainty
-    - Explicitly ask "What would disprove my hypothesis?"
-    - Write down my estimate BEFORE running the tool
+**Protocol:**
+
+### Step 1: Pre-Calculation
+- In a scratchpad, estimate the expected output magnitude (e.g., "This function has 5 callees, compiles 2x (T1 + T2) → expect ~10-20 inlining decisions").
+- *Key:* You must write this down *before* generating the tool command.
+
+### Step 2: Smoke Test (The Probe)
+- Run on trivial input first to prove the tool *can* work.
+
+### Step 3: Execute & Validate
+- Run the actual command.
+- **Credibility Threshold Check:** Compare Output vs. Estimate.
+  - **Scenario A (Within 1 Order of Magnitude):** **ACCEPT.** The tool is the authority. Proceed with this result.
+  - **Scenario B (>1 Order of Magnitude Divergence OR Unexpected Zero):** **REJECT & DIAGNOSE.**
+    - **STOP.** Do not use this result for the next step.
+    - **Hypothesis:** The tool failed silently, the path is wrong, or permissions are denied.
+    - **Action:** Run a *Debug Command* (e.g., `ls -l target_file` to check size, or `echo $?` to check exit code) to prove the tool is healthy.
+    - *Only* after the tool's health is proven via a secondary check may you accept the divergent result.
 
 ## How the Skill Works
 
@@ -631,3 +639,15 @@ This skill:
 - Suggests budget tuning with conservative increments
 - Combines with profiling for data-driven optimization
 - Saves output to files for offline analysis
+- Combined with other performance analysis skills for full picture
+
+## Related Skills
+
+- Use Graal Truffle Docs skill to understand Truffle APIs and options
+- Use CPU Sampler Analyze skill for initial profiling to identify hot functions
+- Use Performance Warnings Analyze skill to find optimization barriers
+- Use Compilation Trace Analyze skill to see inlining and compilation decisions
+- Use CPU Tracer Analyze skill for execution frequency insights
+- Use Memory Tracer Analyze skill for allocation profiling
+- Use Trace Transfer to Interpreter Analyze skill for deoptimization insights
+- Use Benchmark Baseline skill for creating performance baselines with different benchmarks
