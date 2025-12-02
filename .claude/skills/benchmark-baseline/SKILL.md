@@ -38,6 +38,7 @@ This skill establishes performance baselines for any language implementation by:
 - Similar execution models
 - Similar complexity and feature sets
 - Similar runtime characteristics
+- Prefer GraalVM languages if applicable
 
 ### Phase 3: Benchmarks Game Discovery and Data Retrieval
 **Queries the Computer Language Benchmarks Game** to:
@@ -165,6 +166,7 @@ Optimization: [specific optimizations detected]
    - First: Same execution model (bytecode VM + JIT)
    - Second: Similar execution model (interpreted dynamic languages)
    - Third: Aspirational targets (same platform, e.g., other JVM languages)
+   - Focus on GraalVM Truffle languages if applicable
 
 2. **Match by type system**
    - Prioritize languages with same typing discipline
