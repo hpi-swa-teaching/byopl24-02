@@ -15,7 +15,6 @@ import com.oracle.truffle.api.object.DynamicObjectLibrary;
 import de.hpi.swa.lox.runtime.LoxRuntimeError;
 import de.hpi.swa.lox.runtime.data.LoxArray;
 import de.hpi.swa.lox.runtime.data.LoxClass;
-import de.hpi.swa.lox.runtime.data.LoxNumber;
 import de.hpi.swa.lox.runtime.data.LoxObject;
 import de.hpi.swa.lox.runtime.data.Nil;
 
@@ -26,7 +25,7 @@ public abstract class LoxReadPropertyNode extends Node {
     @Specialization
     public static Object read(String name, LoxArray array) {
         if (name.equals("length")) {
-            return new LoxNumber(array.getSize());
+            return (double) array.getSize();
         } else {
             return Nil.INSTANCE;
         }

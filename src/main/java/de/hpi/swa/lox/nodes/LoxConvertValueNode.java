@@ -12,23 +12,17 @@ import com.oracle.truffle.api.nodes.Node;
 import com.oracle.truffle.api.strings.TruffleString;
 
 import de.hpi.swa.lox.runtime.data.LoxArray;
-import de.hpi.swa.lox.runtime.data.LoxNumber;
 
 @GenerateUncached
 public abstract class LoxConvertValueNode extends Node {
     @Specialization
-    protected Object convert(Long object) {
-        return new LoxNumber(object);
+    protected double convertLong(Long object) {
+        return object.doubleValue();
     }
 
     @Specialization
-    protected Object convert(Double object) {
-        return new LoxNumber(object);
-    }
-
-    @Specialization
-    protected Object convert(LoxNumber object) {
-        return object;
+    protected double convertDouble(Double object) {
+        return object;  // Return primitive double
     }
 
     @Specialization
@@ -38,10 +32,10 @@ public abstract class LoxConvertValueNode extends Node {
             if (object instanceof Character c) {
                 return TruffleString.fromCodePointUncached(c,
                         TruffleString.Encoding.UTF_8);
-            } else if (interop.fitsInLong(object)) {
-                return new LoxNumber(interop.asLong(object));
             } else if (interop.fitsInDouble(object)) {
-                return new LoxNumber(interop.asDouble(object));
+                return interop.asDouble(object);  // Return primitive double
+            } else if (interop.fitsInLong(object)) {
+                return (double) interop.asLong(object);  // Convert to double
             } else if (interop.isString(object)) {
                 if (object instanceof TruffleString) {
                     return object;

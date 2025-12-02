@@ -44,7 +44,6 @@ import de.hpi.swa.lox.runtime.data.GlobalObject;
 import de.hpi.swa.lox.runtime.data.LoxArray;
 import de.hpi.swa.lox.runtime.data.LoxClass;
 import de.hpi.swa.lox.runtime.data.LoxFunction;
-import de.hpi.swa.lox.runtime.data.LoxNumber;
 import de.hpi.swa.lox.runtime.data.LoxObject;
 import de.hpi.swa.lox.runtime.data.Nil;
 
@@ -62,6 +61,26 @@ public abstract class LoxBytecodeRootNode extends LoxRootNode implements Bytecod
 
     @Operation
     public static final class LoxPrint {
+        @Specialization
+        @TruffleBoundary
+        static void doDouble(double value, @Bind LoxContext context) {
+            var out = context.getOutput();
+            try {
+                // Format double: omit ".0" for integer values
+                String formatted;
+                if (value == (long) value) {
+                    formatted = Long.toString((long) value);
+                } else {
+                    formatted = Double.toString(value);
+                }
+                out.write(formatted.getBytes());
+                out.write(System.lineSeparator().getBytes());
+                out.flush();
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        }
+
         @Specialization
         @TruffleBoundary
         static void doDefault(Object value, @Bind LoxContext context) {
@@ -87,15 +106,13 @@ public abstract class LoxBytecodeRootNode extends LoxRootNode implements Bytecod
     @Operation
     public static final class LoxNegate {
         @Specialization
-        static LoxNumber doNumber(LoxNumber loxNumber) {
-            // Unwrap LoxNumber value, calculate result, rewrap.
-            Double result = -1 * loxNumber.getValue();
-            return new LoxNumber(result);
+        static double doDouble(double value) {
+            return -value;
         }
 
         @Fallback
         @TruffleBoundary
-        static LoxNumber doOtherTypes(Object value, @Bind Node node) {
+        static double doOtherTypes(Object value, @Bind Node node) {
             throw new LoxRuntimeError(String.format("Cannot negate %s", value), node);
         }
     }
@@ -103,10 +120,8 @@ public abstract class LoxBytecodeRootNode extends LoxRootNode implements Bytecod
     @Operation
     public static final class LoxAdd {
         @Specialization
-        static LoxNumber doNumbers(LoxNumber left, LoxNumber right) {
-            // Unwrap LoxNumber values, calculate result, rewrap.
-            Double result = left.getValue() + right.getValue();
-            return new LoxNumber(result);
+        static double doDoubles(double left, double right) {
+            return left + right;
         }
 
         @Specialization
@@ -114,9 +129,9 @@ public abstract class LoxBytecodeRootNode extends LoxRootNode implements Bytecod
             return left.concatUncached(right, TruffleString.Encoding.UTF_8, false);
         }
 
-        @Specialization
+        @Fallback
         @TruffleBoundary
-        static LoxNumber doOtherTypes(Object left, Object right, @Bind Node node) {
+        static Object doOtherTypes(Object left, Object right, @Bind Node node) {
             throw new LoxRuntimeError(String.format("Cannot add %s and %s", left.toString(), right.toString()), node);
         }
     }
@@ -124,15 +139,13 @@ public abstract class LoxBytecodeRootNode extends LoxRootNode implements Bytecod
     @Operation
     public static final class LoxSubtract {
         @Specialization
-        static LoxNumber doNumber(LoxNumber left, LoxNumber right) {
-            // Unwrap LoxNumber values, calculate result, rewrap.
-            Double result = left.getValue() - right.getValue();
-            return new LoxNumber(result);
+        static double doDoubles(double left, double right) {
+            return left - right;
         }
 
         @Fallback
         @TruffleBoundary
-        static LoxNumber doOtherTypes(Object left, Object right, @Bind Node node) {
+        static double doOtherTypes(Object left, Object right, @Bind Node node) {
             throw new LoxRuntimeError(String.format("Cannot subtract %s and %s", left.toString(), right.toString()),
                     node);
         }
@@ -141,15 +154,13 @@ public abstract class LoxBytecodeRootNode extends LoxRootNode implements Bytecod
     @Operation
     public static final class LoxMultiply {
         @Specialization
-        static LoxNumber doNumbers(LoxNumber left, LoxNumber right) {
-            // Unwrap LoxNumber values, calculate result, rewrap.
-            Double result = left.getValue() * right.getValue();
-            return new LoxNumber(result);
+        static double doDoubles(double left, double right) {
+            return left * right;
         }
 
         @Fallback
         @TruffleBoundary
-        static LoxNumber doOtherTypes(Object left, Object right, @Bind Node node) {
+        static double doOtherTypes(Object left, Object right, @Bind Node node) {
             throw new LoxRuntimeError(String.format("Cannot multiply %s and %s", left.toString(), right.toString()),
                     node);
         }
@@ -158,19 +169,16 @@ public abstract class LoxBytecodeRootNode extends LoxRootNode implements Bytecod
     @Operation
     public static final class LoxDivide {
         @Specialization
-        static LoxNumber doNumbers(LoxNumber left, LoxNumber right, @Bind Node node) {
-            if (right.getValue() == 0) {
+        static double doDoubles(double left, double right, @Bind Node node) {
+            if (right == 0) {
                 throw new LoxRuntimeError("Division by zero", node);
             }
-            // Unwrap LoxNumber values, calculate result, rewrap.
-            Double result = left.getValue() / right.getValue();
-
-            return new LoxNumber(result);
+            return left / right;
         }
 
         @Fallback
         @TruffleBoundary
-        static LoxNumber doOtherTypes(Object left, Object right, @Bind Node node) {
+        static double doOtherTypes(Object left, Object right, @Bind Node node) {
             throw new LoxRuntimeError(String.format("Cannot divide %s and %s", left.toString(), right.toString()),
                     node);
         }
@@ -179,8 +187,8 @@ public abstract class LoxBytecodeRootNode extends LoxRootNode implements Bytecod
     @Operation
     public static final class LoxInequal {
         @Specialization
-        static boolean doLoxNumbers(LoxNumber left, LoxNumber right) {
-            return !left.equals(right);
+        static boolean doDoubles(double left, double right) {
+            return left != right;
         }
 
         @Specialization
@@ -191,9 +199,9 @@ public abstract class LoxBytecodeRootNode extends LoxRootNode implements Bytecod
 
     @Operation
     public static final class LoxEqual {
-        @Specialization // LoxNumbers need no TruffleBoundary here.
-        static boolean doLoxNumbers(LoxNumber left, LoxNumber right) {
-            return left.equals(right);
+        @Specialization
+        static boolean doDoubles(double left, double right) {
+            return left == right;
         }
 
         @Fallback
@@ -206,13 +214,8 @@ public abstract class LoxBytecodeRootNode extends LoxRootNode implements Bytecod
     @Operation
     public static final class LoxLess {
         @Specialization
-        static boolean doLoxNumbers(LoxNumber left, LoxNumber right) {
-            if (left.equals(right)) {
-                // Remember: we internally deal with doubles, that might be unequal only a
-                // little bit.
-                return false;
-            }
-            return left.getValue() < right.getValue();
+        static boolean doDoubles(double left, double right) {
+            return left < right;
         }
 
         @Fallback
@@ -226,18 +229,13 @@ public abstract class LoxBytecodeRootNode extends LoxRootNode implements Bytecod
     @Operation
     public static final class LoxLessOrEqual {
         @Specialization
-        static boolean doLoxNumbers(LoxNumber left, LoxNumber right) {
-            if (left.equals(right)) {
-                // Remember: we internally deal with doubles, that might be unequal only a
-                // little bit.
-                return true;
-            }
-            return left.getValue() <= right.getValue();
+        static boolean doDoubles(double left, double right) {
+            return left <= right;
         }
 
         @Fallback
         @TruffleBoundary
-        static Object doOtherTypes(Object left, Object right, @Bind Node node) {
+        static boolean doOtherTypes(Object left, Object right, @Bind Node node) {
             throw new LoxRuntimeError(String.format("Cannot apply <= on %s and %s", left.toString(), right.toString()),
                     node);
         }
@@ -246,13 +244,8 @@ public abstract class LoxBytecodeRootNode extends LoxRootNode implements Bytecod
     @Operation
     public static final class LoxGreater {
         @Specialization
-        static boolean doLoxNumbers(LoxNumber left, LoxNumber right) {
-            if (left.equals(right)) {
-                // Remember: we internally deal with doubles, that might be unequal only a
-                // little bit.
-                return false;
-            }
-            return left.getValue() > right.getValue();
+        static boolean doDoubles(double left, double right) {
+            return left > right;
         }
 
         @Fallback
@@ -266,13 +259,8 @@ public abstract class LoxBytecodeRootNode extends LoxRootNode implements Bytecod
     @Operation
     public static final class LoxGreaterOrEqual {
         @Specialization
-        static boolean doLoxNumbers(LoxNumber left, LoxNumber right) {
-            if (left.equals(right)) {
-                // Remember: we internally deal with doubles, that might be unequal only a
-                // little bit.
-                return true;
-            }
-            return left.getValue() >= right.getValue();
+        static boolean doDoubles(double left, double right) {
+            return left >= right;
         }
 
         @Fallback
@@ -387,8 +375,8 @@ public abstract class LoxBytecodeRootNode extends LoxRootNode implements Bytecod
             return false;
         if (object instanceof Boolean)
             return (boolean) object;
-        if (object instanceof LoxNumber)
-            return ((LoxNumber) object).getValue() != 0;
+        if (object instanceof Double)
+            return ((Double) object) != 0;
         return true;
     }
 
@@ -396,8 +384,8 @@ public abstract class LoxBytecodeRootNode extends LoxRootNode implements Bytecod
     public static final class LoxIsTruthy {
 
         @Specialization
-        public static boolean fromLoxNumber(LoxNumber x) {
-            return x.getValue() != 0;
+        public static boolean fromDouble(double x) {
+            return x != 0;
         }
 
         @Specialization
@@ -413,9 +401,13 @@ public abstract class LoxBytecodeRootNode extends LoxRootNode implements Bytecod
 
     @Operation
     public static final class LoxReadArray {
-        @Specialization(guards = "index.getValue().intValue() >= 0")
-        static Object readArray(LoxArray array, LoxNumber index) {
-            return array.get(index.getValue().intValue());
+        @Specialization(guards = "isValidIndex(index)")
+        static Object readArray(LoxArray array, double index) {
+            return array.get((int) index);
+        }
+
+        static boolean isValidIndex(double index) {
+            return index >= 0;
         }
 
         @Fallback
@@ -435,25 +427,34 @@ public abstract class LoxBytecodeRootNode extends LoxRootNode implements Bytecod
 
     @Operation
     public static final class LoxWriteArray {
-        @Specialization(guards = { "index.getValue().intValue() >= 0",
-                "array.getSize() > index.getValue().intValue()" })
-        static Void writeArrayInSize(LoxArray array, LoxNumber index, Object value) {
-            array.setInSize(index.getValue().intValue(), value);
+        @Specialization(guards = { "isValidIndex(index)", "isInSize(array, index)" })
+        static Void writeArrayInSize(LoxArray array, double index, Object value) {
+            array.setInSize((int) index, value);
             return null;
         }
 
-        @Specialization(guards = { "index.getValue().intValue() >= 0",
-                "array.getCapacity() > index.getValue().intValue()" }, replaces = "writeArrayInSize")
-        static Void writeArrayInCapacity(LoxArray array, LoxNumber index, Object value) {
-            array.setInCapacity(index.getValue().intValue(), value);
+        @Specialization(guards = { "isValidIndex(index)", "isInCapacity(array, index)" }, replaces = "writeArrayInSize")
+        static Void writeArrayInCapacity(LoxArray array, double index, Object value) {
+            array.setInCapacity((int) index, value);
             return null;
         }
 
-        // Lox number wraps a double, so we need to cast it to int
-        @Specialization(guards = "index.getValue().intValue() >= 0", replaces = "writeArrayInCapacity")
-        static Void writeArray(LoxArray array, LoxNumber index, Object value) {
-            array.set(index.getValue().intValue(), value);
+        @Specialization(guards = "isValidIndex(index)", replaces = "writeArrayInCapacity")
+        static Void writeArray(LoxArray array, double index, Object value) {
+            array.set((int) index, value);
             return null;
+        }
+
+        static boolean isValidIndex(double index) {
+            return index >= 0;
+        }
+
+        static boolean isInSize(LoxArray array, double index) {
+            return array.getSize() > (int) index;
+        }
+
+        static boolean isInCapacity(LoxArray array, double index) {
+            return array.getCapacity() > (int) index;
         }
 
         @Fallback
@@ -483,8 +484,8 @@ public abstract class LoxBytecodeRootNode extends LoxRootNode implements Bytecod
     @Operation
     public static final class LoxArrayHasNext {
         @Specialization
-        static boolean hasNext(LoxArray loxArray) {
-            return loxArray.getLoxIterator().hasNext();
+        static boolean hasNext(LoxArray.LoxArrayIterator iterator) {
+            return iterator.hasNext();
         }
 
         @Fallback
@@ -494,15 +495,15 @@ public abstract class LoxBytecodeRootNode extends LoxRootNode implements Bytecod
 
         @TruffleBoundary
         private static LoxRuntimeError createRuntimeError(Object object, Node node) {
-            return new LoxRuntimeError(object.toString() + " is not an LoxArray", node);
+            return new LoxRuntimeError(object.toString() + " is not an LoxArrayIterator", node);
         }
     }
 
     @Operation
     public static final class LoxArrayGetNext {
         @Specialization
-        static Object getNext(LoxArray loxArray) {
-            return loxArray.getLoxIterator().next();
+        static Object getNext(LoxArray.LoxArrayIterator iterator) {
+            return iterator.next();
         }
 
         @Fallback
@@ -512,19 +513,37 @@ public abstract class LoxBytecodeRootNode extends LoxRootNode implements Bytecod
 
         @TruffleBoundary
         private static LoxRuntimeError createRuntimeError(Object object, Node node) {
-            return new LoxRuntimeError(object.toString() + " is not an LoxArray", node);
+            return new LoxRuntimeError(object.toString() + " is not an LoxArrayIterator", node);
         }
     }
 
     @Operation
     public static final class LoxArrayGetNextIndex {
         @Specialization
-        static LoxNumber getNextIndex(LoxArray loxArray) {
-            return new LoxNumber(loxArray.getLoxIterator().nextIndex());
+        static double getNextIndex(LoxArray.LoxArrayIterator iterator) {
+            return iterator.getIndex();
         }
 
         @Fallback
-        static LoxNumber fallback(Object object, @Bind Node node) {
+        static double fallback(Object object, @Bind Node node) {
+            throw createRuntimeError(object, node);
+        }
+
+        @TruffleBoundary
+        private static LoxRuntimeError createRuntimeError(Object object, Node node) {
+            return new LoxRuntimeError(object.toString() + " is not an LoxArrayIterator", node);
+        }
+    }
+
+    @Operation
+    public static final class LoxCreateIterator {
+        @Specialization
+        static LoxArray.LoxArrayIterator createIterator(LoxArray loxArray) {
+            return loxArray.createIterator();
+        }
+
+        @Fallback
+        static LoxArray.LoxArrayIterator fallback(Object object, @Bind Node node) {
             throw createRuntimeError(object, node);
         }
 

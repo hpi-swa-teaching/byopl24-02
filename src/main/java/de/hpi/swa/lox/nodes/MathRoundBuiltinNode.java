@@ -8,7 +8,6 @@ import com.oracle.truffle.api.nodes.Node;
 
 import de.hpi.swa.lox.LoxLanguage;
 import de.hpi.swa.lox.runtime.LoxRuntimeError;
-import de.hpi.swa.lox.runtime.data.LoxNumber;
 
 public abstract class MathRoundBuiltinNode extends BuiltInNodeWithArgs {
     public MathRoundBuiltinNode(LoxLanguage lang) {
@@ -16,13 +15,13 @@ public abstract class MathRoundBuiltinNode extends BuiltInNodeWithArgs {
     }
 
     @Specialization
-    static LoxNumber roundDouble(LoxNumber number) {
-        return new LoxNumber(Math.round(number.getValue()));
+    static double roundDouble(double number) {
+        return (double) Math.round(number);
     }
 
     @Fallback
     @TruffleBoundary
-    static Object fallback(Object arg, @Bind Node node) {
+    static double fallback(Object arg, @Bind Node node) {
         throw new LoxRuntimeError("Type Error: Argument must be a Number: " + arg, node);
     }
 }

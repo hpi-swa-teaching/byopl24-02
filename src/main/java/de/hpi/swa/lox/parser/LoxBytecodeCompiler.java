@@ -77,7 +77,6 @@ import de.hpi.swa.lox.parser.LoxParser.VarDeclContext;
 import de.hpi.swa.lox.parser.LoxParser.VariableExprContext;
 import de.hpi.swa.lox.parser.LoxParser.WhileStmtContext;
 import de.hpi.swa.lox.runtime.LoxContext;
-import de.hpi.swa.lox.runtime.data.LoxNumber;
 import de.hpi.swa.lox.runtime.data.Nil;
 
 /**
@@ -443,7 +442,7 @@ public final class LoxBytecodeCompiler extends LoxBaseVisitor<Void> {
 
     @Override
     public Void visitNumber(NumberContext ctx) {
-        b.emitLoadConstant(new LoxNumber(ctx.getText()));
+        b.emitLoadConstant(Double.valueOf(ctx.getText()));
         return super.visitNumber(ctx);
     }
 
@@ -896,13 +895,23 @@ public final class LoxBytecodeCompiler extends LoxBaseVisitor<Void> {
         b.endLoxIsArray();
         b.endTag(CONDITION);
         endAttribution();
+
+        // Create iterator variable
+        String iteratorVarName = "$iterator_" + System.identityHashCode(ctx);
+        lexicalScope.declare(iteratorVarName, ctx);
+        lexicalScope.beginStore(iteratorVarName);
+        b.beginLoxCreateIterator();
+        visitVariableExpr(ctx.toIterate);
+        b.endLoxCreateIterator();
+        lexicalScope.endStore();
+
         // Begin loop operation that retrieves every element of array.
         b.beginWhile();
         beginAttribution(ctx);
         b.beginTag(CONDITION);
-        // Check if iterator through has next element.
+        // Check if iterator has next element.
         b.beginLoxArrayHasNext();
-        visitVariableExpr(ctx.toIterate);
+        lexicalScope.loadIntoScope(iteratorVarName);
         b.endLoxArrayHasNext();
         b.endTag(CONDITION);
         endAttribution();
@@ -911,7 +920,7 @@ public final class LoxBytecodeCompiler extends LoxBaseVisitor<Void> {
         lexicalScope.beginStore(ctx.elementVar.IDENTIFIER().getText());
         // Retrieve next element from iterator to store in elementVar.
         b.beginLoxArrayGetNext();
-        visitVariableExpr(ctx.toIterate);
+        lexicalScope.loadIntoScope(iteratorVarName);
         b.endLoxArrayGetNext();
         lexicalScope.endStore();
         // Visit the actual body of for-of loop.
@@ -937,13 +946,23 @@ public final class LoxBytecodeCompiler extends LoxBaseVisitor<Void> {
         b.endLoxIsArray();
         b.endTag(CONDITION);
         endAttribution();
+
+        // Create iterator variable
+        String iteratorVarName = "$iterator_" + System.identityHashCode(ctx);
+        lexicalScope.declare(iteratorVarName, ctx);
+        lexicalScope.beginStore(iteratorVarName);
+        b.beginLoxCreateIterator();
+        visitVariableExpr(ctx.toIterate);
+        b.endLoxCreateIterator();
+        lexicalScope.endStore();
+
         // Begin loop operation that retrieves every element of array.
         b.beginWhile();
         beginAttribution(ctx);
         b.beginTag(CONDITION);
-        // Check if iterator through has next element.
+        // Check if iterator has next element.
         b.beginLoxArrayHasNext();
-        visitVariableExpr(ctx.toIterate);
+        lexicalScope.loadIntoScope(iteratorVarName);
         b.endLoxArrayHasNext();
         b.endTag(CONDITION);
         endAttribution();
@@ -952,12 +971,12 @@ public final class LoxBytecodeCompiler extends LoxBaseVisitor<Void> {
         lexicalScope.beginStore(ctx.indexVar.IDENTIFIER().getText());
         // Retrieve next index from iterator to store in indexVar.
         b.beginLoxArrayGetNextIndex();
-        visitVariableExpr(ctx.toIterate);
+        lexicalScope.loadIntoScope(iteratorVarName);
         b.endLoxArrayGetNextIndex();
         lexicalScope.endStore();
         // Actually move iterator to the next element, but ignore its result here.
         b.beginLoxArrayGetNext();
-        visitVariableExpr(ctx.toIterate);
+        lexicalScope.loadIntoScope(iteratorVarName);
         b.endLoxArrayGetNext();
         // Visit the actual body of for-in loop.
         visit(ctx.body);

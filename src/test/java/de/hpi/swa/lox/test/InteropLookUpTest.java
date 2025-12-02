@@ -23,7 +23,7 @@ public class InteropLookUpTest extends AbstractLoxTest {
                         list.add(3);
                         print list;
                         """,
-                "JavaObject[[3] (java.util.ArrayList)]\n");
+                "JavaObject[[3.0] (java.util.ArrayList)]\n");
     }
 
     @Test

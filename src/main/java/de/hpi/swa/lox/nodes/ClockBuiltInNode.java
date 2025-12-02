@@ -4,7 +4,6 @@ import com.oracle.truffle.api.CompilerDirectives.TruffleBoundary;
 import com.oracle.truffle.api.dsl.Specialization;
 
 import de.hpi.swa.lox.LoxLanguage;
-import de.hpi.swa.lox.runtime.data.LoxNumber;
 
 public abstract class ClockBuiltInNode extends BuiltInNodeWithArgs {
 
@@ -14,8 +13,7 @@ public abstract class ClockBuiltInNode extends BuiltInNodeWithArgs {
 
     @Specialization
     @TruffleBoundary
-    static Object getTime() {
-        return new LoxNumber((double) System.nanoTime() / 1_000_000_000.0);
-
+    static double getTime() {
+        return (double) System.nanoTime() / 1_000_000_000.0;
     }
 }

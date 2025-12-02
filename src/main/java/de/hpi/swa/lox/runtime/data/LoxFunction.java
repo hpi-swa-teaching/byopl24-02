@@ -66,11 +66,40 @@ public class LoxFunction implements TruffleObject {
      * We implicitly define the function object itself as the first argument (so the
      * index is off-by-one),
      * and therefore all user arguments are shifted by one index.
+     *
+     * Manually specialized for 0-6 arguments to avoid System.arraycopy overhead
+     * and enable escape analysis.
      */
     public Object[] createArguments(Object[] userArguments) {
+        // Fast path for common cases (0-6 arguments)
+        switch (userArguments.length) {
+            case 0:
+                return new Object[] { this };
+            case 1:
+                return new Object[] { this, userArguments[0] };
+            case 2:
+                return new Object[] { this, userArguments[0], userArguments[1] };
+            case 3:
+                return new Object[] { this, userArguments[0], userArguments[1], userArguments[2] };
+            case 4:
+                return new Object[] { this, userArguments[0], userArguments[1], userArguments[2], userArguments[3] };
+            case 5:
+                return new Object[] { this, userArguments[0], userArguments[1], userArguments[2], userArguments[3],
+                        userArguments[4] };
+            case 6:
+                return new Object[] { this, userArguments[0], userArguments[1], userArguments[2], userArguments[3],
+                        userArguments[4], userArguments[5] };
+            default:
+                // Slow path for 7+ arguments (rare case)
+                return createArgumentsSlow(userArguments);
+        }
+    }
+
+    @TruffleBoundary
+    private Object[] createArgumentsSlow(Object[] userArguments) {
         Object[] result = new Object[userArguments.length + 1];
         System.arraycopy(userArguments, 0, result, 1, userArguments.length);
-        result[0] = this; // give the static function itself as first argument
+        result[0] = this;
         return result;
     }
 
@@ -105,14 +134,6 @@ public class LoxFunction implements TruffleObject {
     @ExportMessage
     public Object execute(Object[] arguments, @Cached IndirectCallNode callNode) {
         Object[] args = createArguments(arguments);
-        var result = callNode.call(this.getCallTarget(), args);
-        if (result instanceof LoxNumber) {
-            return convertLoxNumberToDouble(result); // Truffle does not support LoxNumber directly
-        }
-        return result;
-    }
-
-    private double convertLoxNumberToDouble(Object result) {
-        return ((LoxNumber) result).getValue();
+        return callNode.call(this.getCallTarget(), args);
     }
 }

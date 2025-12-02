@@ -40,7 +40,7 @@ public class InteropTest extends AbstractLoxTest {
     public void testInteropReadProperty() {
         Value obj = context.eval("lox", "class O {} var o = O(); o.a = 4; return o;");
         Value result = obj.getMember("a");
-        assertEquals("result", result.toString(), "4");
+        assertEquals("result", 4, result.asInt());
     }
 
     @Test
@@ -55,7 +55,7 @@ public class InteropTest extends AbstractLoxTest {
         Value obj = context.eval("lox", "class O {} var o = O(); return o;");
         obj.putMember("c", 3);
         var result = context.eval("lox", "return o.c;");
-        assertEquals("result", result.toString(), "3");
+        assertEquals("result", 3, result.asInt());
     }
 
     public class Dummy {

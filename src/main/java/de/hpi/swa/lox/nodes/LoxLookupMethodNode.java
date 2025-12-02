@@ -15,7 +15,7 @@ import de.hpi.swa.lox.runtime.data.LoxObject;
 public abstract class LoxLookupMethodNode extends Node {
     public abstract LoxFunction execute(LoxObject object, LoxClass startingKlazz, String name);
 
-    @Specialization(limit = "1", guards = { "startingClass == cachedStartingClass", "name == cachedName" })
+    @Specialization(limit = "3", guards = { "startingClass == cachedStartingClass", "name == cachedName" })
     public LoxFunction doCached(LoxObject obj, LoxClass startingClass, String name,
             @Cached("name") String cachedName, @Cached("startingClass") LoxClass cachedStartingClass,
             @CachedLibrary("startingClass") DynamicObjectLibrary dylib,
@@ -27,7 +27,7 @@ public abstract class LoxLookupMethodNode extends Node {
         }
     }
 
-    @Specialization(limit = "1", replaces = "doCached")
+    @Specialization(limit = "3", replaces = "doCached")
     public LoxFunction doUncached(LoxObject obj, LoxClass startingClass, String name,
             @CachedLibrary("startingClass") DynamicObjectLibrary dylib) {
         var method = lookupMethod(startingClass, name, dylib);
