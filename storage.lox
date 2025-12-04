@@ -1,0 +1,68 @@
+load("benchmark.lox");
+
+class Random {
+    init() {
+        self.seed = 74755;
+    }
+
+    mod(a, b) {
+        var quotient = a / b;
+        var floored = 0;
+        if (quotient >= 0) {
+            while (floored + 1 <= quotient) {
+                floored = floored + 1;
+            }
+        } else {
+            while (floored - 1 >= quotient) {
+                floored = floored - 1;
+            }
+        }
+        return a - (floored * b);
+    }
+
+    next() {
+        self.seed = self.mod((self.seed * 1309) + 13849, 65536);
+        return self.seed;
+    }
+}
+
+class StorageNode {
+    init(n) {
+        self.n = n;
+        self.children = 👉👈;
+    }
+}
+
+class Storage 🤝 Benchmark {
+    init() {
+        super.init();
+        self.count = 0;
+    }
+
+    benchmark() {
+        var random = Random();
+        self.count = 0;
+        self.buildTreeDepth(7, random);
+        return self.count;
+    }
+
+    verifyResult(result) {
+        return result == 5461;
+    }
+
+    buildTreeDepth(depth, random) {
+        self.count = self.count + 1;
+        if (depth == 1) {
+            var node = StorageNode(random.mod(random.next(), 10) + 1);
+            return node;
+        } else {
+            var node = StorageNode(4);
+            for (var i = 0; i < 4; i = i + 1) {
+                node.children👉i👈 = self.buildTreeDepth(depth - 1, random);
+            }
+            return node;
+        }
+    }
+}
+
+return Storage();

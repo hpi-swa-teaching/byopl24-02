@@ -1,0 +1,96 @@
+load("benchmark.lox");
+
+class SpectralNorm 🤝 Benchmark {
+    init() {
+        super.init();
+    }
+
+    benchmark() {
+        return self.run(5500);
+    }
+
+    verifyResult(result) {
+        var expected = 1.252309925;
+        var epsilon = 0.000001;
+        var diff = result - expected;
+        if (diff < 0) { diff = -diff; }
+        return diff < epsilon;
+    }
+
+    run(n) {
+        var u = 👉👈;
+        var v = 👉👈;
+        var t = 👉👈;
+
+        for (var i = 1; i <= n; i = i + 1) {
+            u👉i👈 = 1;
+            v👉i👈 = 0;
+            t👉i👈 = 0;
+        }
+
+        for (var i = 0; i < 10; i = i + 1) {
+            self.atAv(u, v, t, n);
+            self.atAv(v, u, t, n);
+        }
+
+        var vBv = 0;
+        var vv = 0;
+        for (var i = 1; i <= n; i = i + 1) {
+            var ui = u👉i👈;
+            var vi = v👉i👈;
+            vBv = vBv + ui * vi;
+            vv = vv + vi * vi;
+        }
+
+        return self.sqrt(vBv / vv);
+    }
+
+    a(i, j) {
+        var ij = i + j - 1;
+        return 1.0 / (ij * (ij - 1) * 0.5 + i);
+    }
+
+    av(x, y, n) {
+        for (var i = 1; i <= n; i = i + 1) {
+            var sum = 0;
+            for (var j = 1; j <= n; j = j + 1) {
+                sum = sum + x👉j👈 * self.a(i, j);
+            }
+            y👉i👈 = sum;
+        }
+    }
+
+    atv(x, y, n) {
+        for (var i = 1; i <= n; i = i + 1) {
+            var sum = 0;
+            for (var j = 1; j <= n; j = j + 1) {
+                sum = sum + x👉j👈 * self.a(j, i);
+            }
+            y👉i👈 = sum;
+        }
+    }
+
+    atAv(x, y, t, n) {
+        self.av(x, t, n);
+        self.atv(t, y, n);
+    }
+
+    sqrt(x) {
+        if (x < 0) { return 0; }
+        if (x == 0) { return 0; }
+        var guess = x / 2;
+        var epsilon = 0.000001;
+        var prevGuess = 0;
+        while (true) {
+            var diff = guess - prevGuess;
+            if (diff < 0) { diff = -diff; }
+            if (diff < epsilon) {
+                return guess;
+            }
+            prevGuess = guess;
+            guess = (guess + x / guess) / 2;
+        }
+    }
+}
+
+return SpectralNorm();
