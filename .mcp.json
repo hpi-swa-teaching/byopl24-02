@@ -1,0 +1,20 @@
+{
+  "mcpServers": {
+    "mcp-graal-rag": {
+      "type": "stdio",
+      "command": "uv",
+      "args": [
+        "--directory",
+        "/Users/antonykamp/Projects/hpi-ma/mcp-graal-cli",
+        "run",
+        "mcp"
+      ],
+      "env": {
+        "WORKING_DIR": "/Users/antonykamp/Projects/hpi-ma/byopl24-02",
+        "EXECUTABLE_NAME": "lox",
+        "ENABLE_RESOURCE_EMBEDDING": "false",
+        "SERVER_PROFILE": "rag"
+      }
+    }
+  }
+}
