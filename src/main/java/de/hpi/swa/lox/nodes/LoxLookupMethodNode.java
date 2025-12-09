@@ -1,6 +1,8 @@
 package de.hpi.swa.lox.nodes;
 
 import com.oracle.truffle.api.dsl.Cached;
+import com.oracle.truffle.api.dsl.GenerateCached;
+import com.oracle.truffle.api.dsl.GenerateInline;
 import com.oracle.truffle.api.dsl.GenerateUncached;
 import com.oracle.truffle.api.dsl.Specialization;
 import com.oracle.truffle.api.library.CachedLibrary;
@@ -11,9 +13,11 @@ import de.hpi.swa.lox.runtime.data.LoxClass;
 import de.hpi.swa.lox.runtime.data.LoxFunction;
 import de.hpi.swa.lox.runtime.data.LoxObject;
 
+@GenerateInline(true)
 @GenerateUncached
+@GenerateCached(false)
 public abstract class LoxLookupMethodNode extends Node {
-    public abstract LoxFunction execute(LoxObject object, LoxClass startingKlazz, String name);
+    public abstract LoxFunction execute(Node node, LoxObject object, LoxClass startingKlazz, String name);
 
     @Specialization(limit = "1", guards = { "startingClass == cachedStartingClass", "name == cachedName" })
     public LoxFunction doCached(LoxObject obj, LoxClass startingClass, String name,

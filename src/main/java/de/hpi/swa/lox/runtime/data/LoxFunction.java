@@ -106,14 +106,6 @@ public class LoxFunction implements TruffleObject {
     @ExportMessage
     public Object execute(Object[] arguments, @Cached IndirectCallNode callNode) {
         Object[] args = createArguments(arguments);
-        var result = callNode.call(this.getCallTarget(), args);
-        if (result instanceof LoxNumber) {
-            return convertLoxNumberToDouble(result); // Truffle does not support LoxNumber directly
-        }
-        return result;
-    }
-
-    private double convertLoxNumberToDouble(Object result) {
-        return ((LoxNumber) result).getValue();
+        return callNode.call(this.getCallTarget(), args);
     }
 }

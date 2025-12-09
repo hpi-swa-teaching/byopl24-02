@@ -77,7 +77,6 @@ import de.hpi.swa.lox.parser.LoxParser.VarDeclContext;
 import de.hpi.swa.lox.parser.LoxParser.VariableExprContext;
 import de.hpi.swa.lox.parser.LoxParser.WhileStmtContext;
 import de.hpi.swa.lox.runtime.LoxContext;
-import de.hpi.swa.lox.runtime.data.LoxNumber;
 import de.hpi.swa.lox.runtime.data.Nil;
 
 /**
@@ -443,7 +442,8 @@ public final class LoxBytecodeCompiler extends LoxBaseVisitor<Void> {
 
     @Override
     public Void visitNumber(NumberContext ctx) {
-        b.emitLoadConstant(new LoxNumber(ctx.getText()));
+        // Emit primitive double instead of LoxNumber - enables boxing elimination
+        b.emitLoadConstant(Double.parseDouble(ctx.getText()));
         return super.visitNumber(ctx);
     }
 

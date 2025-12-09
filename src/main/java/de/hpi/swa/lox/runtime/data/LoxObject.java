@@ -1,19 +1,19 @@
 package de.hpi.swa.lox.runtime.data;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
-
+import com.oracle.truffle.api.dsl.Bind;
 import com.oracle.truffle.api.dsl.Cached;
 import com.oracle.truffle.api.interop.InteropLibrary;
+import com.oracle.truffle.api.interop.InvalidArrayIndexException;
+import com.oracle.truffle.api.interop.TruffleObject;
+import com.oracle.truffle.api.library.CachedLibrary;
 import com.oracle.truffle.api.library.ExportLibrary;
 import com.oracle.truffle.api.library.ExportMessage;
+import com.oracle.truffle.api.nodes.Node;
 import com.oracle.truffle.api.object.DynamicObject;
 import com.oracle.truffle.api.object.DynamicObjectLibrary;
 
 import de.hpi.swa.lox.nodes.LoxReadPropertyNode;
 import de.hpi.swa.lox.nodes.LoxWritePropertyNode;
-import de.hpi.swa.lox.runtime.LoxContext;
 
 @ExportLibrary(InteropLibrary.class)
 public class LoxObject extends DynamicObject {
@@ -35,20 +35,21 @@ public class LoxObject extends DynamicObject {
     }
 
     @ExportMessage
-    public Object getMembers(boolean includeInternal) {
-        List<Object> keys = new ArrayList<>();
-        keys.addAll(Arrays.asList(DynamicObjectLibrary.getUncached().getKeyArray(this)));
-        return LoxContext.get(null).getEnv().asGuestValue(keys);
+    public Object getMembers(boolean includeInternal,
+            @CachedLibrary("this") DynamicObjectLibrary dylib) {
+        Object[] keys = dylib.getKeyArray(this);
+        return new Keys(keys);
     }
 
     @ExportMessage
-    public boolean isMemberReadable(String member) {
-        return ((ArrayList) LoxContext.get(null).getEnv().asHostObject(getMembers(true))).contains(member);
+    public boolean isMemberReadable(String member,
+            @CachedLibrary("this") DynamicObjectLibrary dylib) {
+        return dylib.containsKey(this, member);
     }
 
     @ExportMessage
-    public Object readMember(String member, @Cached LoxReadPropertyNode readNode) {
-        return readNode.execute(member, this);
+    public Object readMember(String member, @Bind("$node") Node node, @Cached LoxReadPropertyNode readNode) {
+        return readNode.execute(node, member, this);
     }
 
     @ExportMessage
@@ -62,8 +63,8 @@ public class LoxObject extends DynamicObject {
     }
 
     @ExportMessage
-    public void writeMember(String member, Object value, @Cached LoxWritePropertyNode writeNode) {
-        writeNode.execute(member, this, value);
+    public void writeMember(String member, Object value, @Bind("$node") Node node, @Cached LoxWritePropertyNode writeNode) {
+        writeNode.execute(node, member, this, value);
     }
 
     // TODO aber wir können das doch!!
@@ -73,4 +74,40 @@ public class LoxObject extends DynamicObject {
      *                return false;
      *                }
      */
+
+    /**
+     * Lightweight wrapper for object keys that implements InteropLibrary
+     * for efficient member enumeration without allocations.
+     */
+    @ExportLibrary(InteropLibrary.class)
+    static final class Keys implements TruffleObject {
+        private final Object[] keys;
+
+        Keys(Object[] keys) {
+            this.keys = keys;
+        }
+
+        @ExportMessage
+        boolean hasArrayElements() {
+            return true;
+        }
+
+        @ExportMessage
+        long getArraySize() {
+            return keys.length;
+        }
+
+        @ExportMessage
+        boolean isArrayElementReadable(long index) {
+            return index >= 0 && index < keys.length;
+        }
+
+        @ExportMessage
+        Object readArrayElement(long index) throws InvalidArrayIndexException {
+            if (!isArrayElementReadable(index)) {
+                throw InvalidArrayIndexException.create(index);
+            }
+            return keys[(int) index];
+        }
+    }
 }

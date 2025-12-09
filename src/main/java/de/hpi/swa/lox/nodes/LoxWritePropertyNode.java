@@ -2,6 +2,8 @@ package de.hpi.swa.lox.nodes;
 
 import com.oracle.truffle.api.CompilerDirectives.TruffleBoundary;
 import com.oracle.truffle.api.dsl.Bind;
+import com.oracle.truffle.api.dsl.GenerateCached;
+import com.oracle.truffle.api.dsl.GenerateInline;
 import com.oracle.truffle.api.dsl.GenerateUncached;
 import com.oracle.truffle.api.dsl.Specialization;
 import com.oracle.truffle.api.interop.InteropLibrary;
@@ -15,9 +17,11 @@ import com.oracle.truffle.api.object.DynamicObjectLibrary;
 import de.hpi.swa.lox.runtime.LoxRuntimeError;
 import de.hpi.swa.lox.runtime.data.LoxObject;
 
+@GenerateInline(true)
 @GenerateUncached
+@GenerateCached(false)
 public abstract class LoxWritePropertyNode extends Node {
-    public abstract Object execute(String name, Object object, Object value);
+    public abstract Object execute(Node node, String name, Object object, Object value);
 
     @Specialization(limit = "1")
     public static Object write(String name, LoxObject object, Object value,

@@ -13,6 +13,18 @@ public abstract class StringBuiltInNode extends BuiltInNodeWithArgs {
 
     @Specialization
     @TruffleBoundary
+    static Object parseDouble(double value) {
+        String formatted;
+        if (value == (long) value) {
+            formatted = String.format("%d", (long) value);
+        } else {
+            formatted = String.valueOf(value);
+        }
+        return TruffleString.fromJavaStringUncached(formatted, TruffleString.Encoding.UTF_8);
+    }
+
+    @Specialization
+    @TruffleBoundary
     static Object parseString(Object string) {
         return TruffleString.fromJavaStringUncached(string.toString(), TruffleString.Encoding.UTF_8);
 

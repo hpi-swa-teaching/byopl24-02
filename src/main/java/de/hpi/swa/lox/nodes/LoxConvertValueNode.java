@@ -2,6 +2,8 @@ package de.hpi.swa.lox.nodes;
 
 import java.math.BigInteger;
 
+import com.oracle.truffle.api.dsl.GenerateCached;
+import com.oracle.truffle.api.dsl.GenerateInline;
 import com.oracle.truffle.api.dsl.GenerateUncached;
 import com.oracle.truffle.api.dsl.Specialization;
 import com.oracle.truffle.api.interop.InteropLibrary;
@@ -12,22 +14,18 @@ import com.oracle.truffle.api.nodes.Node;
 import com.oracle.truffle.api.strings.TruffleString;
 
 import de.hpi.swa.lox.runtime.data.LoxArray;
-import de.hpi.swa.lox.runtime.data.LoxNumber;
 
+@GenerateInline(true)
 @GenerateUncached
+@GenerateCached(false)
 public abstract class LoxConvertValueNode extends Node {
     @Specialization
-    protected Object convert(Long object) {
-        return new LoxNumber(object);
+    protected double convert(Long object) {
+        return (double) object;
     }
 
     @Specialization
-    protected Object convert(Double object) {
-        return new LoxNumber(object);
-    }
-
-    @Specialization
-    protected Object convert(LoxNumber object) {
+    protected double convert(Double object) {
         return object;
     }
 
@@ -39,9 +37,9 @@ public abstract class LoxConvertValueNode extends Node {
                 return TruffleString.fromCodePointUncached(c,
                         TruffleString.Encoding.UTF_8);
             } else if (interop.fitsInLong(object)) {
-                return new LoxNumber(interop.asLong(object));
+                return (double) interop.asLong(object);
             } else if (interop.fitsInDouble(object)) {
-                return new LoxNumber(interop.asDouble(object));
+                return interop.asDouble(object);
             } else if (interop.isString(object)) {
                 if (object instanceof TruffleString) {
                     return object;
@@ -56,5 +54,5 @@ public abstract class LoxConvertValueNode extends Node {
         return object;
     }
 
-    public abstract Object execute(Object object);
+    public abstract Object execute(Node node, Object object);
 }

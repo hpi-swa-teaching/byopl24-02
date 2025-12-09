@@ -3,6 +3,8 @@ package de.hpi.swa.lox.nodes;
 import com.oracle.truffle.api.CompilerDirectives.TruffleBoundary;
 import com.oracle.truffle.api.dsl.Bind;
 import com.oracle.truffle.api.dsl.Cached;
+import com.oracle.truffle.api.dsl.GenerateCached;
+import com.oracle.truffle.api.dsl.GenerateInline;
 import com.oracle.truffle.api.dsl.GenerateUncached;
 import com.oracle.truffle.api.dsl.Specialization;
 import com.oracle.truffle.api.interop.InteropLibrary;
@@ -15,30 +17,31 @@ import com.oracle.truffle.api.object.DynamicObjectLibrary;
 import de.hpi.swa.lox.runtime.LoxRuntimeError;
 import de.hpi.swa.lox.runtime.data.LoxArray;
 import de.hpi.swa.lox.runtime.data.LoxClass;
-import de.hpi.swa.lox.runtime.data.LoxNumber;
 import de.hpi.swa.lox.runtime.data.LoxObject;
 import de.hpi.swa.lox.runtime.data.Nil;
 
+@GenerateInline(true)
 @GenerateUncached
+@GenerateCached(false)
 public abstract class LoxReadPropertyNode extends Node {
-    public abstract Object execute(String name, Object object);
+    public abstract Object execute(Node node, String name, Object object);
 
     @Specialization
     public static Object read(String name, LoxArray array) {
         if (name.equals("length")) {
-            return new LoxNumber(array.getSize());
+            return (double) array.getSize();  // Return primitive double
         } else {
             return Nil.INSTANCE;
         }
     }
 
     @Specialization(limit = "1")
-    public static Object read(String name, LoxObject object,
+    public static Object read(Node node, String name, LoxObject object,
             @CachedLibrary("object") DynamicObjectLibrary dylib,
             @Cached LoxLookupMethodNode lookupMethodNode) {
         var result = dylib.getOrDefault(object, name, Nil.INSTANCE);
         if (result == Nil.INSTANCE) {
-            var method = lookupMethodNode.execute(object, (LoxClass) dylib.getOrDefault(object, "Class", null),
+            var method = lookupMethodNode.execute(node, object, (LoxClass) dylib.getOrDefault(object, "Class", null),
                     name);
             if (method != null) {
                 return method;
