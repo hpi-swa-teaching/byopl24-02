@@ -1,5 +1,5 @@
 ---
-name: Run and Analyze Compilation Tracer
+name: trace-compilation-analyze
 description: Logs every compilation event with timing, tier (T1/T2), success/failure, and invalidation reasons. Use to verify hot code is compiling, diagnose compilation failures/bailouts, track recompilation cycles, and understand tiered compilation behavior. Shows WHEN compilation happens. Essential for understanding compilation lifecycle.
 ---
 

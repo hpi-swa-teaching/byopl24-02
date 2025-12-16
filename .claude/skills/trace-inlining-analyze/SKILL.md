@@ -1,5 +1,5 @@
 ---
-name: Run and Analyze Inlining Tracer
+name: trace-inlining-analyze
 description: Shows inlining decisions during compilation with call tree and reasons for inline/don't-inline. Use to verify critical calls are inlined, understand why inlining failed (too large, recursive, boundary, budget exhaustion), and optimize method sizes. Good inlining = better compilation and performance.
 ---
 

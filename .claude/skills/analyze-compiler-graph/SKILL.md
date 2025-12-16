@@ -1,5 +1,5 @@
 ---
-name: Dump and Analyze Compiler Graphs
+name: analyze-compiler-graph
 description: Dumps and analyzes Graal IR compiler graphs showing optimization decisions. Use BGV format with bgv2json/seafoam to inspect escape analysis (allocation elimination), boxing removal, inlining decisions, and call node types. Reveals what compiler actually optimized vs what you intended. Best for deep-dive investigation after basic profiling identifies issues.
 ---
 

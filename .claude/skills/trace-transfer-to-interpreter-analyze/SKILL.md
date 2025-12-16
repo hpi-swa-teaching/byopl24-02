@@ -1,5 +1,5 @@
 ---
-name: Run and Analyze Transfer To Interpreter Tracer
+name: trace-transfer-to-interpreter-analyze
 description: Traces deoptimization events where execution falls back from compiled code to interpreter. Use to detect deoptimization loops (same location repeatedly), unstable assumptions causing recompilation, and type instability. Zero transfers = stable compilation (ideal). Many transfers = severe performance problem. Critical for diagnosing compilation instability.
 ---
 

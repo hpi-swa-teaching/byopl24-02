@@ -1,5 +1,5 @@
 ---
-name: Run and Analyze CPU Sampler
+name: cpu-sampler-analyze
 description: Runs CPU sampling profiler on your language implementation to identify performance bottlenecks and analyzes the results to provide actionable insights
 ---
 

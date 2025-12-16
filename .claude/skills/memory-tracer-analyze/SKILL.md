@@ -1,5 +1,5 @@
 ---
-name: Run and Analyze Memory Tracer
+name: memory-tracer-analyze
 description: Experimental allocation profiler tracking memory allocations at guest-language level. Shows allocation sites, object types, and memory pressure patterns. Use to identify allocation hotspots, find unnecessary object creation, and understand memory behavior. High allocations in hot loops = optimization opportunity if escape analysis isn't eliminating them.
 ---
 

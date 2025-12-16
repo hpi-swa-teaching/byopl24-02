@@ -1,5 +1,5 @@
 ---
-name: Graal and Truffle Documentation Lookup
+name: graal-truffle-docs
 description: Fetches up-to-date information from official GraalVM, Truffle, and Graal compiler documentation to answer technical questions and provide guidance
 ---
 

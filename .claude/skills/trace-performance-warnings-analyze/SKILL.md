@@ -1,5 +1,5 @@
 ---
-name: Run and Analyze Performance Warning Tracer
+name: trace-performance-warnings-analyze
 description: Detects optimization barriers during compilation. Use FIRST when optimizing - identifies virtual calls, non-constant stores, unresolved type checks, and TruffleBoundary issues that prevent peak performance. Reports exact source locations with stack traces. Essential for eliminating compilation warnings that block full optimization.
 ---
 

@@ -1,5 +1,5 @@
 ---
-name: Run and Analyze CPU Tracer
+name: cpu-tracer-analyze
 description: Counts exact execution frequencies at function/statement level with interpreted vs compiled split. Use to verify compilation effectiveness (aim for >95% compiled), understand control flow patterns, validate algorithmic complexity, and quantify execution frequencies. Complements CPUSampler by showing frequency rather than duration.
 ---
 
