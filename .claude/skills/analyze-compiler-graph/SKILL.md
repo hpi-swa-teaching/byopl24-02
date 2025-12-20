@@ -1,643 +1,890 @@
 ---
 name: analyze-compiler-graph
-description: Dumps and analyzes Graal IR compiler graphs showing optimization decisions. Use BGV format with bgv2json/seafoam to inspect escape analysis (allocation elimination), boxing removal, inlining decisions, and call node types. Reveals what compiler actually optimized vs what you intended. Best for deep-dive investigation after basic profiling identifies issues.
+description: Analyzes Graal IR compiler graphs to understand optimization decisions. Dumps compiler graphs from benchmarks using -Djdk.graal.Dump, analyzes them directly with seafoam for quick insights, converts to JSON with bgv2json for deep analysis with jq, and identifies performance issues like failed escape analysis, boxing overhead, indirect calls, and polymorphism.
 ---
 
-# Skill: Dump and Analyze Compiler Graphs
+# Skill: Analyze Compiler Graphs
 
-This skill dumps Graal IR compiler graphs and analyzes them to understand optimization decisions at the deepest level.
+This skill performs deep IR-level analysis of Graal compiler graphs to understand what optimizations the compiler applied (or failed to apply) and identify performance issues invisible to other profiling tools.
 
 ## What This Skill Does
 
-1. **Dumps Compiler Graphs**: Generates BGV files showing IR at different optimization phases
-2. **Analyzes with Seafoam/bgv2json**: Converts BGV to JSON for programmatic analysis
-3. **Identifies Optimization Issues**: Reveals:
-   - Failed escape analysis (allocations remaining)
-   - Indirect calls preventing inlining
-   - Boxing/unboxing overhead
-   - Missing arithmetic specializations
-   - Deoptimization instability
+1. **Generates Compiler Graphs**: Runs benchmarks with `-Djdk.graal.Dump=Truffle:1` to generate BGV files
+2. **Analyzes with Seafoam**: Uses `seafoam` for quick analysis and graph summaries
+3. **Converts to JSON**: Uses `bgv2json` to convert BGV files to JSON for detailed querying
+4. **Queries with jq**: Runs systematic jq queries to find:
+   - Indirect calls (OptimizedIndirectCallNode)
+   - Boxing/unboxing overhead (BoxNode, UnboxNode)
+   - Failed escape analysis (allocation nodes after PartialEscape phase)
+   - Type instability (excessive guards, deoptimization nodes)
+   - Polymorphism (InstanceOf, Checkcast nodes)
+5. **Generates Analysis Report**: Documents findings with specific IR-level evidence
 
-## Critical Understanding: Use After Basic Profiling!
+## When to Use This Skill
 
-**This is a DEEP diagnostic tool - use only after**:
-1. ✅ CPU profiling identified hot methods
-2. ✅ Performance warnings revealed optimization barriers
-3. ✅ Compilation/inlining traces showed issues
+Use this skill as a **LAST RESORT** after simpler tools (trace-performance-warnings, trace-inlining, cpu-sampler) show problems but don't reveal root causes:
 
-**Why last**:
-- Most complex diagnostic
-- Requires compiler expertise to interpret
-- Generates massive output without filtering
-- Usually other tools identify the issue faster
+- **After trace-performance-warnings** shows optimization barriers but you need to see WHAT the compiler actually did
+- **When allocations should be eliminated** but escape analysis appears to fail
+- **When boxing overhead is suspected** but you need to see BoxNode/UnboxNode in the IR
+- **When indirect calls are suspected** and you need to verify OptimizedIndirectCallNode presence
+- **Understanding why inlining worked** but performance is still poor (what did the inlined code become?)
+- **Deep investigation** when other tools indicate problems but the root cause is unclear
 
-**Use when**:
-- Other tools show problems but don't reveal root cause
-- Need to understand WHY optimization fails
-- Investigating allocation elimination issues
-- Debugging polymorphism and specialization
+**Important**: This is the most complex diagnostic tool. Always use simpler tools first:
+1. `cpu-sampler` - Find where time is spent
+2. `trace-performance-warnings` - Find optimization barriers
+3. `trace-inlining` - Understand inlining decisions
+4. **Only then** → Analyze compiler graphs to see what the compiler actually did
 
 ## Prerequisites
 
-Before using this skill:
-- **Required**: Having benchmark baseline data for comparison
-- **Required**: Profiling data showing specific hot functions
-- **Required**: bgv2json or Seafoam installed
-  - `which bgv2json || echo "Install: gem install bgv2json"`
-  - `which seafoam || echo "Install: gem install seafoam"`
-- **Recommended**: Performance warning output
-- **Recommended**: Compilation trace output
+### Required Tools
+- **GraalVM** with Truffle (already installed if running Truffle language)
+- **seafoam**: Ruby gem for BGV analysis
+  ```bash
+  brew install graphviz  # macOS
+  gem install seafoam
+  ```
+- **bgv2json**: Ruby gem for BGV to JSON conversion
+  ```bash
+  gem install bgv2json
+  ```
 
-## Fermi Verification: The Sanity Gate (MANDATORY)
+### Required Files
+- Benchmark programs 
+- Sufficient disk space (100MB-1GB per benchmark depending on complexity)
 
-**Principle:**  
-The Tool Output is the highest authority for *data*, but your Fermi Estimate is the highest authority for *pipeline integrity*.
+## How This Skill Works
 
-**The Logic:**
-- **Small Deviation:** Tool works correctly. Update your mental model.
-- **Massive Deviation (>1 Order of Magnitude):** Tool is likely **malfunctioning** (silent failure, misconfiguration, or wrong target).
+### Phase 1: Generate Compiler Graphs
 
-**Protocol:**
+**Objective**: Run benchmark with Graal graph dumping enabled to generate BGV files
 
-### Step 1: Pre-Calculation
-- In a scratchpad, estimate the expected output magnitude (e.g., "This acts on an array of 10k items, so I expect at least 10k nodes").
-- *Key:* You must write this down *before* generating the tool command.
+**Process**:
 
-### Step 2: Smoke Test (The Probe)
-- Run on trivial input first to prove the tool *can* work.
+1. **Create output directory**
+   ```bash
+   mkdir -p compiler_graphs/[benchmark-name]
+   ```
 
-### Step 3: Execute & Validate
-- Run the actual command.
-- **Credibility Threshold Check:** Compare Output vs. Estimate.
-  - **Scenario A (Within 1 Order of Magnitude):** **ACCEPT.** The tool is the authority. Proceed with this result.
-  - **Scenario B (>1 Order of Magnitude Divergence OR Unexpected Zero):** **REJECT & DIAGNOSE.**
-    - **STOP.** Do not use this result for the next step.
-    - **Hypothesis:** The tool failed silently, the path is wrong, or permissions are denied.
-    - **Action:** Run a *Debug Command* (e.g., `ls -l target_file` to check size, or `echo $?` to check exit code) to prove the tool is healthy.
-    - *Only* after the tool's health is proven via a secondary check may you accept the divergent result.
+2. **Run benchmark with compiler graph dumping**
+   ```bash
+   EXTRA_JAVA_ARGS="-Djdk.graal.Dump=Truffle:1 \
+                    -Djdk.graal.PrintGraph=File \
+                    -Djdk.graal.DumpPath=compiler_graphs/[benchmark-name]" \
+   <language-launcher> <program>
+   ```
 
-## How the Skill Works
+3. **Verify BGV files generated**
+   ```bash
+   ls -lh compiler_graphs/[benchmark-name]/*.bgv
+   ```
 
-In all examples, `<launcher>` refers to your programming language launcher script.
+**Key Options**:
+- `-Djdk.graal.Dump=Truffle:1`: Dump Truffle compilation graphs (level 1 verbosity)
+- `-Djdk.graal.PrintGraph=File`: Write to filesystem (not network/IGV)
+- `-Djdk.graal.DumpPath=<path>`: Custom output directory
 
-### 1. Dump Compiler Graphs
+**Output**: BGV files named like:
+```
+TruffleHotSpotCompilation-2745[root_getRowColumn].bgv
+TruffleHotSpotCompilation-2801[root_placeQueen].bgv
+```
 
-#### Basic Dump (Truffle Compilations)
+**Example**:
 ```bash
+# Run queens benchmark with graph dumping
+mkdir -p compiler_graphs/queens
 EXTRA_JAVA_ARGS="-Djdk.graal.Dump=Truffle:1 \
-  -Djdk.graal.PrintGraph=File \
-  -Djdk.graal.DumpPath=compiler_graphs" \
-  <launcher> <program> [script args]
-```
-- Dumps all Truffle compilations
-- Level 1: Basic graphs (After parsing, After TruffleTier)
-- Output: `compiler_graphs/` directory with BGV files
+                 -Djdk.graal.PrintGraph=File \
+                 -Djdk.graal.DumpPath=compiler_graphs/queens" \
+<language-launcher> <program>
 
-#### Focused Dump (Specific Method)
+# Verify output
+ls -lh compiler_graphs/queens/
+# Output:
+# -rw-r--r--  732K TruffleHotSpotCompilation-2745[root_getRowColumn].bgv
+# -rw-r--r--  1.2M TruffleHotSpotCompilation-2801[root_placeQueen].bgv
+# -rw-r--r--  1.3M TruffleHotSpotCompilation-3227[root_queens].bgv
+```
+
+---
+
+### Phase 2: Analyze with Seafoam (Quick Analysis)
+
+**Objective**: Get high-level graph statistics and verify optimization quality without deep diving
+
+**Process**:
+
+1. **List graphs in BGV file**
+   ```bash
+   seafoam "[bgv-file]" list
+   ```
+
+   Shows all compilation phases:
+   - `After PE Tier` - After partial evaluation
+   - `After TruffleTier` - After Truffle-specific optimizations (MOST IMPORTANT)
+   - `After high tier` - After high-level Graal optimizations
+   - `After low tier` - After code generation
+
+2. **Describe specific graph** (focus on "After TruffleTier")
+   ```bash
+   seafoam --json "[bgv-file]:3" describe
+   ```
+
+   Returns:
+   ```json
+   {
+     "node_count": 426,
+     "branches": true,
+     "calls": true,
+     "deopts": false,
+     "loops": true,
+     "linear": false,
+     "node_counts": {
+       "FixedGuardNode": 59,
+       "LoadFieldNode": 46,
+       "ConstantNode": 33,
+       ...
+     }
+   }
+   ```
+
+3. **Identify optimization issues**
+   - **InvokeWithExceptionNode** count: Should be minimal (indicates method calls remaining)
+   - **OptimizedIndirectCallNode**: BAD - should be OptimizedDirectCallNode
+   - **BoxNode/UnboxNode**: BAD - indicates boxing overhead
+   - **CommitAllocationNode** after TruffleTier: BAD - escape analysis failed
+   - **DeoptimizeNode** count: Should be low (indicates speculation failures)
+   - **FixedGuardNode** count: High counts indicate type instability
+
+**Example**:
 ```bash
-EXTRA_JAVA_ARGS="-Djdk.graal.Dump=Truffle:1 \
-  -Djdk.graal.MethodFilter="*hotFunction*" \
-  -Djdk.graal.DumpPath=compiler_graphs" \
-  <launcher> --experimental-options \
-  --engine.CompileOnly="*hotFunction*" \
-  <program> [script args]
-```
-- Level 1: Basic graphs (After parsing, After TruffleTier)
-- After TruffleTier is the phase showing Truffle-specific optimizations
-- `--engine.CompileOnly` ensures only this function is compiled, reducing output
-- Dramatically reduces output
-- Focus on known problem method
-- Essential for manageable analysis
+# Analyze the "After TruffleTier" graph (usually index 3)
+seafoam --json "compiler_graphs/queens/TruffleHotSpotCompilation-2801[root_placeQueen].bgv:3" describe
 
-#### With Source Positions
-```bash
-EXTRA_JAVA_ARGS="-Djdk.graal.Dump=Truffle:1 \
-  -Djdk.graal.TrackNodeSourcePosition=true \
-  -Djdk.graal.DumpPath=compiler_graphs" \
-  <launcher> --experimental-options \
-  --engine.NodeSourcePositions \
-  <program> [script args]
-```
-- Enables source location tracking
-- Required for `seafoam source` command
-- Shows inlining call stacks
-
-#### Level 2: Detailed Phases
-```bash
-EXTRA_JAVA_ARGS="-Djdk.graal.Dump=Truffle:2 \
-  -Djdk.graal.MethodFilter="*hotFunction*" \
-  -Djdk.graal.DumpPath=compiler_graphs" \
-  <launcher> <program> [script args]
-```
-- Shows all optimization phases
-- Level 2: Full detail
-- Use only for investigating specific phase failures
-- 5-10x more output than level 1
-
-#### Side Note: Dump Level Argument
-
-The numbers after the colon (`:1`, `:2`, `:3`, etc.) control the **verbosity** of graph dumps - essentially how many compilation phases are dumped.
-
-The dump levels control how many compiler phases are captured. A typical usage for low-level IR visualization is `:3`, which provides detailed dumps suitable for the C1 Visualizer. While the documentation doesn't specify exact phase counts for each level, the pattern is:
-
-- **`:1`** - Fewer phases (basic dumps)
-- **`:2`** - More phases (intermediate detail)  
-- **`:3`** - Most phases (comprehensive dumps for low-level debugging)
-
-Using `Truffle:1` with `PrintGraph=Network` shows Truffle ASTs, guest-language call graphs, and Graal graphs as they leave the Truffle phase. `Truffle:2` dumps Graal graphs between each compiler phase, providing more granular detail during the Truffle compilation pipeline.
-
-### 2. Use seafoam to analyze BGV
-
-- Call `seafoam help` for full command list
-- Analyze the BGV files dumped in output directory
-- Continue with step 3 if you need more control to analyze JSON directly
-
-### 3. Convert BGV to JSON
-
-```bash
-bgv2json compiler_graphs/*.bgv > graphs.json
-```
-- Fast, efficient conversion
-- Produces JSON Lines format (one graph per line)
-- Works with compressed files (.bgv.gz)
-
-### 4. Understanding the JSON Structure
-
-The converted JSON has a specific structure that's important to understand for effective analysis.
-
-#### File Format
-- **JSON Lines format**: Each line is a complete JSON object representing one compilation phase/graph
-- Multiple graphs per BGV file (one for each compilation phase)
-
-#### Top-Level Structure
-Each graph object has these keys:
-```json
+# Output:
 {
-  "name": ["function_name", "phase_name"],
-  "props": { /* graph metadata */ },
-  "nodes": [ /* IR nodes */ ],
-  "edges": [ /* data/control flow */ ],
-  "blocks": [ /* basic blocks */ ]
-}
-```
-
-#### Graph Metadata
-```json
-{
-  "name": ["TruffleIR.Tier1.root_sieve()", "After TruffleTier"],
-  "props": {
-    "compilationIdentifier": "TruffleHotSpotCompilation-2793[root sieve]",
-    "graph": "StructuredGraph:696145{...}",
-    "scope": "TruffleCompilerThread-31.Truffle.TruffleFinal"
+  "node_count": 426,
+  "branches": true,
+  "calls": true,
+  "deopts": false,
+  "loops": true,
+  "node_counts": {
+    "FixedGuardNode": 59,        # Many guards - possible type instability
+    "LoadFieldNode": 46,          # Field accesses
+    "InvokeWithExceptionNode": 9, # 9 method calls remaining - optimization opportunity
+    "UnboxNode": 8,               # Boxing overhead present
+    "BoxNode$PureBoxNode": 4      # Boxing overhead present
   }
 }
-```
-- `name[0]`: Function/method name
-- `name[1]`: Compilation phase (e.g., "After TruffleTier", "After PartialEscape")
-- `props.compilationIdentifier`: Unique ID for this compilation
 
-#### Node Structure
-Each node represents a compiler IR operation:
+# Interpretation:
+# ⚠️ 9 InvokeNodes - calls not fully inlined/specialized
+# ⚠️ Boxing overhead - 8 UnboxNode + 4 BoxNode
+# ⚠️ 59 FixedGuardNode - possible type instability
+# ✅ No deopts - compilation is stable
+```
+
+---
+
+### Phase 3: Convert to JSON with bgv2json
+
+**Objective**: Convert BGV files to JSON format for detailed querying with jq
+
+**Process**:
+
+1. **Convert BGV to JSON**
+   ```bash
+   bgv2json "[bgv-file]" > [output.json]
+   ```
+
+   Generates JSON Lines format (one JSON object per graph, one per line)
+
+2. **Verify JSON structure**
+   ```bash
+   cat [output.json] | jq -s 'length'  # Count graphs
+   cat [output.json] | jq -r '.name'   # List graph names
+   ```
+
+**JSON Structure**:
+Each line is a graph with:
 ```json
 {
-  "id": 5,
-  "props": {
-    "label": "AddNode",              // Node type (for filtering)
-    "category": "arithmetic",         // Category: floating, arithmetic, state, etc.
-    "stamp": "i32",                   // Type information
-    "nodeToBlock": "B0",              // Basic block ID
-    "node_class": {
-      "node_class": "jdk.graal.compiler.nodes.calc.AddNode"
-    }
-  }
+  "name": ["TruffleIR.Tier1.root_placeQueen()", "After TruffleTier"],
+  "props": {...},
+  "nodes": [
+    {
+      "id": 0,
+      "props": {
+        "node_class": {
+          "node_class": "jdk.graal.compiler.nodes.StartNode",
+          "name_template": "Start",
+          ...
+        },
+        ...
+      }
+    },
+    ...
+  ],
+  "edges": [
+    {"from": 0, "to": 11, "props": {...}},
+    ...
+  ]
 }
 ```
 
-**Key properties:**
-- `id`: Unique identifier (used in edges)
-- `props.label`: Human-readable node type (e.g., "AddNode", "UnboxNode")
-- `props.category`: Node category (arithmetic, floating, state, control)
-- `props.stamp`: Type/value information
-- `props.node_class.node_class`: Fully qualified Java class name
+**Example**:
+```bash
+# Convert queens placeQueen function to JSON
+bgv2json "compiler_graphs/queens/TruffleHotSpotCompilation-2801[root_placeQueen].bgv" \
+  > compiler_graphs/queens/placeQueen.json
 
-#### Edge Structure
-Edges connect nodes to show data and control flow:
+# Verify conversion
+cat compiler_graphs/queens/placeQueen.json | jq -s 'length'
+# Output: 9 (9 graphs in the file)
+
+# List graph names
+cat compiler_graphs/queens/placeQueen.json | jq -r '.name'
+# Output:
+# ["TruffleIR.Tier1.root_placeQueen()","After PE Tier"]
+# ["TruffleIR.Tier1.root_placeQueen()","Call Tree","Before Inline"]
+# ["TruffleIR.Tier1.root_placeQueen()","Call Tree","After Inline"]
+# ["TruffleIR.Tier1.root_placeQueen()","After TruffleTier"]
+# ...
+```
+
+---
+
+### Phase 4: Query with jq (Deep Analysis)
+
+**Objective**: Run systematic queries to identify specific performance issues in the IR
+
+**Process**: Query the JSON using jq to find problematic patterns
+
+#### Query 1: Graph Statistics
+```bash
+# Basic statistics for "After TruffleTier" graph (index 3)
+cat [json-file] | jq -s '.[3] | {
+  graph_name: .name,
+  total_nodes: (.nodes | length),
+  total_edges: (.edges | length)
+}'
+```
+
+**Example Output**:
 ```json
 {
-  "from": 5,
-  "to": 1,
-  "props": {
-    "direct": true,
-    "name": "x",               // Input name (e.g., "x", "y" for binary ops)
-    "type": "Value",           // Edge type: Value, State, Association
-    "index": 0
-  }
+  "graph_name": ["TruffleIR.Tier1.root_getRowColumn()", "After TruffleTier"],
+  "total_nodes": 608,
+  "total_edges": 1434
 }
 ```
 
-#### Common Node Types
-
-**Arithmetic Operations:**
-- `AddNode`, `SubNode`, `MulNode`, `DivNode`
-- `IntegerLessThanNode`, `IntegerEqualsNode`
-
-**Constants & Parameters:**
-- `ConstantNode` - Compile-time constants
-- `ParameterNode` - Method parameters
-
-**Conversions (Performance Critical):**
-- `BoxNode` / `BoxNode$AllocatingBoxNode` - Boxing primitives ⚠️
-- `UnboxNode` - Unboxing objects ⚠️
-
-**Memory Operations:**
-- `LoadFieldNode`, `StoreFieldNode` - Object field access
-- `LoadIndexedNode`, `StoreIndexedNode` - Array access
-
-**Allocations (Escape Analysis):**
-- `TruffleNew` - Object allocation ⚠️
-- `CommitAllocationNode`, `NewInstanceNode` - Failed escape analysis ⚠️
-- `AllocatedObjectNode` - Allocation tracking
-
-**Call Operations:**
-- `OptimizedDirectCallNode` - Specialized direct call ✅
-- `OptimizedIndirectCallNode` - Dynamic call ⚠️
-- `InvokeNode`, `InvokeWithExceptionNode` - Method calls ⚠️
-
-**Control Flow:**
-- `IfNode` - Conditional branch
-- `LoopBeginNode`, `LoopEndNode` - Loop structure
-- `MergeNode`, `BeginNode`, `EndNode` - Control merge points
-- `ReturnNode` - Method return
-
-### 6. Analyze with jq
-
-#### Query 1: Find Indirect Calls (Performance Problem!)
+#### Query 2: Node Type Distribution (Top 15)
 ```bash
-# Should show OptimizedDirectCallNode, NOT OptimizedIndirectCallNode
-cat graphs.json | jq '.nodes[] | select(.props.label | contains("Call")) | .props.label' | sort | uniq -c
-
-# Or with seafoam
-seafoam --json file.bgv.gz:2 describe | \
-  jq '.node_counts | to_entries | .[] | select(.key | contains("Call"))'
+# Find most common node types
+cat [json-file] | jq -s '.[3] |
+  .nodes |
+  group_by(.props.node_class.node_class) |
+  map({
+    node_class: .[0].props.node_class.node_class,
+    count: length
+  }) |
+  sort_by(.count) |
+  reverse |
+  .[0:15]'
 ```
 
-**Good**:
+**Example Output**:
 ```json
-{"key": "OptimizedDirectCallNode", "value": 5}
-```
-
-**Bad** (needs caching!):
-```json
-{"key": "OptimizedIndirectCallNode", "value": 10}
-{"key": "InvokeNode", "value": 8}
-```
-
-#### Query 2: Find Failed Escape Analysis (Allocations Remaining)
-```bash
-# After PartialEscape phase, should have ZERO allocations
-cat graphs.json | jq 'select(.name | contains("After PartialEscape")) | .nodes[] | select(.props.label | test("Alloc|New")) | .props.label' | sort | uniq -c
-
-# Or with seafoam
-seafoam --json file.bgv.gz:3 describe | \
-  jq '.node_counts | to_entries | .[] | select(.key | test("Alloc|New"))'
-```
-
-**Good**: Empty output (all allocations eliminated)
-
-**Bad** (escape analysis failed!):
-```json
-{"key": "CommitAllocationNode", "value": 2}
-{"key": "NewInstanceNode", "value": 1}
-```
-
-#### Query 3: Find Boxing Operations (Specialization Issue!)
-```bash
-cat graphs.json | jq '.nodes[] | select(.props.label | test("Box|Unbox")) | .props.label' | sort | uniq -c
-
-# Or with seafoam
-seafoam --json file.bgv.gz:2 describe | \
-  jq '.node_counts | to_entries | .[] | select(.key | test("Box|Unbox"))'
-```
-
-**Good**: Empty output (primitives stay unboxed)
-
-**Bad** (missing primitive specializations!):
-```json
-{"key": "BoxNode", "value": 4}
-{"key": "UnboxNode", "value": 4}
-```
-
-#### Query 4: Check Graph Characteristics
-```bash
-seafoam --json file.bgv.gz:2 describe | \
-  jq '{
-    node_count,
-    loops,
-    branches,
-    deopts,
-    calls,
-    linear
-  }'
+[
+  {"node_class": "jdk.graal.compiler.nodes.FrameState", "count": 102},
+  {"node_class": "jdk.graal.compiler.nodes.ConstantNode", "count": 50},
+  {"node_class": "jdk.graal.compiler.nodes.FixedGuardNode", "count": 37},
+  {"node_class": "jdk.graal.compiler.nodes.java.LoadFieldNode", "count": 23},
+  ...
+]
 ```
 
 **Interpretation**:
-- `deopts: false` = Good (stable compilation)
-- `deopts: true` = Bad (deoptimization instability)
-- `calls` count = High means many unspecialized calls
-- `linear: true` = Optimal (no branches, straight-line code)
+- **High ConstantNode count**: Good - constant folding working
+- **High FixedGuardNode count**: May indicate type instability
+- **High FrameState count**: Normal for complex functions
 
-#### Query 5: Count Node Types
+#### Query 3: Find Call Nodes (Optimization Opportunities)
 ```bash
-seafoam --json file.bgv.gz:2 describe | jq '.node_counts' | jq 'to_entries | sort_by(.value) | reverse | .[0:10]'
+# Find all call-related nodes
+cat [json-file] | jq -s '.[3] |
+  .nodes |
+  group_by(.props.node_class.node_class) |
+  map({
+    node_class: .[0].props.node_class.node_class,
+    count: length
+  }) |
+  map(select(.node_class | test("Call"))) |
+  sort_by(.count) |
+  reverse'
 ```
 
-**Look for**:
-- High `InvokeNode` count = Unspecialized method calls
-- `AddNode`, `MulNode` = Good (arithmetic specialized)
-- `ConstantNode` high = Good (constant propagation working)
+**Example Output**:
+```json
+[
+  {"node_class": "jdk.graal.compiler.nodes.java.MethodCallTargetNode", "count": 10}
+]
+```
 
-#### Additional: Generate SVG Visualization
+**Interpretation**:
+- **InvokeNode / InvokeWithExceptionNode**: Method calls remaining (BAD - should be eliminated)
+- **OptimizedIndirectCallNode**: Indirect calls preventing optimization (BAD)
+- **OptimizedDirectCallNode**: Direct calls, acceptable if minimal (ACCEPTABLE)
+- **MethodCallTargetNode**: Call metadata, count indicates call overhead
 
+**Problem**: 10 MethodCallTargetNode means 10 method calls remain in compiled code
+**Fix**: Add CallTarget caching with `@Cached`, improve specialization
+
+#### Query 4: Find Boxing Overhead
 ```bash
-# Render the "After TruffleTier" phase to an image
-seafoam file.bgv.gz:2 render > graph.svg
+# Find Box/Unbox nodes
+cat [json-file] | jq -s '.[3] |
+  .nodes |
+  group_by(.props.node_class.node_class) |
+  map({
+    node_class: .[0].props.node_class.node_class,
+    count: length
+  }) |
+  map(select(.node_class | test("Box|Unbox"))) |
+  sort_by(.count) |
+  reverse'
 ```
 
-### 5. Common Problem Patterns
-
-#### Problem 1: Indirect Calls (Critical!)
-```
-OptimizedIndirectCallNode found in graph
-```
-
-**Root Cause**: No caching of CallTarget
-
-**Fix** (Language Implementation):
-```java
-// ❌ BAD: Dynamic lookup every time
-public Object execute(VirtualFrame frame) {
-    CallTarget target = lookupFunction(name);
-    return target.call(args);
-}
-
-// ✅ GOOD: Cache with @Cached
-@Specialization(guards = "function == cachedFunction")
-public Object executeCached(VirtualFrame frame,
-        @Cached("function") Function cachedFunction,
-        @Cached("cachedFunction.getCallTarget()") CallTarget callTarget) {
-    return callTarget.call(args);
-}
+**Example Output**:
+```json
+[
+  {"node_class": "jdk.graal.compiler.nodes.extended.UnboxNode", "count": 18},
+  {"node_class": "jdk.graal.compiler.nodes.extended.BoxNode$PureBoxNode", "count": 4}
+]
 ```
 
-**Verification**: Re-dump and check for OptimizedDirectCallNode
+**Interpretation**:
+- **UnboxNode / BoxNode**: Boxing/unboxing operations waste allocations (BAD)
+- **High counts**: Missing primitive specializations or boxing elimination config
 
-#### Problem 2: Failed Escape Analysis
-```
-CommitAllocationNode or NewInstanceNode found after PartialEscape
-```
+**Problem**: 18 UnboxNode + 4 BoxNode = significant boxing overhead
+**Fix**: Add primitive specializations (`int`, `long`, `double`), enable boxing elimination in bytecode config
 
-**Root Cause**: Object escapes compilation unit
-
-**Common Causes**:
-- Object stored in field visible to other threads
-- Object passed to method that doesn't inline
-- Object stored in escaping data structure
-- Identity operations (synchronization, ==)
-
-**Fix**: Keep object lifetime strictly local
-```<your-language>
-// ❌ BAD: Object escapes
-var temp = Point(x, y);
-this.lastPoint = temp;  // Escapes!
-
-// ✅ GOOD: Object stays local
-fun calculate(x, y) {
-    var temp = Point(x, y);  // Local only
-    var result = temp.distance();
-    return result;  // Only result escapes
-}
-```
-
-**Verification**: After PartialEscape phase should show zero allocation nodes
-
-#### Problem 3: Boxing/Unboxing
-```
-BoxNode and UnboxNode found
-```
-
-**Root Cause**: Missing primitive specializations
-
-**Fix** (Language Implementation):
-```java
-// ❌ BAD: Generic Object parameters
-@Specialization
-Object add(Object left, Object right) { ... }
-
-// ✅ GOOD: Primitive specializations
-@Specialization
-int add(int left, int right) { return left + right; }
-
-@Specialization
-long add(long left, long right) { return left + right; }
-
-@Specialization
-double add(double left, double right) { return left + right; }
-```
-
-**Verification**: Box/Unbox nodes should disappear
-
-#### Problem 4: Deoptimization Nodes
-```
-DeoptimizeNode or UnreachedNode found in hot path
-```
-
-**Root Cause**: Unstable type assumptions
-
-**Fix**: Add proper guards and type specializations
-
-**Correlation**: Use with `--engine.TraceTransferToInterpreter` to find exact location
-
-### 6. Key Graph Phases to Check
-
-#### "After parsing"
-- Shows initial IR from AST
-- Lots of nodes, not optimized yet
-
-#### "After TruffleTier"
-- **Most important for language developers!**
-- Shows Truffle-specific optimizations
-- Should see:
-  - ✅ Constant nodes (from partial evaluation)
-  - ✅ Direct calls (not indirect)
-  - ✅ Arithmetic nodes (not InvokeNodes)
-  - ❌ VirtualFrame references (should be eliminated)
-
-#### "After PartialEscape"
-- Check for allocation elimination
-- Should have ZERO allocation nodes if escape analysis worked
-
-#### "After TruffleTier" vs "Final"
-- Compare to see what generic Graal optimizations did
-- Node count should decrease significantly
-
-## Typical Workflow
-
-### Step 1: Profile to Identify Hot Function
+#### Query 5: Find Allocation Nodes (Failed Escape Analysis)
 ```bash
-<launcher> --cpusampler --cpusampler.ShowTiers=true <program> [script args]
+# Find allocation-related nodes
+cat [json-file] | jq -s '.[3] |
+  .nodes |
+  group_by(.props.node_class.node_class) |
+  map({
+    node_class: .[0].props.node_class.node_class,
+    count: length
+  }) |
+  map(select(.node_class | test("Alloc|New|Commit"))) |
+  sort_by(.count) |
+  reverse'
 ```
-**Identify**: Function consuming most time
 
-### Step 2: Dump Graphs for Hot Function Only
+**Example Output**:
+```json
+[]
+```
+
+**Interpretation**:
+- **Empty result after "After TruffleTier"**: GOOD - escape analysis successful, allocations eliminated
+- **CommitAllocationNode present**: BAD - allocations survived optimization
+- **NewInstanceNode present**: BAD - object allocations remaining
+- **NewArrayNode present**: BAD - array allocations remaining
+
+**Problem**: Allocations present means escape analysis failed
+**Fix**: Refactor to keep object lifetimes local, ensure inlining succeeds, avoid storing in fields
+
+#### Query 6: Find Deoptimization Nodes
 ```bash
-# Clean previous dumps to ensure data isolation
-rm -rf compiler_graphs/
+# Count deoptimization nodes
+cat [json-file] | jq -s '.[3] |
+  .nodes |
+  map(select(.props.node_class.node_class | test("Deopt"))) |
+  length'
+```
 
+**Example Output**:
+```
+10
+```
+
+**Interpretation**:
+- **0 DeoptimizeNode**: IDEAL - no unconditional deoptimizations
+- **1-5 DeoptimizeNode**: ACCEPTABLE - uncommon paths
+- **>10 DeoptimizeNode**: CONCERNING - many deoptimization points
+
+**Problem**: Many DeoptimizeNode suggests unstable speculation or excessive guards
+**Fix**: Improve type stability, check for polymorphic call sites
+
+#### Query 7: Find Loop Structures
+```bash
+# Find loop-related nodes
+cat [json-file] | jq -s '.[3] |
+  .nodes |
+  map(select(.props.node_class.node_class | test("Loop"))) |
+  group_by(.props.node_class.node_class) |
+  map({
+    node_class: .[0].props.node_class.node_class,
+    count: length
+  })'
+```
+
+**Example Output**:
+```json
+[
+  {"node_class": "jdk.graal.compiler.nodes.LoopBeginNode", "count": 1},
+  {"node_class": "jdk.graal.compiler.nodes.LoopEndNode", "count": 1}
+]
+```
+
+**Interpretation**:
+- **LoopBeginNode count**: Number of loops
+- **LoopEndNode count**: Should equal LoopBeginNode (one back-edge per loop ideal)
+- **Multiple LoopEndNode per LoopBeginNode**: Complex control flow, multiple back-edges
+
+#### Query 8: Type Check Operations (Polymorphism Indicators)
+```bash
+# Find type check nodes
+cat [json-file] | jq -s '.[3] |
+  .nodes |
+  group_by(.props.node_class.node_class) |
+  map({
+    node_class: .[0].props.node_class.node_class,
+    count: length
+  }) |
+  map(select(.node_class | test("InstanceOf|Checkcast"))) |
+  sort_by(.count) |
+  reverse'
+```
+
+**Example Output**:
+```json
+[
+  {"node_class": "jdk.graal.compiler.nodes.java.InstanceOfNode", "count": 25}
+]
+```
+
+**Interpretation**:
+- **High InstanceOfNode count**: Indicates polymorphism or type checks
+- **High CheckcastNode count**: Type casting operations, potential type pollution
+
+**Problem**: 25 InstanceOfNode suggests polymorphic code paths
+**Fix**: Add more specific @Specialization guards, use DSL to split execution by type
+
+---
+
+### Phase 5: Analyze and Report Findings
+
+**Objective**: Interpret query results and generate actionable recommendations
+
+**Analysis Checklist**:
+
+1. **Call Overhead**
+   - [ ] Count InvokeNode / InvokeWithExceptionNode
+   - [ ] Count OptimizedIndirectCallNode (should be 0)
+   - [ ] Identify which functions are called (not inlined)
+   - [ ] Recommendation: Add CallTarget caching, improve specialization
+
+2. **Boxing Overhead**
+   - [ ] Count BoxNode / UnboxNode
+   - [ ] Identify which operations cause boxing
+   - [ ] Recommendation: Add primitive specializations, enable boxing elimination
+
+3. **Allocation Overhead**
+   - [ ] Check for CommitAllocationNode / NewInstanceNode after TruffleTier
+   - [ ] Identify which allocations survived
+   - [ ] Recommendation: Improve escape analysis, keep objects local
+
+4. **Type Stability**
+   - [ ] Count FixedGuardNode (high counts indicate instability)
+   - [ ] Count DeoptimizeNode (should be minimal)
+   - [ ] Count InstanceOfNode (indicates polymorphism)
+   - [ ] Recommendation: Improve type specialization, reduce polymorphism
+
+5. **Loop Optimization**
+   - [ ] Identify loop structures
+   - [ ] Check for loop-invariant hoisting opportunities
+   - [ ] Recommendation: Manual hoisting if compiler didn't optimize
+
+**Report Template**:
+```markdown
+# Compiler Graph Analysis Report
+
+**Benchmark**: [name]
+**Function Analyzed**: [function-name]
+**Graph Phase**: After TruffleTier
+**Total Nodes**: [count]
+**Total Edges**: [count]
+
+## Findings
+
+### 1. Call Overhead
+- **MethodCallTargetNode**: [count]
+- **InvokeWithExceptionNode**: [count]
+- **Status**: ⚠️ [count] method calls remaining in compiled code
+- **Recommendation**: Add CallTarget caching for [specific calls]
+
+### 2. Boxing Overhead
+- **UnboxNode**: [count]
+- **BoxNode**: [count]
+- **Status**: ⚠️ Boxing overhead present
+- **Recommendation**: Add primitive specializations for arithmetic operations
+
+### 3. Escape Analysis
+- **CommitAllocationNode**: [count]
+- **Status**: ✅ Escape analysis successful (all allocations eliminated)
+
+### 4. Type Stability
+- **FixedGuardNode**: [count]
+- **DeoptimizeNode**: [count]
+- **InstanceOfNode**: [count]
+- **Status**: ⚠️ High guard count suggests type instability
+- **Recommendation**: Add more specific type guards, reduce polymorphism
+
+## Summary
+
+**Critical Issues**: [count]
+**Moderate Issues**: [count]
+**Expected Impact**: [estimate] if fixed
+
+**Top Priority**: [most impactful fix]
+```
+
+---
+
+## Example Usage Scenario
+
+**User**: "Analyze compiler graphs for the queens benchmark to understand why performance is slow"
+
+**Skill Actions**:
+
+### Step 1: Generate Compiler Graphs
+```bash
+# Create output directory
+mkdir -p compiler_graphs/queens
+
+# Run benchmark with graph dumping
 EXTRA_JAVA_ARGS="-Djdk.graal.Dump=Truffle:1 \
-  -Djdk.graal.MethodFilter="*hotFunction*" \
-  -Djdk.graal.DumpPath=compiler_graphs" \
-  <launcher> --experimental-options \
-  --engine.CompileOnly="*hotFunction*" \
-  <program> [script args]
+                 -Djdk.graal.PrintGraph=File \
+                 -Djdk.graal.DumpPath=compiler_graphs/queens" \
+<language-launcher> <program>
+
+# Verify output
+ls -lh compiler_graphs/queens/
+# Generated:
+# TruffleHotSpotCompilation-2745[root_getRowColumn].bgv  (732K)
+# TruffleHotSpotCompilation-2801[root_placeQueen].bgv   (1.2M)
+# TruffleHotSpotCompilation-3227[root_queens].bgv       (1.3M)
 ```
 
-### Step 3: Convert to JSON
+### Step 2: Quick Analysis with Seafoam
 ```bash
-bgv2json compiler_graphs/*.bgv > graphs.json
+# List graphs in placeQueen function
+seafoam "compiler_graphs/queens/TruffleHotSpotCompilation-2801[root_placeQueen].bgv" list
+# Shows 9 graphs (different compilation phases)
+
+# Analyze "After TruffleTier" phase (index 3)
+seafoam --json "compiler_graphs/queens/TruffleHotSpotCompilation-2801[root_placeQueen].bgv:3" describe
+
+# Result:
+{
+  "node_count": 426,
+  "calls": true,
+  "deopts": false,
+  "loops": true,
+  "node_counts": {
+    "InvokeWithExceptionNode": 9,    # ⚠️ Calls remaining
+    "UnboxNode": 8,                   # ⚠️ Boxing overhead
+    "BoxNode$PureBoxNode": 4,         # ⚠️ Boxing overhead
+    "FixedGuardNode": 59              # ⚠️ Many guards
+  }
+}
+
+# Initial findings:
+# ⚠️ 9 method calls not eliminated
+# ⚠️ Boxing overhead (12 box/unbox operations)
+# ⚠️ High guard count (potential type instability)
 ```
 
-### Step 4: Find "After TruffleTier" Graph
+### Step 3: Convert to JSON for Deep Analysis
 ```bash
-cat graphs.json | jq 'select(.name | contains("After TruffleTier"))'  | head -1 > truffle-tier.json
+# Convert to JSON
+bgv2json "compiler_graphs/queens/TruffleHotSpotCompilation-2801[root_placeQueen].bgv" \
+  > compiler_graphs/queens/placeQueen.json
+
+# Verify
+cat compiler_graphs/queens/placeQueen.json | jq -s '.[3] | .name'
+# ["TruffleIR.Tier1.root_placeQueen()","After TruffleTier"]
 ```
 
-### Step 5: Check for Common Issues
+### Step 4: Query for Specific Issues
 ```bash
-# Indirect calls?
-cat truffle-tier.json | jq '.nodes[] | select(.props.label | contains("IndirectCall"))'
+# Query 1: Find call overhead
+cat compiler_graphs/queens/placeQueen.json | jq -s '.[3] |
+  .nodes |
+  group_by(.props.node_class.node_class) |
+  map({node_class: .[0].props.node_class.node_class, count: length}) |
+  map(select(.node_class | test("Call")))'
 
-# Allocations?
-cat truffle-tier.json | jq '.nodes[] | select(.props.label | test("Alloc|New"))'
+# Result: 9 MethodCallTargetNode
+# Interpretation: 9 method calls not optimized away
 
-# Boxing?
-cat truffle-tier.json | jq '.nodes[] | select(.props.label | test("Box|Unbox"))'
+# Query 2: Find boxing overhead
+cat compiler_graphs/queens/placeQueen.json | jq -s '.[3] |
+  .nodes |
+  group_by(.props.node_class.node_class) |
+  map({node_class: .[0].props.node_class.node_class, count: length}) |
+  map(select(.node_class | test("Box|Unbox")))'
 
-# InvokeNodes (unspecialized)?
-cat truffle-tier.json | jq '.nodes[] | select(.props.label == "InvokeNode") | .props'
+# Result: 8 UnboxNode, 4 BoxNode$PureBoxNode
+# Interpretation: Significant boxing overhead for primitive operations
+
+# Query 3: Check escape analysis
+cat compiler_graphs/queens/placeQueen.json | jq -s '.[3] |
+  .nodes |
+  group_by(.props.node_class.node_class) |
+  map({node_class: .[0].props.node_class.node_class, count: length}) |
+  map(select(.node_class | test("Alloc|New|Commit")))'
+
+# Result: []
+# Interpretation: ✅ Escape analysis successful - all allocations eliminated
 ```
 
-### Step 6: Fix Issues
+### Step 5: Generate Report
+```markdown
+# Compiler Graph Analysis Report
 
-### Step 7: Verify Fixes
-```bash
-# Re-dump and re-analyze
-# Should see problems eliminated
+**Benchmark**: queens
+**Function Analyzed**: root_placeQueen
+**Graph Phase**: After TruffleTier
+**Total Nodes**: 426
+**Total Edges**: 1253
+
+## Findings
+
+### 1. Call Overhead ⚠️ CRITICAL
+- **MethodCallTargetNode**: 9
+- **InvokeWithExceptionNode**: 9
+- **Status**: ⚠️ 9 method calls remaining in compiled code
+- **Impact**: Prevents full optimization, adds overhead
+- **Recommendation**:
+  - Add CallTarget caching with @Cached for recursive calls
+  - Ensure helper methods inline properly
+  - Check trace-inlining to see which calls didn't inline
+
+### 2. Boxing Overhead ⚠️ MODERATE
+- **UnboxNode**: 8
+- **BoxNode$PureBoxNode**: 4
+- **Status**: ⚠️ 12 boxing operations present
+- **Impact**: Allocation overhead, prevents scalar replacement
+- **Recommendation**:
+  - Add primitive specializations for arithmetic (`int`, `long`)
+  - Enable boxing elimination in @GenerateBytecode config
+  - Use @Specialization with primitive parameter types
+
+### 3. Escape Analysis ✅ SUCCESS
+- **CommitAllocationNode**: 0
+- **Status**: ✅ All allocations successfully eliminated
+- **Impact**: Optimal - no allocation overhead
+
+### 4. Type Stability ⚠️ MODERATE
+- **FixedGuardNode**: 59
+- **DeoptimizeNode**: 0
+- **InstanceOfNode**: 15
+- **Status**: ⚠️ Many guards, but no deoptimizations
+- **Impact**: Guard overhead acceptable, no deopt instability
+- **Recommendation**: Guards are working correctly, not a priority
+
+## Summary
+
+**Critical Issues**: 1 (call overhead)
+**Moderate Issues**: 1 (boxing overhead)
+**Expected Impact**: 3-5x speedup if both issues fixed
+
+**Top Priority**: Add CallTarget caching to eliminate 9 remaining method calls
+
+**Next Steps**:
+1. Implement CallTarget caching for recursive placeQueen calls
+2. Add primitive specializations to eliminate boxing
+3. Re-run benchmark and verify improvements
 ```
+
+---
+
+## Tool Selection Guide
+
+**When to Use Compiler Graph Analysis**:
+- **AFTER** trace-performance-warnings shows issues
+- **AFTER** trace-inlining shows successful inlining but performance still poor
+- **AFTER** cpu-sampler shows high compiled time but slow execution
+- **When** you need to verify WHAT the compiler actually did
+- **When** you suspect escape analysis, boxing, or indirect call issues
+
+**When NOT to Use**:
+- **BEFORE** simpler tools (cpu-sampler, trace-performance-warnings, trace-inlining)
+- **When** the issue is obvious from traces or warnings
+- **When** you're just starting performance investigation
+
+**Workflow**:
+```
+1. cpu-sampler → Identify hot functions
+2. trace-performance-warnings → Find optimization barriers
+3. trace-inlining → Verify inlining decisions
+4. analyze-compiler-graph → Understand WHAT the compiler did (if still unclear)
+```
+
+---
+
+## Common Patterns and Interpretations
+
+### Good Patterns (Optimized Code)
+
+✅ **High ConstantNode count**: Constant folding working
+✅ **Zero allocation nodes after TruffleTier**: Escape analysis successful
+✅ **Low InvokeNode count**: Calls inlined or specialized
+✅ **Zero BoxNode/UnboxNode**: No boxing overhead
+✅ **Low DeoptimizeNode count**: Stable speculation
+
+### Bad Patterns (Optimization Failures)
+
+❌ **High InvokeNode/InvokeWithExceptionNode count**: Calls not optimized
+❌ **OptimizedIndirectCallNode present**: Indirect calls preventing optimization
+❌ **High BoxNode/UnboxNode count**: Boxing overhead
+❌ **CommitAllocationNode after TruffleTier**: Escape analysis failed
+❌ **High FixedGuardNode with high DeoptimizeNode**: Type instability
+❌ **High InstanceOfNode count**: Polymorphic code
+
+---
 
 ## Best Practices
 
-### 1. Always Use MethodFilter
-```bash
-# ❌ BAD: Overwhelming output
--Djdk.graal.Dump=Truffle:1
+### 1. Always Focus on "After TruffleTier" Graph
+- This shows Truffle-specific optimization results
+- Earlier phases are less relevant for Truffle languages
+- Later phases show generic Graal optimizations
 
-# ✅ GOOD: Focused on problem
--Djdk.graal.Dump=Truffle:1 -Djdk.graal.MethodFilter="*hotFunction*"
-```
+### 2. Start with Seafoam for Quick Overview
+- Use `seafoam --json [file]:3 describe` for instant statistics
+- Identify major issues before deep diving
+- Saves time compared to full JSON analysis
 
-### 2. Start with Level 1
-- Level 1: Basic phases (usually sufficient)
-- Level 2: All phases (only when needed)
-- Level 3+: Rarely useful for Truffle development
+### 3. Systematic Query Workflow
+1. Graph statistics (nodes, edges)
+2. Node type distribution (top 15)
+3. Call nodes (optimization opportunities)
+4. Boxing nodes (primitive specialization opportunities)
+5. Allocation nodes (escape analysis effectiveness)
+6. Deoptimization nodes (stability check)
+7. Type check nodes (polymorphism indicators)
 
-### 3. Compress BGV Files
-```bash
-# BGV files are huge, compress them
-gzip compiler_graphs/*.bgv
+### 4. Correlate with Other Tools
+- **trace-performance-warnings** → Identifies issues
+- **Compiler graphs** → Confirms issues in IR
+- **Example**: Warning says "virtual call" → Graph shows OptimizedIndirectCallNode
 
-# bgv2json and seafoam read .bgv.gz natively
-```
+### 5. Compare Before/After Optimization
+- Generate graphs before fix
+- Apply fix (e.g., add CallTarget caching)
+- Generate graphs after fix
+- Compare node counts to verify improvement
 
-### 4. Focus on "After TruffleTier"
-- Most relevant for language developers
-- Shows language-specific optimization effectiveness
-- Later phases are generic Graal (less actionable)
-
-### 5. Correlate with Other Tools
-```bash
-# Run together
-EXTRA_JAVA_ARGS="-Djdk.graal.Dump=Truffle:1 ..." \
-  <launcher> --experimental-options \
-  --compiler.TracePerformanceWarnings=all \
-  --engine.TraceCompilation \
-  <program> [script args] 2>&1 | tee combined.log
-```
+---
 
 ## Common Pitfalls
 
-- ❌ **Dumping without profiling first**: Wasted effort on wrong methods
-- ❌ **Not using MethodFilter**: Gigabytes of unusable output
-- ❌ **Analyzing wrong phase**: Focus on "After TruffleTier" first
-- ❌ **Ignoring source positions**: Use --engine.NodeSourcePositions
-- ❌ **Comparing without controlled conditions**: Different warmup = incomparable
-- ❌ **Over-interpreting**: Graphs show results, not decision process
+❌ **Analyzing wrong graph phase**: Focus on "After TruffleTier" (usually index 3)
+❌ **Not using seafoam first**: JSON queries are slow; seafoam gives quick overview
+❌ **Analyzing cold code**: Only analyze hot functions identified by cpu-sampler
+❌ **Ignoring other tools**: Graphs alone don't explain WHY; use trace-performance-warnings
+❌ **Over-interpreting small counts**: A few guards/invokes may be acceptable
+❌ **Comparing graphs from different runs**: Different compilation IDs, not comparable
 
-## Key Node Types to Recognize
+---
 
-### Good Patterns (Optimized)
-- `OptimizedDirectCallNode` - Specialized calls
-- `AddNode`, `MulNode`, `SubNode` - Primitive arithmetic
-- `ConstantNode` - Constants from partial evaluation
-- `ParameterNode` → disappears after inlining
-- Few `GuardNode` - Stable assumptions
+## Reference Commands
 
-### Bad Patterns (Need Fixes)
-- `OptimizedIndirectCallNode` - Need caching
-- `InvokeNode` - Unspecialized method calls
-- `CommitAllocationNode`, `NewInstanceNode` - Escape analysis failed
-- `BoxNode`, `UnboxNode` - Missing primitive specializations
-- `DeoptimizeNode` in hot paths - Unstable assumptions
-- Many `GuardNode` - Over-speculation or instability
+### Generate Compiler Graphs
+```bash
+EXTRA_JAVA_ARGS="-Djdk.graal.Dump=Truffle:1 \
+                 -Djdk.graal.PrintGraph=File \
+                 -Djdk.graal.DumpPath=compiler_graphs/[name]" \
+<language-launcher> <program>
+```
+
+### Seafoam Quick Analysis
+```bash
+# List graphs
+seafoam "[file].bgv" list
+
+# Describe specific graph
+seafoam --json "[file].bgv:3" describe
+```
+
+### Convert to JSON
+```bash
+bgv2json "[file].bgv" > output.json
+```
+
+### Essential jq Queries
+```bash
+# Count graphs
+cat [json] | jq -s 'length'
+
+# List graph names
+cat [json] | jq -r '.name'
+
+# Graph statistics
+cat [json] | jq -s '.[3] | {total_nodes: (.nodes|length), total_edges: (.edges|length)}'
+
+# Top 15 node types
+cat [json] | jq -s '.[3] | .nodes | group_by(.props.node_class.node_class) | map({node_class: .[0].props.node_class.node_class, count: length}) | sort_by(.count) | reverse | .[0:15]'
+
+# Find calls
+cat [json] | jq -s '.[3] | .nodes | group_by(.props.node_class.node_class) | map({node_class: .[0].props.node_class.node_class, count: length}) | map(select(.node_class | test("Call")))'
+
+# Find boxing
+cat [json] | jq -s '.[3] | .nodes | group_by(.props.node_class.node_class) | map({node_class: .[0].props.node_class.node_class, count: length}) | map(select(.node_class | test("Box|Unbox")))'
+
+# Find allocations
+cat [json] | jq -s '.[3] | .nodes | group_by(.props.node_class.node_class) | map({node_class: .[0].props.node_class.node_class, count: length}) | map(select(.node_class | test("Alloc|New|Commit")))'
+
+# Count deopts
+cat [json] | jq -s '.[3] | .nodes | map(select(.props.node_class.node_class | test("Deopt"))) | length'
+```
+
+---
+
+## Related Documentation
+
+- **Dump Compiler Graph.md**: Complete reference for `-Djdk.graal.Dump` option
+- **Seafoam**: https://github.com/Shopify/seafoam
+- **BGV Format**: https://github.com/Shopify/seafoam/blob/main/docs/bgv.md
+- **Ideal Graph Visualizer (IGV)**: Traditional GUI tool for BGV visualization
+- **GraalVM Compiler**: https://www.graalvm.org/latest/reference-manual/compiler/
+
+---
 
 ## Success Criteria
 
-**After optimization**:
-- ✅ Zero `OptimizedIndirectCallNode` (all direct)
-- ✅ Zero allocation nodes after PartialEscape
-- ✅ Zero `BoxNode`/`UnboxNode` (primitives stay unboxed)
-- ✅ Low `InvokeNode` count (arithmetic specialized)
-- ✅ Zero `DeoptimizeNode` in hot paths
-- ✅ High `ConstantNode` count (good partial evaluation)
-- ✅ Simple, linear graphs (few branches)
+**Good Analysis**:
+- ✅ Compiler graphs generated for hot functions
+- ✅ Seafoam analysis shows optimization quality
+- ✅ JSON queries identify specific issues
+- ✅ Findings correlate with trace-performance-warnings
+- ✅ Actionable recommendations generated
 
-## Reference Documentation
-
-For detailed information, see:
-- Seafoam: https://github.com/Shopify/seafoam
-- BGV format: https://github.com/Shopify/seafoam/blob/main/docs/bgv.md
-- GraalVM Debugging: https://github.com/oracle/graal/blob/master/compiler/docs/Debugging.md
-- Use Graal Truffle Docs skill
-
-## Implementation Notes
-
-This skill:
-- Uses environment variable: `EXTRA_JAVA_ARGS`
-- Dumps to: `compiler_graphs/` directory (default)
-- Requires: bgv2json or Seafoam for analysis
-- Generates: Potentially gigabytes of data without filtering
-- Use only after: Profiling, warnings, and compilation traces
-- Focus on: "After TruffleTier" phase for Truffle work
-- Emphasizes: **Most complex diagnostic - use last, after simpler tools**
-- Combined with other performance analysis skills for full picture
-
-## Related Skills
-
-- Use Graal Truffle Docs skill to understand Truffle APIs and options
-- Use CPU Sampler Analyze skill for initial profiling to identify hot functions
-- Use Performance Warnings Analyze skill to find optimization barriers
-- Use Compilation Trace Analyze skill to see inlining and compilation decisions
-- Use CPU Tracer Analyze skill for execution frequency insights
-- Use Memory Tracer Analyze skill for allocation profiling
-- Use Trace Inlining Analyze skill for inlining decision analysis
-- Use Trace Transfer to Interpreter Analyze skill for deoptimization insights
-- Use Benchmark Baseline skill for creating performance baselines with different benchmarks
+**Excellent Analysis**:
+- ✅ Before/after comparison shows optimization improvements
+- ✅ All major optimization barriers identified in IR
+- ✅ Specific node IDs referenced in recommendations
+- ✅ Verification that fixes eliminated problematic nodes
+- ✅ Documentation of expected IR patterns for future reference
