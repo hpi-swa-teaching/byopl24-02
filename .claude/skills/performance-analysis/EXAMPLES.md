@@ -54,34 +54,56 @@ Problem Benchmarks: queens (primary focus)
 ```
 
 ```
-Analyzing implementation code...
-→ Searching for node files: **/*Node.java
-→ Found: CallNode.java, AddNode.java, ReadVariableNode.java
-→ Checking for anti-patterns...
-→ Found: CallTarget.call() without @Cached in CallNode.java:42
-→ Found: Only Object specialization in AddNode.java
+Analyzing implementation code systematically...
 
-Theories for queens (2.6x slower, recursive algorithm):
+Step 1: Language configuration
+→ Reading LoxLanguage.java bytecode configuration
+→ Checking optimization flags and settings
+→ Found: Boxing configuration looks good
+
+Step 2: ALL operations/nodes
+→ Reading LoxBytecodeRootNode.java
+→ Checking all @Operation definitions
+→ Found 20 operations total
+→ Analyzing each for anti-patterns...
+→ Found: Missing primitive specializations in 3 operations
+
+Step 3: Runtime data structures
+→ Reading LoxFunction.java, LoxClass.java, GlobalObject.java
+→ Checking for @TruffleBoundary and allocation patterns
+→ Found: CallTarget.call() without @Cached in function calls
+→ Found: ConditionProfile not cached
+
+Step 4: Node implementations
+→ Reading src/main/java/de/hpi/swa/lox/nodes/*.java
+→ Found: CallNode.java:42 missing caching
+→ Found: AddNode.java only has Object specialization
+
+Generated Theories for queens (2.6x slower, recursive algorithm):
 
 Priority 1: "Hot functions have low compilation effectiveness"
-- Tool: cpu-sampler
-- Verification: Quick, initial profiling
-- Evidence if true: High T0 % (interpreter time)
+- Tools: cpu-sampler (tier distribution), cpu-tracer (compiled %), trace-compilation (why not compiling)
+- Verification: Quick, foundational profiling
+- Evidence if true: High T0 % in sampler, low compiled % in tracer
+- Impact: Critical (blocks all optimization)
 
 Priority 2: "CallTarget not cached in CallNode"
 - Source: Code analysis found CallNode.java:42
-- Tool: trace-performance-warnings
-- Evidence if true: Virtual call warnings at CallNode execution
+- Tools: trace-performance-warnings (virtual calls), cpu-sampler (impact on hot path)
+- Evidence if true: Virtual call warnings at CallNode, high time in CallNode
+- Impact: High (recursive benchmark = many calls)
 
-Priority 3: "Optimization barriers prevent peak performance"
-- Tool: trace-performance-warnings
-- Verification: Targeted diagnostic
-- Evidence if true: Virtual call warnings
+Priority 3: "ConditionProfile not cached causing virtual calls"
+- Source: Code analysis of control flow nodes
+- Tools: trace-performance-warnings (virtual calls), trace-inlining (inlining failures)
+- Evidence if true: ConditionProfile.profile() warnings, inline cutoffs
+- Impact: High (every conditional statement affected)
 
 Priority 4: "Inlining budget exhausted for recursive calls"
-- Tool: trace-inlining
+- Tools: trace-inlining (cutoff states), cpu-tracer (depth analysis)
 - Verification: Medium complexity
-- Evidence if true: Cutoff states
+- Evidence if true: Cutoff states for queens function
+- Impact: Medium (would limit optimization depth)
 ```
 
 ### Phase 3: Verify Theories
@@ -89,47 +111,212 @@ Priority 4: "Inlining budget exhausted for recursive calls"
 **Theory 1**: "Hot functions have low compilation effectiveness"
 
 ```
-Step 3a: Load Documentation
+Tool 1/3: cpu-sampler
+
+Step 3.1: Load Documentation
 → Reading .claude/skills/performance-analysis/CPUSampler.md
 → Retrieved: Command syntax, tier meanings, targets
 
-Step 3b: Fermi Verification
+Step 3.2: Fermi Verification
 → Pre-calculation: Expect 1-5 functions in output
-→ Smoke test: ./lox --cpusampler trivial.lox → ✓ Works
+→ Smoke test: ./lox --cpusampler trivial.lox → ✓ Shows 1 function
 → Execute: ./lox --cpusampler --cpusampler.ShowTiers=true --cpusampler.Delay=2000 queens.lox
 → Output: 3 functions shown
 → Validation: 3 is within 1 order of magnitude of 1-5 ✓
 → Credibility: ACCEPT
 
-Step 3c: Analyze Results
+Step 3.3: Analyze Results
 → Parsing output...
 → queens: 95.2% T0, 1.7% T2
 → Target: <10% T0, >80% T2
 → Gap: 10x worse than target
+→ Evidence: ✅ FOUND (critical compilation issue)
+→ Saved to tool-outputs/cpu-sampler-queens.txt
+
+Tool 2/3: cpu-tracer
+
+Step 3.1: Load Documentation
+→ Reading .claude/skills/performance-analysis/CPUTracer.md
+→ Retrieved: Shows interpreted vs compiled execution counts
+
+Step 3.2: Fermi Verification
+→ Pre-calculation: Expect queens function executed 100-10000 times (recursive)
+→ Smoke test: ./lox --cputracer trivial.lox → ✓ Shows execution counts
+→ Execute: ./lox --cputracer queens.lox
+→ Output: queens executed 5,432 times total
+→ Validation: 5,432 is within expected range ✓
+→ Credibility: ACCEPT
+
+Step 3.3: Analyze Results
+→ Parsing output...
+→ queens: 5,200 interpreted (95.7%), 232 compiled (4.3%)
+→ Target: >95% compiled for hot functions
+→ Evidence: ✅ FOUND (confirms low compilation)
+→ Saved to tool-outputs/cpu-tracer-queens.txt
+
+Tool 3/3: trace-compilation
+
+Step 3.1: Load Documentation
+→ Reading .claude/skills/performance-analysis/Trace Compilation.md
+→ Retrieved: Shows when/if compilation happens
+
+Step 3.2: Fermi Verification
+→ Pre-calculation: Expect 1-3 compilation events for hot functions
+→ Smoke test: ./lox --engine.TraceCompilation trivial.lox 2>&1 | grep "opt done" → ✓ Works
+→ Execute: ./lox --engine.TraceCompilation queens.lox 2>&1 | grep queens
+→ Output: 2 compilation events shown
+→ Validation: 2 is within expected range ✓
+→ Credibility: ACCEPT
+
+Step 3.3: Analyze Results
+→ Parsing output...
+→ [T1] opt done queens (tier 1, basic optimization)
+→ [T2] opt bailout queens (tier 2 compilation FAILED)
+→ Evidence: ✅ FOUND (T2 compilation failing, explains low T2%)
+→ Saved to tool-outputs/trace-compilation-queens.txt
+
+Step 3.4: Combine Evidence
+→ All 3 tools confirm theory
+→ cpu-sampler: 95.2% T0 (symptom)
+→ cpu-tracer: 95.7% interpreted execution (confirms symptom)
+→ trace-compilation: T2 bailout (root cause!)
 → Verdict: ✅ VERIFIED
 
-Step 3d: Record Findings
-→ Saved output to tool-outputs/cpu-sampler-queens.txt
-→ Recommendation: Investigate compilation issues
-→ Generated follow-up theory: "Compilation failing"
+Step 3.5: Generate Recommendation
+→ Root cause: T2 compilation failing (bailout)
+→ Next step: Use trace-performance-warnings to find why
+→ Generated follow-up theory: "Optimization barriers causing T2 bailout"
 ```
 
-**Theory 2**: "Optimization barriers prevent peak performance"
+**Theory 2**: "CallTarget not cached in CallNode"
 
 ```
-[Similar process...]
+Tool 1/2: trace-performance-warnings
+
+Step 3.1: Load Documentation
+→ Reading .claude/skills/performance-analysis/Trace Performance Warnings.md
+→ Retrieved: Shows virtual calls preventing optimization
+
+Step 3.2: Fermi Verification
+→ Pre-calculation: CallNode used frequently in recursive benchmark, expect 1-10 warnings
+→ Smoke test: ./lox --engine.TracePerformanceWarnings=all trivial.lox 2>&1 | grep "perf warn" → ✓ Works
+→ Execute: ./lox --engine.TracePerformanceWarnings=all queens.lox 2>&1 | grep "perf warn"
+→ Output: 5 warning groups shown
+→ Validation: 5 is within expected range ✓
+→ Credibility: ACCEPT
+
+Step 3.3: Analyze Results
+→ Parsing output...
+→ Warning: "Virtual to HotSpotMethod<CallTarget.call(Object[])>" at CallNode.java:42
+→ Stack trace confirms exact location
+→ Evidence: ✅ FOUND (exact match to theory)
+→ Saved to tool-outputs/trace-performance-warnings-queens.txt
+
+Tool 2/2: cpu-sampler
+
+Step 3.1: Already loaded from Theory 1
+
+Step 3.2: Fermi Verification (already done)
+
+Step 3.3: Re-analyze Results for CallNode
+→ Parsing previous output...
+→ CallNode not directly visible (inlined into queens)
+→ But queens shows 88% total time with virtual calls
+→ Evidence: ✅ SUPPORTING (high impact on hot path)
+
+Step 3.4: Combine Evidence
+→ trace-performance-warnings: Direct evidence of virtual call at CallNode.java:42
+→ cpu-sampler: Shows high time in affected function
 → Verdict: ✅ VERIFIED
-→ Evidence: 3 virtual call warnings
-→ Recommendation: Cache CallTarget and ConditionProfile
+
+Step 3.5: Generate Recommendation
+→ Fix: Add @Cached for CallTarget
+→ Impact: Should reduce virtual calls, help T2 compilation succeed
 ```
 
-**Theory 3**: "Inlining budget exhausted"
+**Theory 3**: "ConditionProfile not cached causing virtual calls"
 
 ```
-[Similar process...]
-→ Verdict: ❌ FALSIFIED
-→ Evidence: All calls inlined successfully, no Cutoff states
-→ Conclusion: Inlining works fine; issue is elsewhere
+Tool 1/2: trace-performance-warnings
+
+Step 3.1: Already loaded from Theory 2
+
+Step 3.2: Fermi Verification
+→ Pre-calculation: Conditionals used frequently, expect 1-10 warnings
+→ Smoke test: Already done for Theory 2
+→ Execute: Use same output from Theory 2
+→ Output: 5 warning groups (already validated)
+→ Credibility: ACCEPT
+
+Step 3.3: Analyze Results
+→ Parsing output...
+→ Warning: "Virtual to HotSpotMethod<ConditionProfile.profile(boolean)>" at IfNode.java:28
+→ Evidence: ✅ FOUND
+→ Saved to tool-outputs/trace-performance-warnings-queens.txt (same file)
+
+Tool 2/2: trace-inlining
+
+Step 3.1: Load Documentation
+→ Reading .claude/skills/performance-analysis/Trace Inlining.md
+→ Retrieved: Shows inlining decisions and failures
+
+Step 3.2: Fermi Verification
+→ Pre-calculation: Expect 1-5 inlining events for queens function
+→ Smoke test: ./lox --engine.TraceInlining trivial.lox 2>&1 | grep "inline" → ✓ Works
+→ Execute: ./lox --engine.TraceInlining queens.lox 2>&1 | grep queens
+→ Output: 0 lines shown (unexpected!)
+→ Validation: REJECTED (expected 1-5, got 0 - divergence too large)
+
+Step 3.2b: Diagnosis
+→ Run: ./lox queens.lox → ✓ Runs successfully
+→ Run: ./lox --engine.TraceInlining queens.lox 2>&1 | head -20
+→ Output shows: "inline start :program" but no queens events
+→ Root cause: queens never compiles to T2 (from Theory 1), so no inlining trace
+→ This is inconclusive due to prerequisite issue
+→ Credibility: ⚠️ INCONCLUSIVE (tool can't provide data due to compilation failure)
+
+Step 3.4: Combine Evidence
+→ trace-performance-warnings: Direct evidence of ConditionProfile virtual call
+→ trace-inlining: Inconclusive (no T2 compilation yet)
+→ Verdict: ⚠️ PARTIALLY VERIFIED (1/2 tools confirm, 1 inconclusive)
+
+Step 3.5: Generate Recommendation
+→ Fix: Add @Cached for ConditionProfile
+→ Note: Should re-test trace-inlining after fixing Theory 1 & 2
+```
+
+**Theory 4**: "Inlining budget exhausted for recursive calls"
+
+```
+Tool 1/2: trace-inlining
+
+Step 3.1: Already loaded from Theory 3
+
+Step 3.2: Fermi Verification & Diagnosis
+→ Already determined inconclusive due to no T2 compilation
+→ Cannot verify this theory without successful compilation
+→ Credibility: ⚠️ INCONCLUSIVE
+
+Tool 2/2: cpu-tracer
+
+Step 3.1: Already loaded from Theory 1
+
+Step 3.2: Use existing results
+
+Step 3.3: Analyze for recursion depth
+→ cpu-tracer doesn't show call depth
+→ Cannot determine if budget exhaustion is the issue
+→ Evidence: ⚠️ INCONCLUSIVE (wrong tool for this metric)
+
+Step 3.4: Combine Evidence
+→ trace-inlining: Inconclusive (no T2 compilation)
+→ cpu-tracer: Inconclusive (doesn't show depth)
+→ Verdict: ⚠️ INCONCLUSIVE (need T2 compilation first)
+
+Step 3.5: Note for Follow-up
+→ Re-test this theory after fixing Theory 1, 2, 3
+→ Alternative: Could use compiler graph analysis if available
+→ Recommendation: Defer until compilation works
 ```
 
 ### Phase 4: Generate Report
@@ -141,14 +328,18 @@ Writing PERFORMANCE_ANALYSIS_REPORT.md:
 ✓ Executive summary
 ✓ Benchmark results
 ✓ Baseline comparison
-✓ 3 theories with verdicts
+✓ 4 theories with verdicts (2 verified, 1 partially verified, 1 inconclusive)
+✓ Multi-tool evidence sections
+✓ Inconclusive theories section with follow-up plan
 ✓ 2 prioritized recommendations
 ✓ Tool outputs appendix
 
 Saving tool outputs:
 ✓ tool-outputs/cpu-sampler-queens.txt
+✓ tool-outputs/cpu-tracer-queens.txt
+✓ tool-outputs/trace-compilation-queens.txt
 ✓ tool-outputs/trace-performance-warnings-queens.txt
-✓ tool-outputs/trace-inlining-queens.txt
+✓ tool-outputs/trace-inlining-queens.txt (inconclusive - documented)
 ```
 
 ### Final Summary
@@ -157,13 +348,18 @@ Saving tool outputs:
 Performance Analysis Complete!
 
 Executive Summary:
-- Analyzed 3 benchmarks
-- 2/3 theories verified
-- 1 critical issue found: Missing caching causing 95.2% interpreter time
-- Expected improvement: 5-10x speedup after fix
+- Analyzed 1 benchmark (queens - 2.6x slower than expected)
+- 4 theories tested: 2 verified, 1 partially verified, 1 inconclusive
+- Critical issue found: T2 compilation failing due to virtual calls
+- Root cause: Missing @Cached for CallTarget and ConditionProfile
+- Expected improvement: 5-10x speedup after fixes
 
-Top Recommendation:
-Implement CallTarget and ConditionProfile caching to eliminate virtual calls
+Top Recommendations (Priority 1):
+1. Add CallTarget caching to eliminate virtual calls
+2. Add ConditionProfile caching to support compilation
+
+Inconclusive Theories:
+- Theory 4: Cannot test until compilation works (defer to post-fix analysis)
 
 Report saved to: PERFORMANCE_ANALYSIS_REPORT.md
 Tool outputs in: tool-outputs/
@@ -176,20 +372,22 @@ Tool outputs in: tool-outputs/
 ```markdown
 # Performance Analysis Report
 
-**Generated**: [DATE and TIME]
-**Language**: [DETECTED NAME]
-**Benchmarks Analyzed**: [COUNT]
-**Theories Tested**: [COUNT verified] / [COUNT total]
+**Generated**: 2024-01-15 14:30:00
+**Language**: Lox (Truffle/GraalVM)
+**Benchmarks Analyzed**: 1 (queens)
+**Theories Tested**: 2 verified, 1 partially verified, 1 inconclusive / 4 total
+**Tools Executed**: cpu-sampler, cpu-tracer, trace-compilation, trace-performance-warnings, trace-inlining
 
 ## Executive Summary
 
-[3-5 sentences summarizing key findings]
+Analysis identified critical T2 compilation failure in the queens benchmark (2.6x slower than Lua baseline). Root cause: missing @Cached annotations for CallTarget and ConditionProfile causing virtual calls that prevent full optimization. Multi-tool verification (cpu-sampler, cpu-tracer, trace-compilation, trace-performance-warnings) confirmed 95.2% interpreter execution with T2 bailouts. Two theories fully verified with multiple tools, one partially verified, and one inconclusive pending compilation fixes.
 
-- **Critical Issues**: [COUNT] (blocking optimization)
-- **Moderate Issues**: [COUNT] (limiting performance)
-- **Expected Improvement**: [ESTIMATE] after fixes
+- **Critical Issues**: 2 verified (blocking T2 compilation)
+- **Partially Verified Issues**: 1 (ConditionProfile caching)
+- **Inconclusive Theories**: 1 (deferred until compilation works)
+- **Expected Improvement**: 5-10x speedup after fixes
 
-**Top Finding**: [Most impactful verified theory]
+**Top Finding**: Missing CallTarget and ConditionProfile caching prevents T2 compilation, causing 95% interpreter execution (target: <10%)
 
 ---
 
@@ -230,10 +428,12 @@ Tool outputs in: tool-outputs/
 
 ### Theory 1: "Hot functions have low compilation effectiveness"
 - **Status**: ✅ VERIFIED
-- **Tool**: cpu-sampler
+- **Tools Used**: cpu-sampler, cpu-tracer, trace-compilation (3/3 tools)
 - **Priority**: P1 (Critical)
 
-**Evidence**:
+**Evidence from Multiple Tools**:
+
+**Tool 1: cpu-sampler** (tier distribution)
 ```
 Name     || Total Time    || T0     | T1    | T2
 queens   || 1850ms 88.0%  || 95.2% | 3.1%  | 1.7%
@@ -242,44 +442,135 @@ queens   || 1850ms 88.0%  || 95.2% | 3.1%  | 1.7%
 - Target: <10% T0, >80% T2
 - Gap: 10x worse than target
 
-**Conclusion**: Critical compilation issue preventing optimization
+**Tool 2: cpu-tracer** (execution counts)
+```
+queens: 5,200 interpreted (95.7%), 232 compiled (4.3%)
+```
+- Target: >95% compiled for hot functions
+- Confirms low compilation effectiveness
+
+**Tool 3: trace-compilation** (compilation events)
+```
+[T1] opt done queens (tier 1, basic optimization)
+[T2] opt bailout queens (tier 2 compilation FAILED)
+```
+- Root cause identified: T2 compilation failing
+
+**Conclusion**: Critical compilation issue - T2 bailout prevents optimization
+
+**Saved Outputs**:
+- tool-outputs/cpu-sampler-queens.txt
+- tool-outputs/cpu-tracer-queens.txt
+- tool-outputs/trace-compilation-queens.txt
 
 ---
 
-### Theory 2: "Optimization barriers prevent peak performance"
+### Theory 2: "CallTarget not cached in CallNode"
 - **Status**: ✅ VERIFIED
-- **Tool**: trace-performance-warnings
+- **Tools Used**: trace-performance-warnings, cpu-sampler (2/2 tools)
 - **Priority**: P1 (Critical)
 
-**Evidence**:
+**Evidence from Multiple Tools**:
+
+**Tool 1: trace-performance-warnings** (virtual calls)
 ```
 [engine] perf warn queens |Partial evaluation could not inline the virtual runtime call Virtual to HotSpotMethod<CallTarget.call(Object[])>
-[engine] perf warn queens |Partial evaluation could not inline the virtual runtime call Virtual to HotSpotMethod<ConditionProfile.profile(boolean)>
-```
-- 3 virtual call warnings found
-- Prevents full inlining and optimization
-- CallTarget and ConditionProfile not cached
 
-**Conclusion**: Missing caching of compilation-final objects
+Approximated stack trace:
+  at CallNode.java:42
+```
+- Direct evidence of virtual call at exact location predicted by theory
+- Prevents optimization and likely causes T2 bailout from Theory 1
+
+**Tool 2: cpu-sampler** (impact assessment)
+```
+queens || 1850ms 88.0%  (88% of total execution time)
+```
+- Virtual call occurs in function consuming 88% of runtime
+- High impact on hot path
+
+**Conclusion**: Missing CallTarget caching causes virtual calls in hot path, preventing T2 compilation
+
+**Saved Outputs**:
+- tool-outputs/trace-performance-warnings-queens.txt
+- tool-outputs/cpu-sampler-queens.txt (from Theory 1)
 
 ---
 
-### Theory 3: "Inlining budget exhausted for recursive calls"
-- **Status**: ❌ FALSIFIED
-- **Tool**: trace-inlining
+### Theory 3: "ConditionProfile not cached causing virtual calls"
+- **Status**: ⚠️ PARTIALLY VERIFIED
+- **Tools Used**: trace-performance-warnings (verified), trace-inlining (inconclusive) - 1/2 tools
+- **Priority**: P1 (Critical)
+
+**Evidence from Multiple Tools**:
+
+**Tool 1: trace-performance-warnings** (virtual calls) - ✅ VERIFIED
+```
+[engine] perf warn queens |Partial evaluation could not inline the virtual runtime call Virtual to HotSpotMethod<ConditionProfile.profile(boolean)>
+
+Approximated stack trace:
+  at IfNode.java:28
+```
+- Direct evidence of ConditionProfile virtual call
+- Confirms theory prediction
+
+**Tool 2: trace-inlining** (inlining failures) - ⚠️ INCONCLUSIVE
+- Expected: Inlining cutoff or failure messages
+- Actual: No output for queens function
+- Diagnosis: queens never reaches T2 compilation (from Theory 1)
+- Conclusion: Cannot verify inlining impact until compilation succeeds
+
+**Conclusion**: Theory confirmed by trace-performance-warnings; second tool inconclusive due to prerequisite compilation failure
+
+**Follow-up Required**: Re-test trace-inlining after fixing Theory 1 & 2
+
+**Saved Outputs**:
+- tool-outputs/trace-performance-warnings-queens.txt (same as Theory 2)
+- tool-outputs/trace-inlining-queens.txt (inconclusive - documented)
+
+---
+
+### Theory 4: "Inlining budget exhausted for recursive calls"
+- **Status**: ⚠️ INCONCLUSIVE
+- **Tools Used**: trace-inlining (inconclusive), cpu-tracer (inconclusive) - 0/2 tools verified
 - **Priority**: P2 (Medium)
 
-**Evidence**:
-```
-[engine] inline start queens |IR Nodes 4500 |Truffle Callees 2 |Depth 0
-[engine] Inlined hasConflict |call diff -1.00 |IR Nodes 800 |Depth 1
-[engine] inline done queens |IR Nodes 4500 |...
-```
-- All calls successfully inlined (no Cutoff states)
-- IR nodes well under budget (4500 < 12000)
-- No budget exhaustion
+**Evidence from Multiple Tools**:
 
-**Conclusion**: Inlining working correctly; issue is elsewhere (theories 1 & 2)
+**Tool 1: trace-inlining** - ⚠️ INCONCLUSIVE
+- Expected: Cutoff states or budget messages
+- Actual: No output for queens function
+- Diagnosis: Requires T2 compilation which is currently failing
+- Conclusion: Cannot verify without successful compilation
+
+**Tool 2: cpu-tracer** - ⚠️ INCONCLUSIVE
+- Expected: Call depth metrics
+- Actual: Tool doesn't show call depth/recursion metrics
+- Conclusion: Wrong tool for measuring this aspect
+
+**Alternative Approaches Considered**:
+- Compiler graph analysis (requires bgv2json/seafoam setup)
+- Manual code inspection (not sufficient for verification per methodology)
+
+**Conclusion**: Cannot verify theory with available tools until compilation works
+
+**Follow-up Required**:
+1. Fix Theory 1, 2, 3 to enable T2 compilation
+2. Re-run trace-inlining to check for budget exhaustion
+3. Consider compiler graph analysis if still inconclusive
+
+**Saved Outputs**:
+- tool-outputs/trace-inlining-queens.txt (inconclusive - documented)
+- tool-outputs/cpu-tracer-queens.txt (from Theory 1)
+
+---
+
+## Inconclusive Theories Summary
+
+**Theory 4** could not be fully verified due to prerequisite issues:
+- **Blocker**: T2 compilation must succeed first
+- **Recommended Action**: Fix verified issues (Theory 1, 2, 3) then re-test
+- **Alternative Tools**: Compiler graph analysis with bgv2json if trace tools remain inconclusive
 
 ---
 
@@ -358,21 +649,33 @@ public Object execute(VirtualFrame frame,
 
 ## Summary
 
-**Verified Theories**: 2/3
-- ✅ Low compilation effectiveness (cpu-sampler)
-- ✅ Optimization barriers (trace-performance-warnings)
-- ❌ Inlining budget exhaustion (trace-inlining)
+**Theory Verification Results**: 4 theories tested
+- ✅ **2 Verified**: Theory 1 (3/3 tools), Theory 2 (2/2 tools)
+- ⚠️ **1 Partially Verified**: Theory 3 (1/2 tools verified, 1 inconclusive)
+- ⚠️ **1 Inconclusive**: Theory 4 (0/2 tools - blocked by compilation failure)
+
+**Multi-Tool Verification Summary**:
+- **Theory 1**: cpu-sampler + cpu-tracer + trace-compilation → All confirm T2 bailout
+- **Theory 2**: trace-performance-warnings + cpu-sampler → Both confirm CallTarget virtual calls
+- **Theory 3**: trace-performance-warnings (✅) + trace-inlining (⚠️ blocked by T2 failure)
+- **Theory 4**: All tools inconclusive due to prerequisite issues
 
 **Critical Findings**:
-1. Missing caching causing virtual calls and preventing optimization
-2. Only 1.7% fully compiled execution (target >80%)
+1. **Root Cause**: T2 compilation failing (bailout)
+2. **Trigger**: Virtual calls from missing @Cached on CallTarget and ConditionProfile
+3. **Impact**: 95.2% interpreter execution (target: <10%), 1.7% T2 (target: >80%)
+4. **Severity**: 10x worse than target metrics
 
-**Expected Improvement**: 5-10x speedup after implementing Priority 1 fix
+**Expected Improvement**: 5-10x speedup after implementing Priority 1 fixes
+
+**Inconclusive Theories**:
+- Theory 4 deferred until compilation succeeds (cannot test inlining without T2)
 
 **Next Steps**:
-1. Implement CallTarget and ConditionProfile caching (Priority 1)
+1. Implement Priority 1 fixes (CallTarget + ConditionProfile caching)
 2. Re-run benchmarks to measure improvement
-3. Investigate remaining compilation issues if still slow (Priority 2)
+3. Re-test inconclusive theories (Theory 3 trace-inlining, Theory 4)
+4. If still slow after fixes: Investigate remaining issues with fresh analysis
 ```
 
 ---

@@ -57,6 +57,9 @@ Loaded Results:
 
 **Objective**: Generate testable performance theories based on gaps and patterns
 
+**Target**: 5-15 most impactful theories (comprehensive but bounded)
+**Time Budget**: 15-20 minutes for theory generation
+
 ### Process
 
 1. **Analyze performance gaps**
@@ -66,40 +69,73 @@ Loaded Results:
      - Generate specific theories
 
 2. **Apply pattern matching**
-   - **Recursive benchmarks** (queens, towers) → Inlining/caching theories
-   - **Allocation benchmarks** (storage, trees) → Escape analysis theories
-   - **Arithmetic benchmarks** (sieve, permute) → Specialization theories
+   - **Recursive benchmarks** → Inlining/caching theories
+   - **Allocation benchmarks** → Escape analysis theories
+   - **Arithmetic benchmarks** → Specialization theories
    - **All slow benchmarks** → Compilation effectiveness theories
 
-3. **Analyze implementation code for common flaws**
-   - Search for known performance anti-patterns in Language definition
-   - Search for known performance anti-patterns in Root Node implementation
-   - Search for anti-patterns in data structure implementations:
-     - Excessive object allocations
-     - Deep call stacks without inlining
-     - Frequent dynamic type checks
-   - Search node implementations for anti-patterns:
-     - Missing @Cached annotations (CallTarget, profiles)
-     - Missing primitive specializations (Object-only)
-     - Dynamic frame slot lookups
-     - Missing boxing elimination config
-   - Generate theories with specific file locations
+3. **Systematic code analysis for anti-patterns** (CRITICAL - Most Important)
 
-4. **Prioritize theories**
-   - **Priority 1**: High-impact, quick-to-verify (e.g., cpu-sampler)
-   - **Priority 2**: Medium complexity (e.g., trace-performance-warnings)
-   - **Priority 3**: Deep investigation (e.g., compiler graphs)
+   **MUST analyze the following systematically**:
 
-5. **Select verification tools**
-   - Match theory type to appropriate tool
-   - Consider verification workflow order
+   a. **Language definition & bytecode configuration**
+      - Check configuration settings for optimization opportunities
+      - Identify missing or suboptimal configurations
+
+   b. **ALL operations/nodes in the implementation**
+      - Check EVERY operation for missing optimizations
+      - Look for patterns that prevent compilation
+      - Identify missing specializations or caching
+
+   c. **Runtime data structures and types**
+      - Analyze allocation patterns
+      - Check for optimization boundaries
+      - Identify inefficient data structure choices
+
+   d. **Frame and variable access patterns**
+      - Analyze slot access patterns
+      - Check for dynamic vs constant access
+      - Identify materialization overhead
+
+   e. **Library and interop usage**
+      - Check for uncached library usage
+      - Analyze limit parameters on cached libraries
+      - Identify missing exports or specializations
+
+   **For each anti-pattern found**:
+   - Record specific file location (file:line)
+   - Extract code excerpt showing the issue
+   - Estimate impact (critical/high/moderate/minor)
+   - Identify root cause (architectural vs implementation)
+
+4. **Prioritize theories by impact × verification cost**
+   - **Priority 1**: Critical impact, quick verification (5-10 min per theory)
+   - **Priority 2**: High impact, moderate verification (10-20 min per theory)
+   - **Priority 3**: Moderate impact or complex verification (20-30 min per theory)
+
+   **Limit to top 15 theories** - rank by (impact score / verification time)
+
+5. **Select ALL verification tools needed for each theory**
+   - Match theory type to appropriate tools
+   - **CRITICAL**: List ALL tools needed for 100% proof (not just one)
+   - If theory requires multiple tools for complete verification, list them all
+   - Example: Architectural theory about data structure choice may need:
+     - Profiler to measure frequency
+     - Memory tracer to measure allocation overhead
+     - Compilation tracer to verify optimization barriers
+   - Consider verification workflow dependencies
 
 ### Output
 
-- Prioritized list of theories (3-8 theories typical)
-- Selected verification tool for each
-- Expected evidence description
-- Theory rationale
+- Prioritized list of 5-15 theories (comprehensive analysis)
+- For EACH theory:
+  - Specific code location (file:line)
+  - Code excerpt showing the issue
+  - ALL tools needed for 100% verification (complete list)
+  - Expected evidence from each tool
+  - Theory rationale and root cause
+  - Impact estimate (critical/high/moderate/minor)
+  - Estimated verification time
 
 ### Example
 
@@ -127,6 +163,15 @@ Priority 3: "Inlining budget exhausted for recursive calls"
 ## Phase 3: Verify Theories Systematically
 
 **Objective**: Verify or falsify each theory using appropriate tools with rigorous methodology
+
+**Time Budget**: Maximum 1 hour total (including Phase 2 theory generation)
+**Requirement**: 100% proof - run ALL tools needed for complete verification
+
+**CRITICAL RULES**:
+1. **Run ALL tools listed for the theory** - do not skip tools even if earlier ones seem conclusive
+2. **Actually execute tools** - do not substitute code analysis for tool verification
+3. **Document inconclusive results** - if a tool produces no useful data, try alternatives
+4. **Respect time budget** - if approaching 1h limit, prioritize remaining high-impact theories
 
 For each theory in priority order, execute this sub-workflow:
 
@@ -242,9 +287,13 @@ Alternative failure scenario:
   - **Credibility**: ACCEPT after fix
 ```
 
-### Step 3.3: Run Tool and Analyze Results
+### Step 3.3: Run ALL Tools and Analyze Results
+
+**CRITICAL**: For each theory, run EVERY tool listed in the theory's verification plan. Do not stop after the first tool even if it seems conclusive.
 
 **Process**:
+
+**For EACH tool listed in the theory's verification plan**:
 
 1. **Execute tool command**
    - Use appropriate options based on documentation
@@ -256,35 +305,61 @@ Alternative failure scenario:
    - Identify key findings
    - Look for expected evidence (from theory description)
 
-3. **Evaluate theory**
-   - **✅ Verified**: Evidence found as predicted
+3. **Evaluate tool result**
+   - **✅ Evidence Found**: Tool confirms theory prediction
      - Extract specific data points
      - Note magnitude of issue (how far from target)
-   - **❌ Falsified**: Evidence not found or contradicts prediction
-     - Document why theory was wrong
-     - Note what was found instead
-   - **⚠️ Inconclusive**: Insufficient data (rare)
-     - Note why inconclusive
-     - Suggest additional investigation
+     - Continue to next tool in verification plan
 
-4. **Generate recommendations** (if verified)
+   - **❌ Evidence Contradicts**: Tool output contradicts theory
+     - Document what was found instead
+     - Continue to next tool (may clarify contradiction)
+
+   - **⚠️ Inconclusive**: Tool produces no useful data
+     - **REQUIRED ACTIONS**:
+       1. Document why inconclusive (no data? wrong benchmark? tool misconfigured?)
+       2. Try alternative tool if available
+       3. If all tools inconclusive, mark theory as "⚠️ INCONCLUSIVE - needs further investigation"
+     - Examples of inconclusive results:
+       - Profiler shows 0 samples (runtime too short / delay too long)
+       - Tracer shows no events (feature not exercised in benchmark)
+       - Graph dump fails (compilation didn't happen)
+     - **Mitigation**: Document in report, suggest follow-up investigation
+
+4. **Combine evidence from all tools**
+   - After running ALL tools, synthesize findings
+   - **✅ Verified**: Majority of tools confirm theory
+     - List supporting evidence from each tool
+     - Note if any tools showed contradictory data
+   - **❌ Falsified**: Majority of tools contradict theory
+     - Explain why theory was wrong
+     - Note what alternative explanation fits the data
+   - **⚠️ Inconclusive**: Tools provide insufficient or contradictory data
+     - Document all tool results
+     - Suggest additional investigation needed
+
+5. **Generate recommendations** (if verified)
    - Identify specific fix based on evidence
    - Provide code examples where applicable
-   - Estimate impact (if possible)
+   - Estimate impact based on tool measurements
    - Reference similar implementations or documentation
+   - Note verification steps to confirm fix worked
 
-5. **Record findings**
-   - Save tool output to file
-   - Record theory verdict
+6. **Record findings**
+   - Save ALL tool outputs to files
+   - Record theory verdict with confidence level
    - Extract actionable insights
    - Note any follow-up theories generated
 
 ### Output
 
-- Theory verdict (verified/falsified/inconclusive)
-- Evidence excerpt from tool output
+- Theory verdict: ✅ VERIFIED / ❌ FALSIFIED / ⚠️ INCONCLUSIVE
+- Evidence from ALL tools (not just one):
+  - Tool 1: [result] (saved to tool-outputs/...)
+  - Tool 2: [result] (saved to tool-outputs/...)
+  - Tool N: [result] (saved to tool-outputs/...)
 - Recommendation (if verified)
-- Saved tool output file
+- Follow-up investigation needed (if inconclusive)
 
 ### Example
 

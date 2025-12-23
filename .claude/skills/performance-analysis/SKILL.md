@@ -27,9 +27,13 @@ Systematic performance analysis of Truffle language implementations through theo
 
 1. **Loads Data**: Reads benchmark results and BENCHMARK_BASELINE.md
 2. **Compares Performance**: Identifies gaps between actual and expected performance
-3. **Generates Theories**: Creates testable hypotheses based on gaps and patterns
-4. **Verifies Theories**: Uses appropriate tools with mandatory Fermi verification
+3. **Generates Theories**: Creates 5-15 testable hypotheses through systematic code analysis
+4. **Verifies Theories**: Runs ALL required tools for 100% proof with mandatory Fermi verification
 5. **Produces Report**: Generates `PERFORMANCE_ANALYSIS_REPORT.md` with actionable fixes
+
+**Time Budget**: Maximum 1 hour total for complete analysis
+**Theory Target**: 5-15 most impactful issues (comprehensive but bounded)
+**Verification Requirement**: 100% proof - no shortcuts, run all tools needed
 
 ## Prerequisites
 
@@ -116,12 +120,20 @@ Select tools based on theory type.
 
 ## Theory Generation
 
-Theories are generated based on:
+**Target**: 10-15 most impactful theories
+**Method**: Systematic code analysis (not opportunistic spot-checks)
 
-1. **Performance vs Baseline**: Gaps compared to comparable languages
-2. **Known Anti-Patterns**: Low compiled %, indirect calls, high allocation
-3. **Benchmark Characteristics**: Recursive, allocation-heavy, arithmetic-heavy
-4. **Code Analysis**: Missing @Cached, missing primitive specializations, dynamic frame slots
+Theories are generated through:
+
+1. **Performance Gap Analysis**: Identify slow benchmarks compared to baseline
+2. **Systematic Code Review**:
+   - Language configuration (bytecode settings, optimization flags)
+   - ALL operations/nodes (every single one, not just a sample)
+   - Runtime data structures (allocation patterns, boundaries)
+   - Frame access patterns (dynamic vs constant slots)
+   - Library usage (uncached, wrong limits)
+3. **Anti-Pattern Detection**: Missing optimizations, unnecessary boundaries, architectural issues
+4. **Multi-Tool Verification Planning**: List ALL tools needed for 100% proof (not just one)
 
 ## Output
 
@@ -180,27 +192,55 @@ Theories are generated based on:
 4. **Fermi Verification**: NEVER skip pre-calculation and smoke tests
 5. **Actionable Recommendations**: Specific code changes, not vague suggestions
 
-## Common Pitfalls
+## Common Pitfalls (Learn from Real Mistakes)
 
-- ❌ Rerunning benchmarks (reuse existing timing data)
-- ❌ Skipping Fermi verification (leads to wrong conclusions)
-- ❌ Running all tools blindly (overwhelming data)
-- ❌ Assuming root causes (verify with evidence)
-- ❌ Vague recommendations ("make it faster" isn't actionable)
+### Theory Generation Mistakes
+- ❌ **Insufficient coverage**: Only finding 3-5 issues instead of systematically analyzing all code
+  - **Wrong**: "I found boxing in arithmetic ops, that's enough"
+  - **Right**: "Checked all 20 operations, found 7 with issues: arithmetic (5), comparison (2), array (0)"
+- ❌ **Sampling instead of exhaustive**: Checking a few files instead of all
+  - **Wrong**: "Looked at AddNode, seems fine"
+  - **Right**: "Analyzed all 15 operation nodes, 8 missing primitive specializations"
+
+### Verification Mistakes
+- ❌ **Code analysis as verification**: Showing problematic code and calling it "verified"
+  - **Wrong**: "GlobalObject uses HashMap with @TruffleBoundary → ✅ VERIFIED"
+  - **Right**: "GlobalObject theory → Run cpu-tracer (frequency) + memory-tracer (allocations) + trace-compilation (boundaries) → ✅ VERIFIED"
+- ❌ **Single-tool verification**: Running cpusampler and stopping
+  - **Wrong**: "cpusampler shows 30% T0 → theory verified, done"
+  - **Right**: "cpusampler (30% T0) + trace-compilation (why no T2?) + trace-transfer-to-interpreter (deopt loops?) → complete picture"
+- ❌ **Stopping at symptoms**: Identifying problem but not investigating root cause
+  - **Wrong**: "Functions aren't reaching T2" + recommendation "run these tools to investigate"
+  - **Right**: "Functions aren't reaching T2" → ACTUALLY RUN trace-compilation + trace-inlining → find ROOT CAUSE → recommend fix
+
+### Evidence Mistakes
+- ❌ **Skipping Fermi verification**: Not estimating expected output before running tools
+- ❌ **Accepting invalid results**: Tool returns 0 samples, using anyway
+- ❌ **Not documenting inconclusive**: Tool provides no useful data, skipping it entirely
+  - **Right**: Mark as "⚠️ INCONCLUSIVE - trace-compilation showed success but trace-inlining failed, needs manual graph analysis"
+
+### Report Mistakes
+- ❌ **Vague recommendations**: "Investigate compilation issues" instead of specific fixes
+- ❌ **No evidence**: Claiming verification but only showing code review
+- ❌ **Self-evident theories**: "Architectural issues are obvious from code" without tool proof
 
 ## Success Criteria
 
-**Good analysis:**
-- ✅ >3 theories generated and verified/falsified
+**Minimum requirements (must achieve all):**
+- ✅ 5-15 theories generated through systematic code analysis
+- ✅ ALL tools listed for each theory were executed (100% verification)
 - ✅ Fermi verification passed for all tool runs
-- ✅ Specific recommendations with fix examples
+- ✅ Inconclusive tool results documented with alternatives attempted
+- ✅ Specific recommendations with code examples
 - ✅ Report saved to `PERFORMANCE_ANALYSIS_REPORT.md`
+- ✅ Completed within 1 hour time budget
 
-**Excellent analysis:**
-- ✅ Multiple tools corroborate findings
-- ✅ Performance improvement estimates provided
+**Excellent analysis (exceeds requirements):**
+- ✅ Multiple tools corroborate each finding
+- ✅ Performance improvement estimates based on tool measurements
 - ✅ Root causes identified (not just symptoms)
-- ✅ Follow-up theories generated from findings
+- ✅ Architectural vs implementation issues distinguished
+- ✅ Follow-up investigation roadmap for inconclusive theories
 
 ## Related Skills
 
