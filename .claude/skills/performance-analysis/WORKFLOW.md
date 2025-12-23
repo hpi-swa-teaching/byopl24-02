@@ -1,6 +1,70 @@
 # Performance Analysis Workflow
 
-Detailed 4-phase workflow for systematic performance analysis.
+Detailed 5-phase workflow for systematic performance analysis.
+
+---
+
+## Phase 0: Determine Analysis Focus
+
+**Objective**: Understand what the user wants to investigate
+
+### Process
+
+1. **Check if user specified focus in the initial prompt**
+   - Look for keywords: "implementation issues", "configuration", "architectural", "minor issues", "critical only", "all issues"
+   - If focus is clear, proceed with that focus
+
+2. **If focus NOT specified, ask the user**
+
+   Use AskUserQuestion tool with:
+
+   **Question**: "What aspects of performance should I focus on?"
+
+   **Header**: "Analysis Focus"
+
+   **Options**:
+
+   1. **All issues (comprehensive)** - Analyze implementation, configuration, and architectural issues at all severity levels
+      - Description: "Complete analysis covering all performance aspects"
+
+   2. **Critical & high-impact only** - Focus on issues with significant performance impact, skip minor optimizations
+      - Description: "Focus on severe performance problems only"
+
+   3. **Implementation issues only** - Focus on method-level code issues (missing specializations, caching, boundaries)
+      - Description: "Code-level optimizations and patterns"
+
+   4. **Configuration issues only** - Focus on bytecode config, compiler settings, optimization flags
+      - Description: "Language and compiler configuration"
+
+   5. **Architectural issues only** - Focus on design patterns, data structure choices, overall architecture
+      - Description: "High-level design and structure decisions"
+
+3. **Document focus decision**
+   - Record which categories to analyze
+   - Record which severity levels to include
+   - Note any custom criteria from user
+
+### Output
+
+- Clear understanding of analysis scope
+- Focus areas documented for theory generation
+- Severity filter determined (all levels vs critical/high only)
+
+### Example
+
+```
+User prompt: "Analyze the code base for performance issues"
+
+No focus specified in prompt → Ask user
+
+User response: "Critical & high-impact only"
+
+Documented focus:
+- Categories: ALL (implementation, configuration, architectural)
+- Severity filter: Critical and High only (skip Medium and Low)
+
+Proceeding with focused analysis...
+```
 
 ---
 
@@ -55,12 +119,22 @@ Loaded Results:
 
 ## Phase 2: Generate Performance Theories
 
-**Objective**: Generate testable performance theories based on gaps and patterns
+**Objective**: Generate testable performance theories based on gaps, patterns, and **user's focus areas**
 
-**Target**: 5-15 most impactful theories (comprehensive but bounded)
-**Time Budget**: 15-20 minutes for theory generation
+**Target**: All theories found through systematic code analysis (within user's focus areas)
 
 ### Process
+
+**STEP 0: Apply Focus Filter** (from Phase 0)
+
+Based on user's specified focus, determine which analysis categories to pursue:
+
+- **If "All issues"**: Analyze all categories below
+- **If "Critical & high-impact only"**: Analyze all categories, but filter out Medium and Low severity theories
+- **If "Implementation issues only"**: Focus on step 3b, 3d, 3e (operations/nodes, frame access, library usage)
+- **If "Configuration issues only"**: Focus on step 3a (language definition & bytecode config)
+- **If "Architectural issues only"**: Focus on step 3c (runtime data structures) and architectural patterns
+- **If "Custom focus"**: Apply user's specific criteria
 
 1. **Analyze performance gaps**
    - For each benchmark significantly slower than baseline:
@@ -76,28 +150,30 @@ Loaded Results:
 
 3. **Systematic code analysis for anti-patterns** (CRITICAL - Most Important)
 
-   **MUST analyze the following systematically**:
+   **Filter analysis by user's focus:**
 
-   a. **Language definition & bytecode configuration**
+   **MUST analyze the following systematically (filtered by user's focus)**:
+
+   a. **Language definition & bytecode configuration** [CONFIGURATION]
       - Check configuration settings for optimization opportunities
       - Identify missing or suboptimal configurations
 
-   b. **ALL operations/nodes in the implementation**
+   b. **ALL operations/nodes in the implementation** [IMPLEMENTATION]
       - Check EVERY operation for missing optimizations
       - Look for patterns that prevent compilation
       - Identify missing specializations or caching
 
-   c. **Runtime data structures and types**
+   c. **Runtime data structures and types** [ARCHITECTURAL + IMPLEMENTATION]
       - Analyze allocation patterns
       - Check for optimization boundaries
       - Identify inefficient data structure choices
 
-   d. **Frame and variable access patterns**
+   d. **Frame and variable access patterns** [IMPLEMENTATION]
       - Analyze slot access patterns
       - Check for dynamic vs constant access
       - Identify materialization overhead
 
-   e. **Library and interop usage**
+   e. **Library and interop usage** [IMPLEMENTATION]
       - Check for uncached library usage
       - Analyze limit parameters on cached libraries
       - Identify missing exports or specializations
@@ -105,15 +181,20 @@ Loaded Results:
    **For each anti-pattern found**:
    - Record specific file location (file:line)
    - Extract code excerpt showing the issue
-   - Estimate impact (critical/high/moderate/minor)
-   - Identify root cause (architectural vs implementation)
+   - Estimate impact (Critical/High/Medium/Low)
+   - Categorize: Implementation vs Configuration vs Architectural
+   - **Filter by user's focus** - skip if outside focus areas or severity threshold
 
-4. **Prioritize theories by impact × verification cost**
-   - **Priority 1**: Critical impact, quick verification (5-10 min per theory)
-   - **Priority 2**: High impact, moderate verification (10-20 min per theory)
-   - **Priority 3**: Moderate impact or complex verification (20-30 min per theory)
+4. **Prioritize theories by impact level**
+   - **Priority 1**: Critical impact (blocks optimization, causes severe slowdowns)
+   - **Priority 2**: High impact (significant performance degradation)
+   - **Priority 3**: Medium impact (noticeable but not severe)
+   - **Priority 4**: Low impact (minor optimizations)
 
-   **Limit to top 15 theories** - rank by (impact score / verification time)
+   **Apply user's focus filter:**
+   - If "Critical & high-impact only": Include only Priority 1-2
+   - If other focus specified: Include all priorities within focus categories
+   - Document skipped theories (e.g., "Skipped 5 low-priority theories per user request")
 
 5. **Select ALL verification tools needed for each theory**
    - Match theory type to appropriate tools
@@ -127,15 +208,16 @@ Loaded Results:
 
 ### Output
 
-- Prioritized list of 5-15 theories (comprehensive analysis)
+- Prioritized list of all theories found (comprehensive analysis within user's focus areas)
+- Count of skipped theories (if focus filter applied)
 - For EACH theory:
   - Specific code location (file:line)
   - Code excerpt showing the issue
+  - Category: Implementation/Configuration/Architectural
   - ALL tools needed for 100% verification (complete list)
   - Expected evidence from each tool
   - Theory rationale and root cause
-  - Impact estimate (critical/high/moderate/minor)
-  - Estimated verification time
+  - Impact estimate (Critical/High/Medium/Low)
 
 ### Example
 
@@ -164,14 +246,13 @@ Priority 3: "Inlining budget exhausted for recursive calls"
 
 **Objective**: Verify or falsify each theory using appropriate tools with rigorous methodology
 
-**Time Budget**: Maximum 1 hour total (including Phase 2 theory generation)
 **Requirement**: 100% proof - run ALL tools needed for complete verification
 
 **CRITICAL RULES**:
 1. **Run ALL tools listed for the theory** - do not skip tools even if earlier ones seem conclusive
 2. **Actually execute tools** - do not substitute code analysis for tool verification
 3. **Document inconclusive results** - if a tool produces no useful data, try alternatives
-4. **Respect time budget** - if approaching 1h limit, prioritize remaining high-impact theories
+4. **Complete all verifications** - verify ALL theories in scope (per user's focus)
 
 For each theory in priority order, execute this sub-workflow:
 

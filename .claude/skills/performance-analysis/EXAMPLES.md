@@ -6,7 +6,7 @@ Complete usage scenarios and report templates.
 
 ## Example Usage Scenario
 
-**User**: "Analyze the performance of my Lox implementation. I've run benchmarks and have BENCHMARK_BASELINE.md."
+**User**: "Analyze the performance of my Lox implementation. Focus on minor implementation issues and architectural patterns. I've run benchmarks and have BENCHMARK_BASELINE.md."
 
 ### Phase 1: Load Data
 

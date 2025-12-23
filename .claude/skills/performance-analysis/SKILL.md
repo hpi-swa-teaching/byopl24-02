@@ -1,6 +1,6 @@
 ---
 name: performance-analysis
-description: Comprehensive performance analysis for Truffle language implementations. Loads benchmarks and baseline data, builds performance theories, verifies them using appropriate tools (with mandatory documentation file loading, Fermi verification, and smoke tests), and generates a detailed analysis report with recommendations. You MUST load this skill when you want to perform language performance analysis. YOU MUST run the benchmark baseline skill first.
+description: Comprehensive performance analysis for Truffle language implementations. Loads benchmarks and baseline data, determines user's analysis focus, builds performance theories within that focus, verifies them using appropriate tools (with mandatory documentation file loading, Fermi verification, and smoke tests), and generates a detailed analysis report with recommendations. You MUST load this skill when you want to perform language performance analysis. YOU MUST run the benchmark baseline skill first.
 ---
 
 # Skill: Comprehensive Performance Analysis
@@ -25,14 +25,14 @@ Systematic performance analysis of Truffle language implementations through theo
 
 ## What This Skill Does
 
-1. **Loads Data**: Reads benchmark results and BENCHMARK_BASELINE.md
-2. **Compares Performance**: Identifies gaps between actual and expected performance
-3. **Generates Theories**: Creates 5-15 testable hypotheses through systematic code analysis
-4. **Verifies Theories**: Runs ALL required tools for 100% proof with mandatory Fermi verification
-5. **Produces Report**: Generates `PERFORMANCE_ANALYSIS_REPORT.md` with actionable fixes
+1. **Determines Focus**: Asks user about analysis scope if not specified in prompt
+2. **Loads Data**: Reads benchmark results and BENCHMARK_BASELINE.md
+3. **Compares Performance**: Identifies gaps between actual and expected performance
+4. **Generates Theories**: Creates testable hypotheses through systematic code analysis (within user's focus areas)
+5. **Verifies Theories**: Runs ALL required tools for 100% proof with mandatory Fermi verification
+6. **Produces Report**: Generates `PERFORMANCE_ANALYSIS_REPORT.md` with actionable fixes
 
-**Time Budget**: Maximum 1 hour total for complete analysis
-**Theory Target**: 5-15 most impactful issues (comprehensive but bounded)
+**Theory Target**: All theories found through systematic code analysis (within user's focus areas)
 **Verification Requirement**: 100% proof - no shortcuts, run all tools needed
 
 ## Prerequisites
@@ -46,14 +46,16 @@ Before running this skill:
 
 ## Workflow Overview
 
-The skill follows a 4-phase workflow.
+The skill follows a 5-phase workflow.
 
 **ACTION REQUIRED**: Before starting, read [WORKFLOW.md](WORKFLOW.md) for detailed steps, Fermi verification protocol, and phase-by-phase instructions.
 
 ```
+Phase 0: Determine analysis focus (ask user if not specified)
+    ↓
 Phase 1: Load benchmark results and baseline expectations
     ↓
-Phase 2: Generate theories based on gaps and patterns
+Phase 2: Generate theories based on gaps and patterns (within user's focus)
     ↓
 Phase 3: Verify each theory (documentation → Fermi → smoke test → execute)
          → ACTION: Read tool's .md file before EACH tool execution
@@ -120,20 +122,21 @@ Select tools based on theory type.
 
 ## Theory Generation
 
-**Target**: 10-15 most impactful theories
+**Target**: All theories found through systematic code analysis (within user's focus areas)
 **Method**: Systematic code analysis (not opportunistic spot-checks)
 
 Theories are generated through:
 
 1. **Performance Gap Analysis**: Identify slow benchmarks compared to baseline
-2. **Systematic Code Review**:
+2. **Systematic Code Review** (filtered by user's focus):
    - Language configuration (bytecode settings, optimization flags)
    - ALL operations/nodes (every single one, not just a sample)
    - Runtime data structures (allocation patterns, boundaries)
    - Frame access patterns (dynamic vs constant slots)
    - Library usage (uncached, wrong limits)
 3. **Anti-Pattern Detection**: Missing optimizations, unnecessary boundaries, architectural issues
-4. **Multi-Tool Verification Planning**: List ALL tools needed for 100% proof (not just one)
+4. **Focus Filtering**: Include only theories matching user's requested focus areas
+5. **Multi-Tool Verification Planning**: List ALL tools needed for 100% proof (not just one)
 
 ## Output
 
@@ -195,7 +198,13 @@ Theories are generated through:
 ## Common Pitfalls (Learn from Real Mistakes)
 
 ### Theory Generation Mistakes
-- ❌ **Insufficient coverage**: Only finding 3-5 issues instead of systematically analyzing all code
+- ❌ **Ignoring user's focus**: Generating theories outside requested scope
+  - **Wrong**: User asks for "critical issues only", you report minor cache limit issues
+  - **Right**: Filter theories by user's specified focus, document what was skipped
+- ❌ **Not asking about focus**: Assuming comprehensive analysis when user may want targeted
+  - **Wrong**: Immediately start analyzing everything without checking user's intent
+  - **Right**: Check if focus specified in prompt, ask if not clear
+- ❌ **Insufficient coverage within focus**: Only finding 3-5 issues when more exist
   - **Wrong**: "I found boxing in arithmetic ops, that's enough"
   - **Right**: "Checked all 20 operations, found 7 with issues: arithmetic (5), comparison (2), array (0)"
 - ❌ **Sampling instead of exhaustive**: Checking a few files instead of all
@@ -227,13 +236,13 @@ Theories are generated through:
 ## Success Criteria
 
 **Minimum requirements (must achieve all):**
-- ✅ 5-15 theories generated through systematic code analysis
+- ✅ User's analysis focus determined (asked if not specified)
+- ✅ Theories generated through systematic code analysis (covering user's focus areas)
 - ✅ ALL tools listed for each theory were executed (100% verification)
 - ✅ Fermi verification passed for all tool runs
 - ✅ Inconclusive tool results documented with alternatives attempted
 - ✅ Specific recommendations with code examples
 - ✅ Report saved to `PERFORMANCE_ANALYSIS_REPORT.md`
-- ✅ Completed within 1 hour time budget
 
 **Excellent analysis (exceeds requirements):**
 - ✅ Multiple tools corroborate each finding
