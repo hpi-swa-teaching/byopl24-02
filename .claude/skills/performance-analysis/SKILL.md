@@ -35,6 +35,17 @@ Systematic performance analysis of Truffle language implementations through theo
 **Theory Target**: All theories found through systematic code analysis (within user's focus areas)
 **Verification Requirement**: 100% proof - no shortcuts, run all tools needed
 
+### CRITICAL: Verification is Mandatory
+
+**Code analysis finds POTENTIAL issues. Tools PROVE which issues actually matter.**
+
+- ❌ **WRONG**: Find code pattern → Label as "VERIFIED" → Include in report
+- ✅ **RIGHT**: Find code pattern → Run tools → Get quantitative data → THEN verify and report
+
+**Before writing the report, you MUST complete [VERIFICATION_CHECKLIST.md](VERIFICATION_CHECKLIST.md) for EVERY theory.**
+
+**NO EXCEPTIONS**: Theories without tool-based verification MUST NOT appear in the report as verified issues.
+
 ## Prerequisites
 
 Before running this skill:
@@ -212,6 +223,9 @@ Theories are generated through:
   - **Right**: "Analyzed all 15 operation nodes, 8 missing primitive specializations"
 
 ### Verification Mistakes
+- ❌ **Skipping tool verification entirely**: Finding code patterns, labeling as "CRITICAL", writing report without running tools
+  - **Wrong**: "Found `new LoxNumber()` in code → ✅ VERIFIED CRITICAL"
+  - **Right**: "Found pattern → Run memory-tracer (45K allocations) + cpu-tracer (2.3M ops) + cpu-sampler (62% time) → ✅ VERIFIED CRITICAL"
 - ❌ **Code analysis as verification**: Showing problematic code and calling it "verified"
   - **Wrong**: "GlobalObject uses HashMap with @TruffleBoundary → ✅ VERIFIED"
   - **Right**: "GlobalObject theory → Run cpu-tracer (frequency) + memory-tracer (allocations) + trace-compilation (boundaries) → ✅ VERIFIED"
@@ -268,7 +282,8 @@ Theories are generated through:
 
 | File | Read When | Contains |
 |------|-----------|----------|
-| [WORKFLOW.md](WORKFLOW.md) | Before starting | 4-phase workflow, Fermi verification details |
+| [WORKFLOW.md](WORKFLOW.md) | Before starting | 5-phase workflow, Fermi verification details |
+| [VERIFICATION_CHECKLIST.md](VERIFICATION_CHECKLIST.md) | During Phase 3 (MANDATORY) | Per-theory verification checklist - MUST complete for every theory |
 | [EXAMPLES.md](EXAMPLES.md) | Before Phase 4 | Example walkthrough, report template |
 
 ## External Resources
