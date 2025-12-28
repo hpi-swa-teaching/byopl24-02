@@ -244,6 +244,18 @@ Priority 3: "Inlining budget exhausted for recursive calls"
 
 ## Phase 3: Verify Theories Systematically
 
+**🔴 MANDATORY: Use VERIFICATION_CHECKLIST.md for EVERY theory**
+
+Before verifying any theory:
+1. Read [VERIFICATION_CHECKLIST.md](VERIFICATION_CHECKLIST.md)
+2. Copy the per-theory template for each theory
+3. Complete ALL checklist items before marking theory as verified
+4. Keep checklist alongside your work as you execute tools
+
+**FILE LOCATION**: `.claude/skills/performance-analysis/VERIFICATION_CHECKLIST.md`
+
+---
+
 **Objective**: Verify or falsify each theory using appropriate tools with rigorous methodology
 
 **Requirement**: 100% proof - run ALL tools needed for complete verification
@@ -253,6 +265,7 @@ Priority 3: "Inlining budget exhausted for recursive calls"
 2. **Actually execute tools** - do not substitute code analysis for tool verification
 3. **Document inconclusive results** - if a tool produces no useful data, try alternatives
 4. **Complete all verifications** - verify ALL theories in scope (per user's focus)
+5. **Use VERIFICATION_CHECKLIST.md** - complete the checklist for each theory
 
 For each theory in priority order, execute this sub-workflow:
 
@@ -419,17 +432,17 @@ Alternative failure scenario:
      - Document all tool results
      - Suggest additional investigation needed
 
-5. **Generate recommendations** (if verified)
-   - Identify specific fix based on evidence
-   - Provide code examples where applicable
-   - Estimate impact based on tool measurements
-   - Reference similar implementations or documentation
-   - Note verification steps to confirm fix worked
+5. **Document issue characteristics** (if verified)
+   - Identify root cause from tool evidence
+   - Quantify impact from tool measurements (frequency, time%, allocations)
+   - Determine issue category (implementation/configuration/architectural)
+   - Note specific code locations affected
+   - Document severity based on quantitative data
 
 6. **Record findings**
    - Save ALL tool outputs to files
    - Record theory verdict with confidence level
-   - Extract actionable insights
+   - Extract quantitative measurements
    - Note any follow-up theories generated
 
 ### Output
@@ -439,7 +452,10 @@ Alternative failure scenario:
   - Tool 1: [result] (saved to tool-outputs/...)
   - Tool 2: [result] (saved to tool-outputs/...)
   - Tool N: [result] (saved to tool-outputs/...)
-- Recommendation (if verified)
+- Issue characterization (if verified):
+  - Root cause
+  - Quantified impact
+  - Affected locations
 - Follow-up investigation needed (if inconclusive)
 
 ### Example
@@ -475,25 +491,66 @@ Evaluation:
   - Theory is correct: low compilation effectiveness
   - Severity: Critical (10x worse than target)
 
-Recommendation:
-**Problem**: queens function executing 95.2% in interpreter (target: <10%)
-**Root Cause**: Functions likely not compiling or deoptimizing constantly
-**Next Steps**:
-  1. Run trace-compilation to see if compilation is happening
-  2. If compiling: Check for deoptimization with trace-transfer-to-interpreter
-  3. If not compiling: Check for compilation barriers with trace-performance-warnings
-**Expected Impact**: Fixing this should yield 5-10x speedup (based on T0→T2 improvement)
+Issue Characterization:
+**Issue**: queens function executing 95.2% in interpreter (target: <10%)
+**Root Cause**: Unknown - requires deeper investigation (compilation not happening OR deoptimization)
+**Impact**: 10x worse than target (95.2% T0 vs <10% target)
+**Severity**: Critical
+**Location**: queens function (primary hotspot, 88% of total time)
+**Category**: Compilation effectiveness issue
 
 **Generated Follow-up Theory**: "Compilation is failing or bailouts occurring"
-- Tool: trace-compilation
-- Priority: High (explains current finding)
+- Tool: trace-compilation (to determine if compilation happening)
+- Tool: trace-transfer-to-interpreter (to check for deoptimization)
+- Priority: High (needed to identify root cause)
 ```
+
+---
+
+### Step 3.4: Complete Verification Checklist
+
+**MANDATORY**: Before moving to Phase 4, you MUST complete this step.
+
+**Process**:
+
+1. **Open VERIFICATION_CHECKLIST.md**
+   - File location: `.claude/skills/performance-analysis/VERIFICATION_CHECKLIST.md`
+   - Review the "Pre-Report Verification Gate" section
+
+2. **Complete checklist for EVERY theory**
+   - For each theory generated in Phase 2:
+     - [ ] Copy the per-theory template from VERIFICATION_CHECKLIST.md
+     - [ ] Fill in all checklist items (tool selection, documentation, Fermi verification, evidence)
+     - [ ] Mark verdict: ✅ VERIFIED / ❌ FALSIFIED / ⚠️ INCONCLUSIVE
+     - [ ] Verify you have tool-based quantitative evidence (not just code analysis)
+
+3. **Verify all theories have proper evidence**
+   - [ ] All "✅ VERIFIED" theories have tool output citations
+   - [ ] All "❌ FALSIFIED" theories are excluded from report
+   - [ ] All "⚠️ INCONCLUSIVE" theories marked appropriately or excluded
+   - [ ] NO theory relies solely on code analysis without tool verification
+   - [ ] All tool outputs saved to `tool-outputs/` directory
+
+4. **Self-assessment questions**
+   - Did I run ALL tools listed for each theory? (not just one tool)
+   - Did I complete Fermi verification for each tool execution?
+   - Do I have quantitative data (numbers, percentages, measurements)?
+   - Can I cite specific tool output files for every verified issue?
+
+**CRITICAL**: If ANY answer to the self-assessment questions is NO, go back and complete verification properly. Do NOT proceed to Phase 4 without completing all checklists.
+
+**Output**:
+- [ ] All theory verification checklists completed
+- [ ] Only verified theories (with tool evidence) will be included in report
+- [ ] Ready to proceed to Phase 4
 
 ---
 
 ## Phase 4: Generate Comprehensive Report
 
-**Objective**: Produce detailed analysis document with all findings and recommendations
+**Objective**: Produce detailed analysis document identifying and quantifying all verified performance issues
+
+**FOCUS**: Document WHAT issues exist, WHERE they are, HOW SEVERE they are - NOT how to fix them
 
 ### Process
 
@@ -502,28 +559,30 @@ Recommendation:
    - Baseline comparisons and expectations
    - All theories with verdicts and evidence
    - Tool outputs (excerpts and full outputs)
-   - Recommendations prioritized by impact
+   - Quantitative measurements from tools
 
 2. **Generate report structure**
-   - Executive summary (high-level findings)
+   - Executive summary (high-level findings, issue counts)
    - Benchmark results section
    - Performance comparison section
-   - Theory verification section (each theory)
-   - Prioritized recommendations section
+   - Theory verification section (each theory with evidence)
+   - Prioritized issues section (by impact/severity)
    - Appendix with full tool outputs
 
-3. **Write recommendations**
+3. **Document verified issues**
    - For each verified theory:
-     - Explain the problem clearly
-     - Provide specific fix (code examples if applicable)
-     - Reference implementation examples or documentation
-     - Estimate performance impact
-     - Note dependencies between fixes
+     - Describe the issue clearly with quantitative data
+     - State root cause (if identified from tools)
+     - Document affected code locations (file:line)
+     - Quantify impact from tool measurements
+     - Categorize (implementation/configuration/architectural)
+     - Assign severity based on tool evidence
 
-4. **Prioritize recommendations**
-   - **Priority 1**: High impact, must-fix issues
-   - **Priority 2**: Medium impact, should-fix issues
-   - **Priority 3**: Low impact, nice-to-have improvements
+4. **Prioritize issues by impact**
+   - **Priority 1**: Critical impact (blocks optimization, severe slowdowns)
+   - **Priority 2**: High impact (significant performance degradation)
+   - **Priority 3**: Medium impact (noticeable but not severe)
+   - **Priority 4**: Low impact (minor issues)
 
 5. **Save report**
    - Write to `PERFORMANCE_ANALYSIS_REPORT.md`

@@ -1,6 +1,6 @@
 ---
 name: performance-analysis
-description: Comprehensive performance analysis for Truffle language implementations. Loads benchmarks and baseline data, determines user's analysis focus, builds performance theories within that focus, verifies them using appropriate tools (with mandatory documentation file loading, Fermi verification, and smoke tests), and generates a detailed analysis report with recommendations. You MUST load this skill when you want to perform language performance analysis. YOU MUST run the benchmark baseline skill first.
+description: Comprehensive performance analysis for Truffle language implementations. Loads benchmarks and baseline data, determines user's analysis focus, builds performance theories within that focus, verifies them using appropriate tools (with mandatory documentation file loading, Fermi verification, and smoke tests), and generates a detailed analysis report identifying and quantifying verified performance issues. You MUST load this skill when you want to perform language performance analysis. YOU MUST run the benchmark baseline skill first.
 ---
 
 # Skill: Comprehensive Performance Analysis
@@ -30,7 +30,7 @@ Systematic performance analysis of Truffle language implementations through theo
 3. **Compares Performance**: Identifies gaps between actual and expected performance
 4. **Generates Theories**: Creates testable hypotheses through systematic code analysis (within user's focus areas)
 5. **Verifies Theories**: Runs ALL required tools for 100% proof with mandatory Fermi verification
-6. **Produces Report**: Generates `PERFORMANCE_ANALYSIS_REPORT.md` with actionable fixes
+6. **Produces Report**: Generates `PERFORMANCE_ANALYSIS_REPORT.md` identifying and quantifying verified performance issues
 
 **Theory Target**: All theories found through systematic code analysis (within user's focus areas)
 **Verification Requirement**: 100% proof - no shortcuts, run all tools needed
@@ -161,29 +161,31 @@ Theories are generated through:
 
 ## Executive Summary
 - Critical Issues: [COUNT]
-- Expected Improvement: [ESTIMATE]
+- Issue Categories: [Implementation / Configuration / Architectural]
 
 ## Benchmark Results
 | Benchmark | Actual | Expected Range | Status |
 
 ## Theory Verification Results
 ### Theory N: "[description]"
-- Status: ✅ VERIFIED / ❌ FALSIFIED
-- Evidence: [tool output excerpt]
-- Recommendation: [specific fix]
+- Status: ✅ VERIFIED / ❌ FALSIFIED / ⚠️ INCONCLUSIVE
+- Evidence: [tool output excerpt with quantitative data]
+- Impact: [Quantified impact from tools]
+- Root Cause: [Identified from tool evidence]
 
-## Prioritized Recommendations
+## Prioritized Issues
 ### Priority 1: [High Impact]
-- Problem: ...
-- Fix: [code example]
-- Expected Impact: ...
+- Issue: [Description]
+- Location: [File:line]
+- Evidence: [Tool data]
+- Impact: [Quantified from measurements]
 ```
 
 **ACTION REQUIRED**: Before writing the report, read [EXAMPLES.md](EXAMPLES.md) to see:
 - Complete example analysis walkthrough
 - Full report template with all sections
 - Example tool outputs and their interpretation
-- How to format recommendations with code examples
+- How to present verified issues with evidence
 
 ## When to Use This Skill
 
@@ -204,7 +206,7 @@ Theories are generated through:
 2. **Theory Prioritization**: High-impact first, quick-to-verify early, complex later
 3. **Evidence-Based**: Verify with data, don't assume root causes
 4. **Fermi Verification**: NEVER skip pre-calculation and smoke tests
-5. **Actionable Recommendations**: Specific code changes, not vague suggestions
+5. **Quantify Everything**: Measure frequency, time, allocations - provide concrete numbers
 
 ## Common Pitfalls (Learn from Real Mistakes)
 
@@ -233,8 +235,8 @@ Theories are generated through:
   - **Wrong**: "cpusampler shows 30% T0 → theory verified, done"
   - **Right**: "cpusampler (30% T0) + trace-compilation (why no T2?) + trace-transfer-to-interpreter (deopt loops?) → complete picture"
 - ❌ **Stopping at symptoms**: Identifying problem but not investigating root cause
-  - **Wrong**: "Functions aren't reaching T2" + recommendation "run these tools to investigate"
-  - **Right**: "Functions aren't reaching T2" → ACTUALLY RUN trace-compilation + trace-inlining → find ROOT CAUSE → recommend fix
+  - **Wrong**: "Functions aren't reaching T2" + note "run these tools to investigate"
+  - **Right**: "Functions aren't reaching T2" → ACTUALLY RUN trace-compilation + trace-inlining → find ROOT CAUSE → document root cause with evidence
 
 ### Evidence Mistakes
 - ❌ **Skipping Fermi verification**: Not estimating expected output before running tools
@@ -243,9 +245,10 @@ Theories are generated through:
   - **Right**: Mark as "⚠️ INCONCLUSIVE - trace-compilation showed success but trace-inlining failed, needs manual graph analysis"
 
 ### Report Mistakes
-- ❌ **Vague recommendations**: "Investigate compilation issues" instead of specific fixes
+- ❌ **Vague issue descriptions**: "Compilation issues exist" instead of specific, quantified problems
 - ❌ **No evidence**: Claiming verification but only showing code review
 - ❌ **Self-evident theories**: "Architectural issues are obvious from code" without tool proof
+- ❌ **Missing quantification**: Reporting issues without concrete numbers (frequency, time%, allocations)
 
 ## Success Criteria
 
@@ -255,12 +258,12 @@ Theories are generated through:
 - ✅ ALL tools listed for each theory were executed (100% verification)
 - ✅ Fermi verification passed for all tool runs
 - ✅ Inconclusive tool results documented with alternatives attempted
-- ✅ Specific recommendations with code examples
+- ✅ All verified issues have quantitative evidence (frequency, time, allocations, etc.)
 - ✅ Report saved to `PERFORMANCE_ANALYSIS_REPORT.md`
 
 **Excellent analysis (exceeds requirements):**
 - ✅ Multiple tools corroborate each finding
-- ✅ Performance improvement estimates based on tool measurements
+- ✅ Impact quantified precisely from tool measurements
 - ✅ Root causes identified (not just symptoms)
 - ✅ Architectural vs implementation issues distinguished
 - ✅ Follow-up investigation roadmap for inconclusive theories

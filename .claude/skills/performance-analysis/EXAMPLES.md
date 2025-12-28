@@ -182,9 +182,9 @@ Step 3.4: Combine Evidence
 → trace-compilation: T2 bailout (root cause!)
 → Verdict: ✅ VERIFIED
 
-Step 3.5: Generate Recommendation
+Step 3.5: Characterize Issue
 → Root cause: T2 compilation failing (bailout)
-→ Next step: Use trace-performance-warnings to find why
+→ Issue requires deeper investigation: Use trace-performance-warnings to identify cause
 → Generated follow-up theory: "Optimization barriers causing T2 bailout"
 ```
 
@@ -229,9 +229,10 @@ Step 3.4: Combine Evidence
 → cpu-sampler: Shows high time in affected function
 → Verdict: ✅ VERIFIED
 
-Step 3.5: Generate Recommendation
-→ Fix: Add @Cached for CallTarget
-→ Impact: Should reduce virtual calls, help T2 compilation succeed
+Step 3.5: Characterize Issue
+→ Issue: CallTarget.call() not cached, causing virtual calls at CallNode.java:42
+→ Location: CallNode.java:42
+→ Impact: Virtual calls in hot path (queens 88% total time), blocking T2 compilation
 ```
 
 **Theory 3**: "ConditionProfile not cached causing virtual calls"
@@ -280,9 +281,10 @@ Step 3.4: Combine Evidence
 → trace-inlining: Inconclusive (no T2 compilation yet)
 → Verdict: ⚠️ PARTIALLY VERIFIED (1/2 tools confirm, 1 inconclusive)
 
-Step 3.5: Generate Recommendation
-→ Fix: Add @Cached for ConditionProfile
-→ Note: Should re-test trace-inlining after fixing Theory 1 & 2
+Step 3.5: Characterize Issue
+→ Issue: ConditionProfile.profile() not cached, causing virtual calls
+→ Impact: Virtual calls in conditional statements throughout codebase
+→ Note: trace-inlining inconclusive until T2 compilation works (Theory 1 & 2 block this)
 ```
 
 **Theory 4**: "Inlining budget exhausted for recursive calls"
@@ -314,9 +316,9 @@ Step 3.4: Combine Evidence
 → Verdict: ⚠️ INCONCLUSIVE (need T2 compilation first)
 
 Step 3.5: Note for Follow-up
-→ Re-test this theory after fixing Theory 1, 2, 3
+→ Re-test this theory after Theory 1, 2, 3 are investigated/resolved
 → Alternative: Could use compiler graph analysis if available
-→ Recommendation: Defer until compilation works
+→ Status: Defer until T2 compilation issue resolved
 ```
 
 ### Phase 4: Generate Report
@@ -331,7 +333,7 @@ Writing PERFORMANCE_ANALYSIS_REPORT.md:
 ✓ 4 theories with verdicts (2 verified, 1 partially verified, 1 inconclusive)
 ✓ Multi-tool evidence sections
 ✓ Inconclusive theories section with follow-up plan
-✓ 2 prioritized recommendations
+✓ 2 prioritized issues by severity
 ✓ Tool outputs appendix
 
 Saving tool outputs:
@@ -350,16 +352,16 @@ Performance Analysis Complete!
 Executive Summary:
 - Analyzed 1 benchmark (queens - 2.6x slower than expected)
 - 4 theories tested: 2 verified, 1 partially verified, 1 inconclusive
-- Critical issue found: T2 compilation failing due to virtual calls
-- Root cause: Missing @Cached for CallTarget and ConditionProfile
-- Expected improvement: 5-10x speedup after fixes
+- Critical issue found: T2 compilation failing (95.2% T0 vs <10% target)
+- Root cause identified: Virtual calls from uncached CallTarget and ConditionProfile
+- Impact: 10x worse than target compilation tier distribution
 
-Top Recommendations (Priority 1):
-1. Add CallTarget caching to eliminate virtual calls
-2. Add ConditionProfile caching to support compilation
+Priority 1 Issues (Critical):
+1. CallTarget.call() not cached → virtual calls at CallNode.java:42
+2. ConditionProfile.profile() not cached → virtual calls in conditional statements
 
 Inconclusive Theories:
-- Theory 4: Cannot test until compilation works (defer to post-fix analysis)
+- Theory 4: Cannot test until T2 compilation issue resolved (defer)
 
 Report saved to: PERFORMANCE_ANALYSIS_REPORT.md
 Tool outputs in: tool-outputs/
@@ -380,14 +382,14 @@ Tool outputs in: tool-outputs/
 
 ## Executive Summary
 
-Analysis identified critical T2 compilation failure in the queens benchmark (2.6x slower than Lua baseline). Root cause: missing @Cached annotations for CallTarget and ConditionProfile causing virtual calls that prevent full optimization. Multi-tool verification (cpu-sampler, cpu-tracer, trace-compilation, trace-performance-warnings) confirmed 95.2% interpreter execution with T2 bailouts. Two theories fully verified with multiple tools, one partially verified, and one inconclusive pending compilation fixes.
+Analysis identified critical T2 compilation failure in the queens benchmark (2.6x slower than Lua baseline). Root cause: uncached CallTarget and ConditionProfile causing virtual calls that prevent full optimization. Multi-tool verification (cpu-sampler, cpu-tracer, trace-compilation, trace-performance-warnings) confirmed 95.2% interpreter execution with T2 bailouts. Two theories fully verified with multiple tools, one partially verified, and one inconclusive pending T2 compilation resolution.
 
 - **Critical Issues**: 2 verified (blocking T2 compilation)
 - **Partially Verified Issues**: 1 (ConditionProfile caching)
-- **Inconclusive Theories**: 1 (deferred until compilation works)
-- **Expected Improvement**: 5-10x speedup after fixes
+- **Inconclusive Theories**: 1 (deferred until T2 compilation issue resolved)
+- **Impact**: 10x worse than target tier distribution (95.2% T0 vs <10% target)
 
-**Top Finding**: Missing CallTarget and ConditionProfile caching prevents T2 compilation, causing 95% interpreter execution (target: <10%)
+**Top Finding**: Uncached CallTarget and ConditionProfile cause virtual calls, preventing T2 compilation → 95% interpreter execution (target: <10%)
 
 ---
 
@@ -569,60 +571,66 @@ Approximated stack trace:
 
 **Theory 4** could not be fully verified due to prerequisite issues:
 - **Blocker**: T2 compilation must succeed first
-- **Recommended Action**: Fix verified issues (Theory 1, 2, 3) then re-test
+- **Follow-up**: Re-test after Theory 1, 2, 3 issues resolved
 - **Alternative Tools**: Compiler graph analysis with bgv2json if trace tools remain inconclusive
 
 ---
 
-## Recommendations
+## Prioritized Issues Summary
 
-### Priority 1: Fix Missing Caching (Critical Impact)
+### Priority 1: Critical Issues (Blocking Optimization)
 
-**Problem**: CallTarget and ConditionProfile not cached, causing virtual calls
+**Issue 1: Uncached CallTarget.call() causes virtual calls**
 
-**Evidence**: trace-performance-warnings shows 3 virtual call warnings
+**Location**: CallNode.java:42
 
-**Fix**: Cache compilation-final objects using @Cached
+**Evidence**: trace-performance-warnings shows virtual call warning at CallNode
 
-**Implementation**:
+**Impact**: Virtual calls in hot path (queens 88% total time), blocks T2 compilation
+
+**Root Cause**: CallTarget retrieved from LoxFunction not cached as compilation constant
+
+**Category**: Implementation issue
+
+---
+
+**Issue 2: Uncached ConditionProfile causes virtual calls**
+
+**Evidence**: trace-performance-warnings shows ConditionProfile.profile() virtual calls
+
+**Impact**: Virtual calls in conditional statements throughout codebase
+
+**Root Cause**: ConditionProfile not stored as compilation constant
+
+**Category**: Implementation issue
+
+**Status**: Partially verified (1/2 tools confirm, trace-inlining inconclusive until T2 works)
+
+---
+
+### Example Code Showing Issue (for reference):
+
+**Problematic Pattern - CallTarget not cached:**
 ```java
-// Current (bad):
 @Specialization
 public Object call(VirtualFrame frame, Object function) {
     CallTarget target = ((LoxFunction) function).getCallTarget();
-    return target.call(args);  // Virtual call warning!
-}
-
-// Fixed (good):
-@Specialization(guards = "function == cachedFunction", limit = "3")
-public Object callCached(VirtualFrame frame, LoxFunction function,
-        @Cached("function") LoxFunction cachedFunction,
-        @Cached("cachedFunction.getCallTarget()") CallTarget callTarget) {
-    return callTarget.call(args);  // Optimized direct call!
-}
-
-@Specialization(replaces = "callCached")
-public Object callUncached(VirtualFrame frame, LoxFunction function) {
-    return function.getCallTarget().call(args);
+    return target.call(args);  // ← Virtual call warning at this location
 }
 ```
+- CallTarget retrieved from function is not a compilation constant
+- Results in virtual call that blocks T2 compilation
 
-Similarly for ConditionProfile:
+**Problematic Pattern - ConditionProfile not cached:**
 ```java
-// Current (bad):
 private ConditionProfile profile = ConditionProfile.createBinaryProfile();
 
-// Fixed (good):
-@Specialization
-public Object execute(VirtualFrame frame,
-        @Cached("createBinaryProfile()") ConditionProfile profile) {
-    if (profile.profile(condition)) { ... }
+public Object execute(VirtualFrame frame) {
+    if (profile.profile(condition)) { ... }  // ← Virtual call to profile.profile()
 }
 ```
-
-**Expected Impact**: 5-10x speedup (T0 95% → T2 >80%)
-
-**Dependencies**: None (standalone fix)
+- Profile stored in instance field, not as @Cached compilation constant
+- Results in virtual calls on every conditional check
 
 ---
 

@@ -19,6 +19,10 @@
 
 ---
 
+**🔄 EFFICIENCY NOTE**: Tool runs can be **reused** across theories if the same tool runs on the same benchmark with the same configuration. Mark reused items with "🔄 Reused from Theory #X" and reference the original verification. This includes documentation, smoke tests, executions, and evidence data. Each theory still needs its own interpretation and issue characterization.
+
+---
+
 ## Per-Theory Verification Checklist
 
 Copy this template for each theory. ALL boxes must be checked before the theory can be reported as verified.
@@ -118,10 +122,12 @@ Simply note "🔄 Reused from Theory #X" and reference the previous verification
 
 #### Step 4: Evidence Analysis
 
+**NOTE**: Tool output data can be reused (🔄), but each theory needs its own interpretation of that data.
+
 - [ ] **Extracted quantitative data** from EACH tool
-  - Tool 1 data: _______________
-  - Tool 2 data: _______________
-  - Tool 3 data: _______________
+  - Tool 1 data: _______________ (🔄 reused from Theory #___ if applicable)
+  - Tool 2 data: _______________ (🔄 reused from Theory #___ if applicable)
+  - Tool 3 data: _______________ (🔄 reused from Theory #___ if applicable)
 
 - [ ] **All tools agree** OR contradictions explained
   - Agreement: ✅ All tools confirm / ⚠️ Partial / ❌ Contradictory
@@ -182,10 +188,11 @@ Before running Phase 4 (Generate Report), verify:
 After generating the report, verify:
 
 - [ ] **Every issue** has "Evidence:" section with tool output citations
-- [ ] **Every recommendation** has quantitative impact estimate from tools
+- [ ] **Every issue** has quantitative impact data from tools (frequency, time%, allocations, etc.)
 - [ ] **Report structure** matches template in EXAMPLES.md
 - [ ] **No claims** without tool backing
 - [ ] **Honest assessment** of what was verified vs what needs more investigation
+- [ ] **Focus on issues**, not solutions - report describes WHAT/WHERE/HOW SEVERE, not HOW TO FIX
 
 ---
 
@@ -198,7 +205,7 @@ If you generated theories but skipped systematic tool verification:
 1. **Acknowledge the skip**: "I generated theories from code analysis but didn't verify with tools"
 2. **Options**:
    - **Option A (Recommended)**: Go back to Phase 3, verify each theory systematically
-   - **Option B**: Deliver partial report with clear disclaimer: "These are UNVERIFIED potential issues from code analysis only. Tool verification required before implementing fixes."
+   - **Option B**: Deliver partial report with clear disclaimer: "These are UNVERIFIED potential issues from code analysis only. Tool verification required to confirm which issues actually impact performance."
 3. **Do NOT**: Claim theories are "verified" based on code analysis alone
 
 ---
