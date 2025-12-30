@@ -111,7 +111,23 @@ After running ALL tools:
 - Specific code locations affected
 - Severity based on quantitative data
 
-#### 6. Recommend Fix and Stop
+#### 6. Handle Emergent Issues
+While running tools, you may discover **new issues** not in your theory list (e.g., a deoptimization loop while checking CPU sampling):
+
+**Criticality Assessment**:
+1. Estimate severity of the new issue (Critical/High/Medium/Low)
+2. Compare to the current theory's severity
+
+**Decision**:
+- **New issue MORE critical**: **PIVOT** - stop current verification, investigate the new issue immediately
+- **New issue LESS critical**: Note it as "Future Work" in your findings, continue with current theory
+
+**Examples of emergent critical issues**:
+- Deoptimization loops (many transfers to interpreter in hot path)
+- Compilation failures in core functions
+- Unexpected memory pressure patterns
+
+#### 7. Recommend Fix and Stop
 If theory is verified:
 - **Present fix recommendation to user**
 - **STOP further investigation** - noise from this issue obscures others
@@ -153,6 +169,8 @@ tool-outputs/
 - ❌ **Skipping Fermi verification** - Silent tool failures produce garbage data
 - ❌ **Ignoring inconclusive results** - Document what couldn't be verified
 - ❌ **Not saving outputs** - Need citations for report
+- ❌ **Ignoring emergent issues** - If tools reveal a critical issue (like deopt loops), evaluate whether to pivot
+- ❌ **Always pivoting** - Only pivot if the new issue is MORE critical than the current theory
 
 ## Integration with Other Skills
 

@@ -115,7 +115,27 @@ Copy this template for each theory.
 
 ---
 
-#### Step 5: Verdict
+#### Step 5: Check for Emergent Issues
+
+**While running tools, did you discover NEW issues not in your theory list?**
+
+- [ ] **No emergent issues found** → Proceed to Step 6
+
+**If YES - Emergent issue discovered:**
+- Issue description: _______________
+- Issue severity estimate: [Critical / High / Medium / Low]
+- Current theory severity: [Critical / High / Medium / Low]
+
+**Decision:**
+- [ ] **New issue MORE critical** → **PIVOT**: Stop current verification, investigate new issue immediately
+- [ ] **New issue LESS critical** → Note as "Future Work" below, continue with current theory
+
+**Future Work Notes** (for less critical emergent issues):
+- _______________
+
+---
+
+#### Step 6: Verdict
 
 **Based on tool evidence (NOT code analysis alone):**
 
@@ -140,9 +160,15 @@ Copy this template for each theory.
 
 ## After Verification: Next Steps
 
+**If PIVOTED to emergent issue:**
+- [ ] Add new issue to theory list with appropriate severity
+- [ ] Start fresh verification checklist for the emergent issue
+- [ ] Original theory remains unverified (may revisit later)
+
 **If ✅ VERIFIED:**
 - [ ] Present fix recommendation to user
 - [ ] Tool outputs saved to `tool-outputs/` directory
+- [ ] Include any "Future Work" notes from Step 5 in your findings
 - [ ] **STOP** - Wait for user to apply fix
 - [ ] After fix → Re-profile → Verify next highest-priority theory
 
@@ -161,3 +187,4 @@ Copy this template for each theory.
 **Code analysis → POTENTIAL issues**
 **Tool verification → PROVEN issues**
 **Fix one issue at a time → Cleaner signal for next investigation**
+**Emergent issues → Evaluate criticality, pivot if more important, note as future work if not**
