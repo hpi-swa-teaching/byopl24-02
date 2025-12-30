@@ -11,171 +11,53 @@ Systematically verifies performance theories using profiling tools. Enforces rig
 
 **Code analysis finds POTENTIAL issues. Tools PROVE which issues actually matter.**
 
-A theory is only verified when:
-1. Documentation was loaded before running the tool
-2. Fermi verification was completed (estimate → smoke test → validate)
-3. ALL required tools were executed
-4. Quantitative evidence was collected
-5. Evidence synthesis confirms the theory
-
 ## Quick Start
 
 **Input**: List of theories from `generating-performance-theories` skill
 
-**Iterative Approach** (recommended):
-1. **Pick the highest-severity theory** from the list
-2. Verify it using the workflow below
-3. If verified → **Recommend fix to user, STOP investigation**
-4. After fix applied → Re-profile and continue with next theory
+**Approach**: Verify one theory at a time, highest-severity first. Fix it, re-profile, continue.
 
-**Why iterative?** Multiple performance issues create noise in profiling tools. Fixing the biggest issue first clears the signal for finding smaller issues. Don't try to verify all theories at once.
+**Output**: Verified findings for `generating-performance-reports`
 
-**Output**: One verified issue with fix recommendation, then iterate
+## Workflow Overview
 
-## Fermi Verification Protocol (MANDATORY)
+1. **Select** highest-priority unverified theory
+2. **Prepare** - load tool docs, form expectations (Fermi estimation)
+3. **Execute** tools from the theory's verification plan
+4. **Handle emergent issues** - pivot if more critical, note as future work if not
+5. **Synthesize** evidence → VERIFIED / FALSIFIED / INCONCLUSIVE
+6. **Next steps** - if verified, recommend fix and stop; otherwise continue
 
-**Principle**: Tool output is authority for *data*, Fermi estimate is authority for *pipeline integrity*.
+See [WORKFLOW.md](WORKFLOW.md) for detailed procedures.
 
-### Step 1: Pre-Calculation
-Before running any tool:
-- Estimate expected output magnitude
-- Write down estimate explicitly
-- Base on benchmark characteristics, language patterns, theory prediction
+## Tool Skills
 
-### Step 2: Smoke Test
-- Run tool on trivial input first
-- Verify tool produces expected output format
-- Confirm tool is functional and accessible
-
-### Step 3: Execute & Validate
-- Run actual tool command on benchmark
-- Compare output magnitude vs pre-calculated estimate
-
-**Credibility Threshold Check**:
-- **Scenario A (Within 1 Order of Magnitude)**: ACCEPT result, proceed with analysis
-- **Scenario B (>1 Order of Magnitude Divergence OR Unexpected Zero)**: REJECT & DIAGNOSE
-  - STOP - Do NOT use this result
-  - Run debug commands to prove tool health
-  - Only accept after proving tool is working correctly
-
-## Tool Skills for Verification
-
-| Purpose | Tool Skill | When to Use |
-|---------|-----------|-------------|
-| Hot function identification | `profiling-with-cpu-sampler` | FIRST step for any performance issue |
-| Execution frequency | `tracing-execution-counts` | Understand how often code runs |
-| Optimization barriers | `detecting-performance-warnings` | Find virtual calls, type checks, boundaries |
-| Compilation behavior | `tracing-compilation-events` | Verify code is compiling |
-| Inlining analysis | `tracing-inlining-decisions` | Check call inlining |
-| Type stability | `detecting-deoptimizations` | Find deoptimization loops |
-| Allocation patterns | `profiling-memory-allocations` | Track memory allocations |
-| Deep IR analysis | `analyzing-compiler-graphs` | **Essential for code-derived theories** (escape analysis, boxing, allocations) |
+| Purpose | Tool Skill |
+|---------|-----------|
+| Hot function identification | `profiling-with-cpu-sampler` |
+| Execution frequency | `tracing-execution-counts` |
+| Optimization barriers | `detecting-performance-warnings` |
+| Compilation behavior | `tracing-compilation-events` |
+| Inlining analysis | `tracing-inlining-decisions` |
+| Type stability | `detecting-deoptimizations` |
+| Allocation patterns | `profiling-memory-allocations` |
+| Deep IR analysis | `analyzing-compiler-graphs` |
 
 **Note on Compiler Graphs**: When theories come from code analysis (e.g., "this allocation should be eliminated"), compiler graphs provide **direct evidence** of what the compiler actually did. Use them early for allocation/boxing theories, not as a last resort.
 
-## Verification Workflow
-
-### For the Current Highest-Priority Theory:
-
-#### 1. Load Tool Documentation (MANDATORY)
-Before running any tool:
-- Use the corresponding tool skill
-- Extract: Command syntax, output format, interpretation guidelines
-- Understand: What evidence confirms/denies the theory
-
-#### 2. Complete Fermi Verification (MANDATORY)
-For each tool:
-- Pre-calculate expected output
-- Run smoke test
-- Execute on actual benchmark
-- Validate results vs estimate
-
-#### 3. Run ALL Tools and Analyze
-**CRITICAL**: Run EVERY tool listed in the theory's verification plan
-
-For each tool:
-1. Execute tool command with appropriate options
-2. Save output to file for reference
-3. Parse and extract relevant metrics
-4. Evaluate: Evidence Found / Contradicts / Inconclusive
-
-#### 4. Synthesize Evidence
-After running ALL tools:
-- **✅ VERIFIED**: Majority of tools confirm theory
-- **❌ FALSIFIED**: Majority of tools contradict theory
-- **⚠️ INCONCLUSIVE**: Insufficient or contradictory data
-
-#### 5. Characterize Issue (if verified)
-- Root cause from tool evidence
-- Quantified impact (frequency, time%, allocations)
-- Specific code locations affected
-- Severity based on quantitative data
-
-#### 6. Handle Emergent Issues
-While running tools, you may discover **new issues** not in your theory list (e.g., a deoptimization loop while checking CPU sampling):
-
-**Criticality Assessment**:
-1. Estimate severity of the new issue (Critical/High/Medium/Low)
-2. Compare to the current theory's severity
-
-**Decision**:
-- **New issue MORE critical**: **PIVOT** - stop current verification, investigate the new issue immediately
-- **New issue LESS critical**: Note it as "Future Work" in your findings, continue with current theory
-
-**Examples of emergent critical issues**:
-- Deoptimization loops (many transfers to interpreter in hot path)
-- Compilation failures in core functions
-- Unexpected memory pressure patterns
-
-#### 7. Recommend Fix and Stop
-If theory is verified:
-- **Present fix recommendation to user**
-- **STOP further investigation** - noise from this issue obscures others
-- After user applies fix → Re-run profiling → Continue with next theory
-
-## Evidence Requirements
-
-**Verified theories MUST have**:
-- Concrete numbers (frequency, time, allocations)
-- Tool output citations (saved files)
-- Severity confirmed by tool data
-- Root cause identified from evidence
-
-**Falsified theories document**:
-- Why theory was wrong
-- What was found instead
-- Learned from incorrect assumption
-
-**Inconclusive theories require**:
-- Which tools worked and which didn't
-- Alternative verification approaches attempted
-- Decision: include with disclaimer OR exclude
-
-## Tool Output Management
-
-Save all outputs to `tool-outputs/` directory:
-```
-tool-outputs/
-├── cpu-sampler-queens.txt
-├── trace-compilation-queens.txt
-├── perf-warnings-queens.txt
-└── ...
-```
-
-## Common Pitfalls to Avoid
+## Common Pitfalls
 
 - ❌ **Substituting code analysis for tool verification** - Code shows potential, tools prove actuality
 - ❌ **Running only one tool** - Multiple tools required for confidence
 - ❌ **Skipping Fermi verification** - Silent tool failures produce garbage data
-- ❌ **Ignoring inconclusive results** - Document what couldn't be verified
-- ❌ **Not saving outputs** - Need citations for report
 - ❌ **Ignoring emergent issues** - If tools reveal a critical issue (like deopt loops), evaluate whether to pivot
 - ❌ **Always pivoting** - Only pivot if the new issue is MORE critical than the current theory
 
-## Integration with Other Skills
+## Related Skills
 
-**Predecessor Skills**:
-- `generating-performance-theories` → Provides theories to verify
+**Predecessor**: `generating-performance-theories` → Provides theories to verify
+
+**Successor**: `generating-performance-reports` → Compiles verified findings
 
 **Tool Skills Used**:
 - `profiling-with-cpu-sampler`
@@ -187,9 +69,6 @@ tool-outputs/
 - `profiling-memory-allocations`
 - `analyzing-compiler-graphs`
 
-**Successor Skill**:
-- `generating-performance-reports` → Compiles verified findings
-
 ## Workflow Position
 
 ```
@@ -199,5 +78,3 @@ tool-outputs/
 4. [verifying-performance-theories]  → THIS SKILL
 5. [generating-performance-reports]  → Document findings
 ```
-
-See [VERIFICATION-CHECKLIST.md](VERIFICATION-CHECKLIST.md) for the per-theory checklist template.
