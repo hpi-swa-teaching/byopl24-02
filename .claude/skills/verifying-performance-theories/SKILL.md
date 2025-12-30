@@ -22,14 +22,15 @@ A theory is only verified when:
 
 **Input**: List of theories from `generating-performance-theories` skill
 
-**For each theory**:
-1. Copy verification checklist from [VERIFICATION-CHECKLIST.md](VERIFICATION-CHECKLIST.md)
-2. Load documentation for each required tool skill
-3. Execute Fermi verification protocol
-4. Run all tools and collect evidence
-5. Synthesize findings and determine verdict
+**Iterative Approach** (recommended):
+1. **Pick the highest-severity theory** from the list
+2. Verify it using the workflow below
+3. If verified → **Recommend fix to user, STOP investigation**
+4. After fix applied → Re-profile and continue with next theory
 
-**Output**: Verified/falsified theories with quantitative evidence
+**Why iterative?** Multiple performance issues create noise in profiling tools. Fixing the biggest issue first clears the signal for finding smaller issues. Don't try to verify all theories at once.
+
+**Output**: One verified issue with fix recommendation, then iterate
 
 ## Fermi Verification Protocol (MANDATORY)
 
@@ -74,7 +75,7 @@ Before running any tool:
 
 ## Verification Workflow
 
-### For Each Theory:
+### For the Current Highest-Priority Theory:
 
 #### 1. Load Tool Documentation (MANDATORY)
 Before running any tool:
@@ -109,6 +110,12 @@ After running ALL tools:
 - Quantified impact (frequency, time%, allocations)
 - Specific code locations affected
 - Severity based on quantitative data
+
+#### 6. Recommend Fix and Stop
+If theory is verified:
+- **Present fix recommendation to user**
+- **STOP further investigation** - noise from this issue obscures others
+- After user applies fix → Re-run profiling → Continue with next theory
 
 ## Evidence Requirements
 

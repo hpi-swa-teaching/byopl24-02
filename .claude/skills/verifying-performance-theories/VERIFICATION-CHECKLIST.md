@@ -1,21 +1,21 @@
 # Verification Checklist
 
-**MANDATORY**: Complete this checklist for EVERY theory before including it in the report.
+**MANDATORY**: Complete this checklist for the **current highest-priority theory** only.
 
 **CRITICAL RULE**: Code analysis finds POTENTIAL issues. Tools PROVE which issues actually matter.
 
 ---
 
-## Pre-Report Verification Gate
+## Iterative Verification Approach
 
-**Before writing the performance analysis report, you MUST:**
+**Work on ONE theory at a time, highest-priority first:**
 
-1. ✅ Complete this checklist for EVERY theory generated
-2. ✅ Have tool-based evidence for EVERY issue marked as verified
-3. ✅ Document inconclusive results with attempted alternatives
-4. ✅ Remove theories that couldn't be verified from the report
+1. ✅ Complete this checklist for the **highest-severity unverified theory**
+2. ✅ If VERIFIED → **Recommend fix to user and STOP**
+3. ✅ After fix applied → Re-profile and start checklist for next theory
+4. ✅ If FALSIFIED → Move to next highest-priority theory
 
-**NO EXCEPTIONS**: If a theory lacks tool verification, it MUST NOT appear in the report as a verified issue.
+**WHY?** Multiple issues create noise in profiling tools. Fix the biggest issue first to get cleaner signal for the next investigation.
 
 ---
 
@@ -138,18 +138,21 @@ Copy this template for each theory.
 
 ---
 
-## Mandatory Checks Before Report Generation
+## After Verification: Next Steps
 
-Before proceeding to `generating-performance-reports`:
+**If ✅ VERIFIED:**
+- [ ] Present fix recommendation to user
+- [ ] Tool outputs saved to `tool-outputs/` directory
+- [ ] **STOP** - Wait for user to apply fix
+- [ ] After fix → Re-profile → Verify next highest-priority theory
 
-- [ ] **ALL theories** have completed verification checklists
-- [ ] **VERIFIED theories** have quantitative tool data
-- [ ] **FALSIFIED theories** are excluded from report
-- [ ] **INCONCLUSIVE theories** either excluded or marked with disclaimer
-- [ ] **NO theory** in report relies solely on code analysis
-- [ ] **Severity ratings** adjusted based on tool data
-- [ ] **All tool outputs** saved to `tool-outputs/` directory
-- [ ] **Report citations** reference specific tool output files
+**If ❌ FALSIFIED:**
+- [ ] Document why theory was wrong
+- [ ] Proceed immediately to next highest-priority theory
+
+**If ⚠️ INCONCLUSIVE:**
+- [ ] Document tool limitations
+- [ ] Proceed to next theory (may revisit after other fixes)
 
 ---
 
@@ -157,4 +160,4 @@ Before proceeding to `generating-performance-reports`:
 
 **Code analysis → POTENTIAL issues**
 **Tool verification → PROVEN issues**
-**Only PROVEN issues belong in the final report.**
+**Fix one issue at a time → Cleaner signal for next investigation**
