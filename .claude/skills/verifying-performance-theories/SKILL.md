@@ -68,7 +68,9 @@ Before running any tool:
 | Inlining analysis | `tracing-inlining-decisions` | Check call inlining |
 | Type stability | `detecting-deoptimizations` | Find deoptimization loops |
 | Allocation patterns | `profiling-memory-allocations` | Track memory allocations |
-| Deep IR analysis | `analyzing-compiler-graphs` | Last resort for unclear issues |
+| Deep IR analysis | `analyzing-compiler-graphs` | **Essential for code-derived theories** (escape analysis, boxing, allocations) |
+
+**Note on Compiler Graphs**: When theories come from code analysis (e.g., "this allocation should be eliminated"), compiler graphs provide **direct evidence** of what the compiler actually did. Use them early for allocation/boxing theories, not as a last resort.
 
 ## Verification Workflow
 
