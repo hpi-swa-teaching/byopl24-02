@@ -29,6 +29,19 @@ Experimental allocation profiler tracking memory allocations at the guest-langua
 <launcher> --memtracer --memtracer.TraceMem=1000 <program>
 ```
 
+## ⚠️ REQUIRED: Fermi Verification (Every Tool Invocation)
+
+**Before running**:
+- [ ] Pre-calculate: Expected allocation count (estimate based on loops/iterations)
+- [ ] Smoke test: `<launcher> --memtracer -c 'var a = 👉1, 2, 3👈;'` → Verify shows allocations
+
+**After running**:
+- [ ] Validate: Actual vs estimate within 1 order of magnitude? YES / NO
+- [ ] If NO: **STOP** - Debug tool before proceeding (test with known allocating code)
+- [ ] Save output: `tool-outputs/memtracer-[benchmark].txt`
+
+**Gate**: All boxes checked? → Proceed to analysis
+
 ## Key Options
 
 | Option | Description |
@@ -87,12 +100,6 @@ Point creation || 100000 allocations
 
 **Cause**: Temporary objects not eliminated
 **Fix**: Keep objects local, avoid escaping references
-
-## Fermi Verification
-
-1. **Pre-calculate**: Estimate allocations based on algorithm
-2. **Smoke test**: Run on trivial program
-3. **Validate**: Check allocation count matches estimate
 
 ## Integration with Other Skills
 

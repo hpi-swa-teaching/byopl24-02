@@ -61,6 +61,24 @@ bgv2json compiler_graphs/*.bgv > graphs.json
 See [DUMPING.md](DUMPING.md) for detailed dump options.
 See [QUERIES.md](QUERIES.md) for jq analysis queries.
 
+## ⚠️ REQUIRED: Fermi Verification (Every Tool Invocation)
+
+**Before dumping graphs**:
+- [ ] Pre-calculate: Expected # of BGV files (1 per compiled function, typically 5-20)
+- [ ] Smoke test: Dump trivial program first → Verify BGV files generated
+
+**After dumping**:
+- [ ] Validate: BGV file count within expectation? YES / NO
+- [ ] If NO: **STOP** - Check MethodFilter, verify functions compiled
+- [ ] List BGV files: `ls -lh compiler_graphs/*.bgv`
+
+**After analyzing graphs**:
+- [ ] Validate: Node counts reasonable (thousands, not millions)? YES / NO
+- [ ] If NO: **STOP** - May have wrong phase or too broad filter
+- [ ] Save analysis: `tool-outputs/compiler-graph-analysis-[function].txt`
+
+**Gate**: All boxes checked? → Proceed to interpretation
+
 ## Key Phases to Analyze
 
 | Phase | Purpose | What to Check |
@@ -127,13 +145,6 @@ seafoam --json file.bgv.gz:2 describe | \
 **Fix**: Add primitive specializations
 
 See [PATTERNS.md](PATTERNS.md) for detailed fix examples.
-
-## Fermi Verification
-
-Before analyzing graphs:
-1. **Pre-calculate**: Estimate expected node count
-2. **Smoke test**: Dump trivial program first
-3. **Validate**: Check output magnitude matches estimate
 
 ## Best Practices
 

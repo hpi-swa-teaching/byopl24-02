@@ -42,6 +42,19 @@ Traces every deoptimization event where execution falls back from compiled code 
   <program>
 ```
 
+## ⚠️ REQUIRED: Fermi Verification (Every Tool Invocation)
+
+**Before running**:
+- [ ] Pre-calculate: Expected transfers (0-50 during warmup, 0 in steady-state)
+- [ ] Smoke test: `<launcher> --experimental-options --engine.TraceTransferToInterpreter -c 'print 1;'` → Verify no false transfers
+
+**After running**:
+- [ ] Validate: Transfer count within expectation? YES / NO
+- [ ] If >100 transfers: **CRITICAL** - Deoptimization loop, analyze repeated locations
+- [ ] Save output: `tool-outputs/trace-transfers-[benchmark].txt`
+
+**Gate**: All boxes checked? → Proceed to analysis
+
 ## Key Options
 
 | Option | Description |
@@ -119,12 +132,6 @@ grep "transferToInterpreter at" transfers.log | sort -u | wc -l
 # Find repeated locations (deoptimization loops)
 grep "transferToInterpreter at" transfers.log | sort | uniq -c | sort -rn
 ```
-
-## Fermi Verification
-
-1. **Pre-calculate**: Expect 0-50 transfers during warmup, zero in steady-state
-2. **Smoke test**: Run on trivial program
-3. **Validate**: Transfers should decrease and stop
 
 ## Integration with Other Skills
 

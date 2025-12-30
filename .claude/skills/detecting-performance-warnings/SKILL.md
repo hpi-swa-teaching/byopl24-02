@@ -30,6 +30,19 @@ Detects optimization barriers during Truffle compilation. Essential for finding 
   <program> 2>&1 | tee warnings.log
 ```
 
+## ⚠️ REQUIRED: Fermi Verification (Every Tool Invocation)
+
+**Before running**:
+- [ ] Pre-calculate: Expected warnings (0-10 for well-optimized code, 0 is ideal)
+- [ ] Smoke test: `<launcher> --experimental-options --compiler.TracePerformanceWarnings=all -c 'print 1;'` → Verify no false warnings
+
+**After running**:
+- [ ] Validate: Warning count within expectation? YES / NO
+- [ ] If many warnings (>20): **Document each** - these are critical optimization barriers
+- [ ] Save output: `tool-outputs/perf-warnings-[benchmark].txt`
+
+**Gate**: All boxes checked? → Proceed to analysis
+
 ## Key Options
 
 | Option | Description |
@@ -78,12 +91,6 @@ Detects optimization barriers during Truffle compilation. Essential for finding 
 | Virtual call | Critical | Blocks inlining, 10-100x slower |
 | Type check | High | Prevents specialization |
 | Store | Medium | May escape optimization |
-
-## Fermi Verification
-
-1. **Pre-calculate**: Expect 0-10 warnings for well-optimized code
-2. **Smoke test**: Run on trivial program first
-3. **Validate**: Zero warnings is ideal goal
 
 ## Integration with Other Skills
 

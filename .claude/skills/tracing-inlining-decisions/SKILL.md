@@ -34,6 +34,19 @@ Shows inlining decisions during compilation with call tree structure and reasons
   <program>
 ```
 
+## ⚠️ REQUIRED: Fermi Verification (Every Tool Invocation)
+
+**Before running**:
+- [ ] Pre-calculate: Expected hot helper functions to inline (list 2-5 function names)
+- [ ] Smoke test: `<launcher> --experimental-options --engine.TraceInlining -c 'print 1;'` → Verify inlining decisions appear
+
+**After running**:
+- [ ] Validate: Critical functions inlined as expected? YES / NO
+- [ ] If NO: **Document why** (budgetExhausted, TooLarge, TruffleBoundary)
+- [ ] Save output: `tool-outputs/trace-inlining-[benchmark].txt`
+
+**Gate**: All boxes checked? → Proceed to analysis
+
 ## Key Options
 
 | Option | Description |
@@ -99,12 +112,6 @@ Shows inlining decisions during compilation with call tree structure and reasons
 
 **Symptom**: Recursive function shows "RecursiveInlining"
 **Expected**: Normal for recursive algorithms (Bytecode DSL limitation)
-
-## Fermi Verification
-
-1. **Pre-calculate**: Expect hot helper functions to inline
-2. **Smoke test**: Run on trivial program
-3. **Validate**: Check expected functions are inlined
 
 ## Integration with Other Skills
 

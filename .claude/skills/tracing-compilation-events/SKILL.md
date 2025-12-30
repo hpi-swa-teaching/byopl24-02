@@ -33,6 +33,19 @@ Logs every compilation event with timing, tier levels, success/failure status, a
   <program> 2>&1 | tee compilation.log
 ```
 
+## ⚠️ REQUIRED: Fermi Verification (Every Tool Invocation)
+
+**Before running**:
+- [ ] Pre-calculate: Expected # of compilations (5-20 for typical benchmark)
+- [ ] Smoke test: `<launcher> --experimental-options --engine.TraceCompilation -c 'print 1;'` → Verify compilation events appear
+
+**After running**:
+- [ ] Validate: Expected functions appear in trace? YES / NO
+- [ ] If NO: **STOP** - Check if functions are hot enough (increase iterations)
+- [ ] Save output: `tool-outputs/trace-compilation-[benchmark].txt`
+
+**Gate**: All boxes checked? → Proceed to analysis
+
 ## Key Options
 
 | Option | Description |
@@ -108,12 +121,6 @@ opt failed  myFunc  |Reason: Bailout
 
 **Cause**: Code too complex or unsupported pattern
 **Fix**: Use `detecting-performance-warnings` to find barriers
-
-## Fermi Verification
-
-1. **Pre-calculate**: Estimate 5-20 compilations for typical benchmark
-2. **Smoke test**: Run on trivial program
-3. **Validate**: Check expected functions appear
 
 ## Integration with Other Skills
 

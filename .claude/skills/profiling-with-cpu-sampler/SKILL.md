@@ -28,6 +28,19 @@ Time-based sampling profiler that identifies WHERE your program spends execution
 <launcher> --cpusampler --cpusampler.Delay=5000 --cpusampler.ShowTiers=true <program>
 ```
 
+## ⚠️ REQUIRED: Fermi Verification (Every Tool Invocation)
+
+**Before running**:
+- [ ] Pre-calculate: Expected hot functions (1-5 names), T0/T1/T2 split
+- [ ] Smoke test: `<launcher> --cpusampler -c 'print 1;'` → Verify output format
+
+**After running**:
+- [ ] Validate: Actual vs estimate within 1 order of magnitude? YES / NO
+- [ ] If NO: **STOP** - Debug tool before proceeding (run `--help:cpusampler`, test on known-good input)
+- [ ] Save output: `tool-outputs/cpu-sampler-[benchmark].txt`
+
+**Gate**: All boxes checked? → Proceed to analysis
+
 ## Key Options
 
 | Option | Description | Recommended Value |
@@ -72,13 +85,6 @@ hasConflict   || 250ms 11.9%  || 250ms 11.9%  || 8.8%  | 4.2% | 87.0%
 - ⚠️ >30% T0 time → Compilation issues
 - ⚠️ High T1 but low T2 → Optimization barriers
 - ⚠️ Time in unexpected functions → Algorithm issues
-
-## Fermi Verification
-
-Before running:
-1. **Pre-calculate**: Estimate 1-5 hot functions for typical benchmark
-2. **Smoke test**: Run on trivial program first
-3. **Validate**: Check output has expected number of functions
 
 ## Integration with Other Skills
 

@@ -27,6 +27,19 @@ Counts exact execution frequencies (NOT time) at function and statement level. C
 <launcher> --cputracer --cputracer.TraceStatements=true <program>
 ```
 
+## ⚠️ REQUIRED: Fermi Verification (Every Tool Invocation)
+
+**Before running**:
+- [ ] Pre-calculate: Expected call counts (based on algorithm complexity, e.g., O(n²) for nested loops)
+- [ ] Smoke test: `<launcher> --cputracer -c 'var x = 0; for (var i = 0; i < 10; i = i + 1) { x = x + 1; }'` → Verify counts
+
+**After running**:
+- [ ] Validate: Counts within 1 OOM of estimate? YES / NO
+- [ ] If NO: **STOP** - Either algorithm issue or wrong estimate (recalculate)
+- [ ] Save output: `tool-outputs/cpu-tracer-[benchmark].txt`
+
+**Gate**: All boxes checked? → Proceed to analysis
+
 ## Key Options
 
 | Option | Description | Recommended |
@@ -78,13 +91,6 @@ Expected for queens(N=8):
 If counts much higher → algorithm issue
 If counts much lower → early termination bug
 ```
-
-## Fermi Verification
-
-Before running:
-1. **Pre-calculate**: Estimate call counts based on algorithm
-2. **Smoke test**: Run on trivial input
-3. **Validate**: Compare output to estimate
 
 ## Integration with Other Skills
 
