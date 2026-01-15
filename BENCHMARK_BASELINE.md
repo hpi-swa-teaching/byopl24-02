@@ -4,7 +4,7 @@
 
 This report establishes performance baselines for the Lox programming language implementation using the Are We Fast Yet micro-benchmark suite. The Lox implementation is built on GraalVM Truffle with a bytecode interpreter architecture, featuring dynamic typing and object-oriented programming support.
 
-**Date:** 2025-12-21
+**Date:** 2026-01-15 (Updated with nbody and storage benchmarks)
 **Lox Version:** 0.0.1
 **GraalVM Version:** 24.2.0-SNAPSHOT
 **Platform:** macOS (Darwin 25.0.0)
@@ -74,9 +74,11 @@ For performance comparison, we selected two languages from the Are We Fast Yet b
 | bounce | Physics simulation of bouncing balls | Floating-point arithmetic, collision detection | 116 |
 | list | Linked list operations | Object allocation, pointer chasing | ~150 |
 | mandelbrot | Mandelbrot set calculation | Intensive FP math, bit operations | 154 |
+| nbody | N-body gravitational simulation | Intensive FP math, nested loops, physics | ~250 |
 | permute | Permutation generation | Recursion, array manipulation | ~100 |
 | queens | N-Queens solver | Backtracking, constraint satisfaction | 60 |
 | sieve | Prime number sieve | Array operations, arithmetic | ~80 |
+| storage | Tree building and allocation | Deep recursion, GC stress test | ~65 |
 | towers | Towers of Hanoi | Deep recursion, call-intensive | ~120 |
 
 ### Benchmark Coverage
@@ -84,10 +86,11 @@ For performance comparison, we selected two languages from the Are We Fast Yet b
 **Computational Patterns Covered**:
 - ✅ Floating-point arithmetic (bounce, mandelbrot, nbody)
 - ✅ Integer arithmetic (sieve, permute, queens)
-- ✅ Object allocation (list, bounce, towers)
-- ✅ Recursion (permute, queens, towers)
+- ✅ Object allocation (list, bounce, towers, storage)
+- ✅ Recursion (permute, queens, towers, storage)
 - ✅ Array manipulation (all benchmarks)
 - ✅ Bit operations (mandelbrot)
+- ✅ GC stress testing (storage)
 - ⚠️  String operations (limited - not heavily tested)
 - ⚠️  Hash maps/dictionaries (not tested - missing cd, deltablue, richards)
 
@@ -116,9 +119,11 @@ Performance data collected with 10 outer iterations after warmup:
 | bounce | 100 | 65,795 | ~22,000 | 420,880 | 19.1x |
 | list | 10 | 86,773 | ~57,000 | 227,026 | 4.0x |
 | mandelbrot | 500 | 224,786 | ~93,000 | 675,348 | 7.3x |
+| nbody | 1 | 8,860 | ~4,000 | 33,269 | 8.3x |
 | permute | 100 | 38,668 | ~22,000 | 177,048 | 8.0x |
 | queens | 10 | 17,709 | ~6,000 | 114,423 | 19.1x |
 | sieve | 100 | 24,817 | ~5,500 | 173,546 | 31.5x |
+| storage | 1 | 18,348 | ~2,500 | 159,602 | 63.8x |
 | towers | 10 | 104,637 | ~59,000 | 343,562 | 5.8x |
 
 **Notes**:
@@ -215,7 +220,7 @@ For each benchmark showing slower-than-expected performance:
 
 ### Current Limitations
 
-1. **Benchmark Coverage**: Missing complex benchmarks (cd, deltablue, havlak, richards, json) due to implementation complexity
+1. **Benchmark Coverage**: Complete coverage of standard AreWeFastYet micro-benchmarks (9/9). Missing complex macro-benchmarks (cd, deltablue, havlak, richards, json) due to implementation complexity
 
 2. **Statistical Rigor**: Results based on single runs; should use multiple runs with statistical analysis for production baselines
 
@@ -225,11 +230,12 @@ For each benchmark showing slower-than-expected performance:
 
 ### Future Additions
 
-**Recommended Additional Benchmarks**:
-- **nbody**: N-body physics simulation (floating-point intensive)
-- **storage**: Tree-building and object allocation patterns
+**Recommended Additional Benchmarks** (macro-benchmarks for deeper analysis):
 - **richards**: OS kernel simulation (complex control flow)
 - **deltablue**: Constraint solver (algorithm complexity)
+- **cd**: Collision detection (spatial algorithms)
+- **havlak**: Loop recognition (graph algorithms)
+- **json**: JSON parsing and serialization
 
 **Performance Measurement Improvements**:
 - Statistical confidence intervals (mean ± stddev)
@@ -239,7 +245,7 @@ For each benchmark showing slower-than-expected performance:
 
 ## Conclusion
 
-This baseline establishes performance expectations for the Lox language implementation across 7 micro-benchmarks from the Are We Fast Yet suite. Key findings:
+This baseline establishes performance expectations for the Lox language implementation across all 9 micro-benchmarks from the Are We Fast Yet suite. Key findings:
 
 ✅ **JIT compilation is highly effective** (4x-31x speedup after warmup)
 ✅ **Performance is competitive** for a Truffle-based language
@@ -256,7 +262,7 @@ The baseline provides a foundation for:
 
 ---
 
-Generated: 2025-12-21
+Generated: 2025-12-21 (Updated: 2026-01-15)
 Tool: Claude Code benchmark-baseline skill
 Lox Version: 0.0.1
 GraalVM: 24.2.0-SNAPSHOT
