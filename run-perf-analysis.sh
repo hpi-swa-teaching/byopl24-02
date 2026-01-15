@@ -10,7 +10,7 @@ set -e
 PREFIX="${1:?Usage: $0 <prefix> <prompt-file> [baseline-branch]}"
 PROMPT_FILE="${2:?Usage: $0 <prefix> <prompt-file> [baseline-branch]}"
 BASELINE_BRANCH="${3:-main}"
-ITERATIONS_PER_RUN=5
+ITERATIONS_PER_RUN=10
 TOTAL_RUNS=5
 TIMEOUT_PER_RUN="2h"
 
@@ -93,7 +93,12 @@ You have approximately $((REMAINING / 60)) minutes remaining for this run.
 $(if [[ $iteration -gt 1 ]]; then echo "Build upon the improvements from the previous iteration."; fi)
 $(if [[ $iteration -eq $ITERATIONS_PER_RUN ]]; then echo "This is the final iteration of this run."; fi)
 
-When done with your changes for this iteration, commit them with a descriptive message summarizing what you improved."
+When done with your changes for this iteration, commit them with a descriptive message summarizing what you improved.
+
+Do NOT stop to ask me questions. Make reasonable decisions on your own 
+and continue until the task is complete. If you encounter ambiguity, 
+use your best judgment and document your choices. Only stop if you 
+hit a truly unrecoverable error."
 
         # Run Claude Code with timeout
         # --yes: auto-accept all prompts
