@@ -43,43 +43,6 @@ echo "Timeout per run: $TIMEOUT_PER_RUN"
 echo "=================================================="
 echo ""
 
-# --- Baseline Benchmarks ---
-echo "--- Running baseline benchmarks ---"
-BASELINE_BENCHMARK="benchmark-results-${PREFIX}-baseline.txt"
-
-./mvnw package -q || { echo "Error: Baseline build failed"; exit 1; }
-
-{
-    echo "=== Baseline Benchmark Results ==="
-    echo "Date: $(date)"
-    echo "Branch: $BASELINE_BRANCH"
-    echo ""
-
-    echo "--- sieve ---"
-    ./lox harness.lox sieve 10 10000
-    echo ""
-
-    echo "--- towers ---"
-    ./lox harness.lox towers 10 300
-    echo ""
-
-    echo "--- list ---"
-    ./lox harness.lox list 10 100
-    echo ""
-
-    echo "--- permute ---"
-    ./lox harness.lox permute 10 10000
-    echo ""
-
-    echo "--- queens ---"
-    ./lox harness.lox queens 10 3000
-    echo ""
-} | tee "$BASELINE_BENCHMARK"
-
-echo ""
-echo "Baseline benchmark results saved to: $BASELINE_BENCHMARK"
-echo ""
-
 # --- Main Loop ---
 for run in $(seq 1 $TOTAL_RUNS); do
     echo ""
