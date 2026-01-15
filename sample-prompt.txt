@@ -1,0 +1,10 @@
+Analyze and improve the performance of this Lox language implementation.
+
+Follow this cycle:
+1. Generate a theory about what might be causing performance issues
+2. Validate your theory using profiling or benchmarks
+3. Implement a fix based on your findings
+
+If your changes break the build or tests, fix them before continuing.
+
+Focus on meaningful optimizations that improve runtime performance.
