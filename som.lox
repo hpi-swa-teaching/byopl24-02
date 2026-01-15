@@ -1,0 +1,120 @@
+// This code is derived from the SOM benchmarks, see AUTHORS.md file.
+//
+// Copyright (c) 2015-2016 Stefan Marr <git@stefan-marr.de>
+//
+// Permission is hereby granted, free of charge, to any person obtaining a copy
+// of this software and associated documentation files (the 'Software'), to deal
+// in the Software without restriction, including without limitation the rights
+// to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+// copies of the Software, and to permit persons to whom the Software is
+// furnished to do so, subject to the following conditions:
+//
+// The above copyright notice and this permission notice shall be included in
+// all copies or substantial portions of the Software.
+//
+// THE SOFTWARE IS PROVIDED 'AS IS', WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+// IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+// FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+// AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+// LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+// OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+// THE SOFTWARE.
+
+var Math = lookup("java", "java.lang.Math");
+
+class Random {
+    init() {
+        self.seed = 74755;
+    }
+
+    next() {
+        var temp = self.seed * 1309 + 13849;
+        var quotient = temp / 65536;
+        var floored = Math.floor(quotient);
+        self.seed = temp - (floored * 65536);
+        return self.seed;
+    }
+}
+
+// Vector class for dynamic arrays (will add more as needed for other benchmarks)
+class Vector {
+    init() {
+        self.storage = 👉👈;
+        self.firstIdx = 0;
+        self.lastIdx = 0;
+    }
+
+    at(idx) {
+        if (idx >= self.storage.length) {
+            return nil;
+        }
+        return self.storage👉idx👈;
+    }
+
+    atPut(idx, val) {
+        if (idx >= self.storage.length) {
+            var newLength = idx + 1;
+            for (var i = self.storage.length; i < newLength; i = i + 1) {
+                self.storage👉i👈 = nil;
+            }
+        }
+        self.storage👉idx👈 = val;
+        if (self.lastIdx < idx + 1) {
+            self.lastIdx = idx + 1;
+        }
+    }
+
+    append(elem) {
+        self.atPut(self.lastIdx, elem);
+    }
+
+    isEmpty() {
+        return self.lastIdx == self.firstIdx;
+    }
+
+    size() {
+        return self.lastIdx - self.firstIdx;
+    }
+
+    removeFirst() {
+        if (self.isEmpty()) {
+            return nil;
+        }
+        self.firstIdx = self.firstIdx + 1;
+        return self.storage👉self.firstIdx - 1👈;
+    }
+
+    remove(obj) {
+        var newArray = 👉👈;
+        var newLast = 0;
+        for (var i = 0; i < self.storage.length; i = i + 1) {
+            if (self.storage👉i👈 != obj) {
+                newArray👉newLast👈 = self.storage👉i👈;
+                newLast = newLast + 1;
+            }
+        }
+        self.storage = newArray;
+        self.lastIdx = newLast;
+        self.firstIdx = 0;
+    }
+
+    removeAll() {
+        self.storage = 👉👈;
+        self.firstIdx = 0;
+        self.lastIdx = 0;
+    }
+
+    getOne(idx) {
+        return self.storage👉self.firstIdx + idx👈;
+    }
+
+    hasSome(fn) {
+        var storage = self.storage;
+        for (var element of storage) {
+            if (fn(element)) {
+                return true;
+            }
+        }
+        return false;
+    }
+}

@@ -1,0 +1,117 @@
+// This code is derived from the SOM benchmarks, see AUTHORS.md file.
+//
+// Copyright (c) 2015-2016 Stefan Marr <git@stefan-marr.de>
+//
+// Permission is hereby granted, free of charge, to any person obtaining a copy
+// of this software and associated documentation files (the 'Software'), to deal
+// in the Software without restriction, including without limitation the rights
+// to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+// copies of the Software, and to permit persons to whom the Software is
+// furnished to do so, subject to the following conditions:
+//
+// The above copyright notice and this permission notice shall be included in
+// all copies or substantial portions of the Software.
+//
+// THE SOFTWARE IS PROVIDED 'AS IS', WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+// IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+// FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+// AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+// LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+// OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+// THE SOFTWARE.
+
+load("benchmark.lox");
+load("som.lox");
+
+class Ball {
+    init(random) {
+        var temp1 = random.next();
+        var quotient1 = temp1 / 500;
+        var floored1 = Math.floor(quotient1);
+        self.x = temp1 - (floored1 * 500);
+
+        var temp2 = random.next();
+        var quotient2 = temp2 / 500;
+        var floored2 = Math.floor(quotient2);
+        self.y = temp2 - (floored2 * 500);
+
+        var temp3 = random.next();
+        var quotient3 = temp3 / 300;
+        var floored3 = Math.floor(quotient3);
+        self.xVel = (temp3 - (floored3 * 300)) - 150;
+
+        var temp4 = random.next();
+        var quotient4 = temp4 / 300;
+        var floored4 = Math.floor(quotient4);
+        self.yVel = (temp4 - (floored4 * 300)) - 150;
+    }
+
+    bounce() {
+        var xLimit = 500;
+        var yLimit = 500;
+        var bounced = false;
+
+        self.x = self.x + self.xVel;
+        self.y = self.y + self.yVel;
+
+        if (self.x > xLimit) {
+            self.x = xLimit;
+            self.xVel = 0 - Math.abs(self.xVel);
+            bounced = true;
+        }
+
+        if (self.x < 0) {
+            self.x = 0;
+            self.xVel = Math.abs(self.xVel);
+            bounced = true;
+        }
+
+        if (self.y > yLimit) {
+            self.y = yLimit;
+            self.yVel = 0 - Math.abs(self.yVel);
+            bounced = true;
+        }
+
+        if (self.y < 0) {
+            self.y = 0;
+            self.yVel = Math.abs(self.yVel);
+            bounced = true;
+        }
+
+        return bounced;
+    }
+}
+
+class Bounce 🤝 Benchmark {
+    init() {
+        super.init();
+    }
+
+    benchmark() {
+        var random = Random();
+        var ballCount = 100;
+        var bounces = 0;
+        var balls = 👉👈;
+        var i = 0;
+
+        for (i = 0; i < ballCount; i = i + 1) {
+            balls👉i👈 = Ball(random);
+        }
+
+        for (i = 0; i < 50; i = i + 1) {
+            for (var j = 0; j < ballCount; j = j + 1) {
+                var ball = balls👉j👈;
+                if (ball.bounce()) {
+                    bounces = bounces + 1;
+                }
+            }
+        }
+        return bounces;
+    }
+
+    verifyResult(result) {
+        return result == 1331;
+    }
+}
+
+return Bounce();
