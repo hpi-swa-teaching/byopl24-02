@@ -105,7 +105,7 @@ hit a truly unrecoverable error."
         # --yes: auto-accept all prompts
         # --dangerously-skip-permissions: skip all permission prompts (alternative to --yes)
         # --plugin-dir=../cc-truffle-performance-plugin use the performance plugin
-        timeout "${REMAINING}s" claude --dangerously-skip-permissions --plugin-dir=../cc-truffle-performance-plugin -p "$ITERATION_PROMPT" || {
+        timeout "${REMAINING}s" claude --dangerously-skip-permissions -d --plugin-dir=../cc-truffle-performance-plugin -p "$ITERATION_PROMPT" || {
             EXIT_CODE=$?
             if [[ $EXIT_CODE -eq 124 ]]; then
                 echo "Timeout reached for run $run"
