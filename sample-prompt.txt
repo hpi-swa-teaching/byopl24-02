@@ -1,10 +1,10 @@
-Analyze and improve the performance of this Lox language implementation.
+Task: Analyze and improve the performance of this Lox language implementation.
 
-Follow this cycle:
-1. Generate a theory about what might be causing performance issues
-2. Validate your theory using profiling or benchmarks
-3. Implement a fix based on your findings
+Sidenote: If your changes break the build or tests, fix them before continuing.
 
-If your changes break the build or tests, fix them before continuing.
+Sidenote: Do NOT stop to ask me questions. Make reasonable decisions on your own 
+and continue until the task is complete. If you encounter ambiguity, 
+use your best judgment and document your choices. Only stop if you 
+hit a truly unrecoverable error.
 
-Focus on meaningful optimizations that improve runtime performance.
+Sidenote: Document your findings and reuse information from previous iterations.

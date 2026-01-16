@@ -93,14 +93,8 @@ You have approximately $((REMAINING / 60)) minutes remaining for this run.
 $(if [[ $iteration -gt 1 ]]; then echo "Build upon the improvements from the previous iteration."; fi)
 $(if [[ $iteration -eq $ITERATIONS_PER_RUN ]]; then echo "This is the final iteration of this run."; fi)
 
-Document your findings and reuse information from previous iterations.
 When done with your changes for this iteration, commit them with a descriptive message summarizing what you improved.
-Use skills if available.
-
-Do NOT stop to ask me questions. Make reasonable decisions on your own 
-and continue until the task is complete. If you encounter ambiguity, 
-use your best judgment and document your choices. Only stop if you 
-hit a truly unrecoverable error."
+Use skills if available."
 
         # Run Claude Code with timeout
         # --yes: auto-accept all prompts
