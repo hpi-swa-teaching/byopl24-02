@@ -104,7 +104,7 @@ hit a truly unrecoverable error."
         # Run Claude Code with timeout
         # --yes: auto-accept all prompts
         # --dangerously-skip-permissions: skip all permission prompts (alternative to --yes)
-        timeout "${REMAINING}s" claude --yes --dangerously-skip-permissions -p "$ITERATION_PROMPT" || {
+        timeout "${REMAINING}s" claude --dangerously-skip-permissions -p "$ITERATION_PROMPT" || {
             EXIT_CODE=$?
             if [[ $EXIT_CODE -eq 124 ]]; then
                 echo "Timeout reached for run $run"
