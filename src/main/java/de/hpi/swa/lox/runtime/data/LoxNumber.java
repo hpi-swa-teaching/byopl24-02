@@ -14,18 +14,18 @@ import com.oracle.truffle.api.library.ExportMessage;
 @ExportLibrary(InteropLibrary.class)
 public class LoxNumber implements TruffleObject {
 
-    private Double internalValue;
+    private double internalValue;
 
     public static final LoxNumber NaN = new LoxNumber(Double.NaN);
 
     public LoxNumber(String numberText) {
         super();
         try {
-            // Try to parse number text to Double value.
+            // Try to parse number text to double value.
             // This gives us floating number handling and can also deal with integers.
             // Lox-reference: "Lox has only one kind of number: double-precision floating
             // point".
-            this.internalValue = Double.valueOf(numberText);
+            this.internalValue = Double.parseDouble(numberText);
         } catch (NumberFormatException e) {
             // If the content is not parseable into a java Double value,
             // our grammar should have resulted in a syntax error before.
@@ -33,7 +33,7 @@ public class LoxNumber implements TruffleObject {
         }
     }
 
-    public LoxNumber(Double value) {
+    public LoxNumber(double value) {
         super();
         this.internalValue = value;
     }
@@ -48,7 +48,7 @@ public class LoxNumber implements TruffleObject {
         this.internalValue = (double) value;
     }
 
-    public Double getValue() {
+    public double getValue() {
         return internalValue;
     }
 
@@ -58,13 +58,14 @@ public class LoxNumber implements TruffleObject {
     @Override
     @TruffleBoundary
     public String toString() {
-        if (internalValue.longValue() == internalValue.doubleValue()) {
+        long longVal = (long) internalValue;
+        if (longVal == internalValue) {
             // If we deal with non-floating numbers (integers/longs),
             // we do not need to print the decimal point.
-            return Objects.toString(internalValue.longValue());
+            return Objects.toString(longVal);
         } else {
             // Floating number detected, just use regular Double#toString()
-            return internalValue.toString();
+            return Double.toString(internalValue);
         }
     }
 
@@ -77,7 +78,7 @@ public class LoxNumber implements TruffleObject {
             return false;
         }
         final LoxNumber otherLoxNumber = (LoxNumber) other;
-        return this.getValue().equals(otherLoxNumber.getValue());
+        return this.internalValue == otherLoxNumber.internalValue;
     }
 
     @ExportMessage
@@ -87,22 +88,24 @@ public class LoxNumber implements TruffleObject {
 
     @ExportMessage
     public boolean fitsInInt() {
-        return internalValue.longValue() == internalValue.doubleValue();
+        long longVal = (long) internalValue;
+        return longVal == internalValue && longVal >= Integer.MIN_VALUE && longVal <= Integer.MAX_VALUE;
     }
 
     @ExportMessage
     public int asInt() {
-        return internalValue.intValue();
+        return (int) internalValue;
     }
 
     @ExportMessage
     public boolean fitsInLong() {
-        return internalValue.longValue() == internalValue.doubleValue();
+        long longVal = (long) internalValue;
+        return longVal == internalValue;
     }
 
     @ExportMessage
     public long asLong() {
-        return internalValue.longValue();
+        return (long) internalValue;
     }
 
     @ExportMessage
@@ -112,7 +115,7 @@ public class LoxNumber implements TruffleObject {
 
     @ExportMessage
     public float asFloat() {
-        return internalValue.floatValue();
+        return (float) internalValue;
     }
 
     @ExportMessage
@@ -127,24 +130,26 @@ public class LoxNumber implements TruffleObject {
 
     @ExportMessage
     final boolean fitsInByte() {
+        byte byteVal = (byte) internalValue;
         return internalValue >= Byte.MIN_VALUE && internalValue <= Byte.MAX_VALUE
-                && internalValue == internalValue.byteValue();
+                && internalValue == byteVal;
     }
 
     @ExportMessage
     final boolean fitsInShort() {
+        short shortVal = (short) internalValue;
         return internalValue >= Short.MIN_VALUE && internalValue <= Short.MAX_VALUE
-                && internalValue == internalValue.shortValue();
+                && internalValue == shortVal;
     }
 
     @ExportMessage
     final byte asByte() {
-        return internalValue.byteValue();
+        return (byte) internalValue;
     }
 
     @ExportMessage
     final short asShort() {
-        return internalValue.shortValue();
+        return (short) internalValue;
     }
 
     @ExportMessage

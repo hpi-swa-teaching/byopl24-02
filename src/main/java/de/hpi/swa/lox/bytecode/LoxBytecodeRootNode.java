@@ -89,7 +89,7 @@ public abstract class LoxBytecodeRootNode extends LoxRootNode implements Bytecod
         @Specialization
         static LoxNumber doNumber(LoxNumber loxNumber) {
             // Unwrap LoxNumber value, calculate result, rewrap.
-            Double result = -1 * loxNumber.getValue();
+            double result = -loxNumber.getValue();
             return new LoxNumber(result);
         }
 
@@ -105,7 +105,7 @@ public abstract class LoxBytecodeRootNode extends LoxRootNode implements Bytecod
         @Specialization
         static LoxNumber doNumbers(LoxNumber left, LoxNumber right) {
             // Unwrap LoxNumber values, calculate result, rewrap.
-            Double result = left.getValue() + right.getValue();
+            double result = left.getValue() + right.getValue();
             return new LoxNumber(result);
         }
 
@@ -126,7 +126,7 @@ public abstract class LoxBytecodeRootNode extends LoxRootNode implements Bytecod
         @Specialization
         static LoxNumber doNumber(LoxNumber left, LoxNumber right) {
             // Unwrap LoxNumber values, calculate result, rewrap.
-            Double result = left.getValue() - right.getValue();
+            double result = left.getValue() - right.getValue();
             return new LoxNumber(result);
         }
 
@@ -143,7 +143,7 @@ public abstract class LoxBytecodeRootNode extends LoxRootNode implements Bytecod
         @Specialization
         static LoxNumber doNumbers(LoxNumber left, LoxNumber right) {
             // Unwrap LoxNumber values, calculate result, rewrap.
-            Double result = left.getValue() * right.getValue();
+            double result = left.getValue() * right.getValue();
             return new LoxNumber(result);
         }
 
@@ -159,11 +159,12 @@ public abstract class LoxBytecodeRootNode extends LoxRootNode implements Bytecod
     public static final class LoxDivide {
         @Specialization
         static LoxNumber doNumbers(LoxNumber left, LoxNumber right, @Bind Node node) {
-            if (right.getValue() == 0) {
+            double rightValue = right.getValue();
+            if (rightValue == 0) {
                 throw new LoxRuntimeError("Division by zero", node);
             }
             // Unwrap LoxNumber values, calculate result, rewrap.
-            Double result = left.getValue() / right.getValue();
+            double result = left.getValue() / rightValue;
 
             return new LoxNumber(result);
         }
@@ -408,9 +409,10 @@ public abstract class LoxBytecodeRootNode extends LoxRootNode implements Bytecod
 
     @Operation
     public static final class LoxReadArray {
-        @Specialization(guards = "index.getValue().intValue() >= 0")
+        @Specialization
         static Object readArray(LoxArray array, LoxNumber index) {
-            return array.get(index.getValue().intValue());
+            int idx = (int) index.getValue();
+            return array.get(idx);
         }
 
         @Fallback
@@ -430,24 +432,16 @@ public abstract class LoxBytecodeRootNode extends LoxRootNode implements Bytecod
 
     @Operation
     public static final class LoxWriteArray {
-        @Specialization(guards = { "index.getValue().intValue() >= 0",
-                "array.getSize() > index.getValue().intValue()" })
+        @Specialization
         static Void writeArrayInSize(LoxArray array, LoxNumber index, Object value) {
-            array.setInSize(index.getValue().intValue(), value);
-            return null;
-        }
-
-        @Specialization(guards = { "index.getValue().intValue() >= 0",
-                "array.getCapacity() > index.getValue().intValue()" }, replaces = "writeArrayInSize")
-        static Void writeArrayInCapacity(LoxArray array, LoxNumber index, Object value) {
-            array.setInCapacity(index.getValue().intValue(), value);
-            return null;
-        }
-
-        // Lox number wraps a double, so we need to cast it to int
-        @Specialization(guards = "index.getValue().intValue() >= 0", replaces = "writeArrayInCapacity")
-        static Void writeArray(LoxArray array, LoxNumber index, Object value) {
-            array.set(index.getValue().intValue(), value);
+            int idx = (int) index.getValue();
+            if (idx >= 0 && array.getSize() > idx) {
+                array.setInSize(idx, value);
+            } else if (idx >= 0 && array.getCapacity() > idx) {
+                array.setInCapacity(idx, value);
+            } else if (idx >= 0) {
+                array.set(idx, value);
+            }
             return null;
         }
 
