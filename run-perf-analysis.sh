@@ -95,6 +95,7 @@ $(if [[ $iteration -eq $ITERATIONS_PER_RUN ]]; then echo "This is the final iter
 
 Document your findings and reuse information from previous iterations.
 When done with your changes for this iteration, commit them with a descriptive message summarizing what you improved.
+Use skills if available.
 
 Do NOT stop to ask me questions. Make reasonable decisions on your own 
 and continue until the task is complete. If you encounter ambiguity, 
