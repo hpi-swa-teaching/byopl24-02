@@ -140,6 +140,14 @@ The implementation includes optimizations for array literals (see `bonusOptimiza
 - Uncached interpreter enabled for startup performance
 - Serialization support for bytecode caching
 
+### Dump Compiler Graph
+
+> !Important!
+Use the variable `EXTRA_JAVA_ARGS` to dump the compiler graph:
+```bash
+EXTRA_JAVA_ARGS="-Djdk.graal.Dump=Truffle:1" ./lox <file.lox>
+```
+
 ## Migration Tools
 
 For converting standard Lox to this implementation's syntax:
