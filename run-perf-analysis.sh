@@ -89,7 +89,6 @@ for run in $(seq 1 $TOTAL_RUNS); do
         ITERATION_PROMPT="$PROMPT
 
 This is iteration $iteration of $ITERATIONS_PER_RUN in run $run.
-You have approximately $((REMAINING / 60)) minutes remaining for this run.
 $(if [[ $iteration -gt 1 ]]; then echo "Build upon the improvements from the previous iteration."; fi)
 $(if [[ $iteration -eq $ITERATIONS_PER_RUN ]]; then echo "This is the final iteration of this run."; fi)
 
