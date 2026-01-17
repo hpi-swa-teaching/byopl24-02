@@ -4,7 +4,7 @@
 # Runs 5 complete analysis cycles, each with 5 iterations building on each other
 # Total: 25 branches created
 
-set -e
+# Note: NOT using set -e to allow graceful error handling and iteration skipping
 
 # --- Configuration ---
 PREFIX="${1:?Usage: $0 <prefix> <prompt-file> [baseline-branch]}"
@@ -51,7 +51,11 @@ for run in $(seq 1 $TOTAL_RUNS); do
     echo ""
 
     # Reset to baseline at the start of each run
-    git checkout "$BASELINE_BRANCH"
+    if ! git checkout "$BASELINE_BRANCH" 2>/dev/null; then
+        echo "Error: Could not checkout baseline branch $BASELINE_BRANCH"
+        echo "Skipping run $run"
+        continue
+    fi
     git reset --hard "$BASELINE_BRANCH"
 
     for iteration in $(seq 1 $ITERATIONS_PER_RUN); do
@@ -112,7 +116,16 @@ Co-Authored-By: Claude Opus 4.5 <noreply@anthropic.com>" || true
                 fi
                 break
             else
-                echo "Claude exited with code $EXIT_CODE"
+                echo "Error: Claude exited with code $EXIT_CODE"
+                echo "Skipping iteration $iteration and continuing to next iteration..."
+
+                # Delete the branch since this iteration failed
+                git checkout "$BASELINE_BRANCH" 2>/dev/null || git checkout main
+                git branch -D "$BRANCH_NAME" 2>/dev/null || true
+
+                echo "Iteration $iteration skipped due to error at $(date)"
+                echo ""
+                continue
             fi
         }
 
@@ -140,38 +153,41 @@ Co-Authored-By: Claude Opus 4.5 <noreply@anthropic.com>" || true
     BENCHMARK_OUTPUT="benchmark-results-${PREFIX}-run-${run}.txt"
 
     # Rebuild to ensure latest changes are compiled
-    ./mvnw package -q || echo "Warning: Build failed, running benchmarks anyway"
+    if ! ./mvnw package -q 2>&1; then
+        echo "Warning: Build failed, skipping benchmarks for run $run"
+        echo "Build failed - benchmarks skipped" > "$BENCHMARK_OUTPUT"
+    else
+        {
+            echo "=== Benchmark Results for ${PREFIX}-run-${run} ==="
+            echo "Date: $(date)"
+            echo "Final branch: ${PREFIX}-run-${run}-iteration-${ITERATIONS_PER_RUN}"
+            echo ""
 
-    {
-        echo "=== Benchmark Results for ${PREFIX}-run-${run} ==="
-        echo "Date: $(date)"
-        echo "Final branch: ${PREFIX}-run-${run}-iteration-${ITERATIONS_PER_RUN}"
+            echo "--- sieve ---"
+            ./lox harness.lox sieve 10 10000 || echo "sieve benchmark failed"
+            echo ""
+
+            echo "--- towers ---"
+            ./lox harness.lox towers 10 300 || echo "towers benchmark failed"
+            echo ""
+
+            echo "--- list ---"
+            ./lox harness.lox list 10 100 || echo "list benchmark failed"
+            echo ""
+
+            echo "--- permute ---"
+            ./lox harness.lox permute 10 10000 || echo "permute benchmark failed"
+            echo ""
+
+            echo "--- queens ---"
+            ./lox harness.lox queens 10 3000 || echo "queens benchmark failed"
+            echo ""
+        } | tee "$BENCHMARK_OUTPUT"
+
         echo ""
-
-        echo "--- sieve ---"
-        ./lox harness.lox sieve 10 10000
+        echo "Benchmark results saved to: $BENCHMARK_OUTPUT"
         echo ""
-
-        echo "--- towers ---"
-        ./lox harness.lox towers 10 300
-        echo ""
-
-        echo "--- list ---"
-        ./lox harness.lox list 10 100
-        echo ""
-
-        echo "--- permute ---"
-        ./lox harness.lox permute 10 10000
-        echo ""
-
-        echo "--- queens ---"
-        ./lox harness.lox queens 10 3000
-        echo ""
-    } | tee "$BENCHMARK_OUTPUT"
-
-    echo ""
-    echo "Benchmark results saved to: $BENCHMARK_OUTPUT"
-    echo ""
+    fi
 
 done
 
