@@ -126,6 +126,7 @@ run_claude_with_timeout() {
     local timeout=$2
 
     # Start Claude in background
+    echo "+ claude $CLAUDE_FLAGS --plugin-dir=\"$PLUGIN_DIR\" -p \"$prompt\""
     claude $CLAUDE_FLAGS --plugin-dir="$PLUGIN_DIR" -p "$prompt" &
     CLAUDE_PID=$!
     sleep "$STARTUP_DELAY"
