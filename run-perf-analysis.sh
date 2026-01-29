@@ -5,13 +5,36 @@
 
 # Note: NOT using set -e to allow graceful error handling and iteration skipping
 
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+
+# =============================================================================
+# Source helper scripts
+# =============================================================================
+
+source "$SCRIPT_DIR/perf-analysis/helpers.sh"
+source "$SCRIPT_DIR/perf-analysis/benchmarks.sh"
+source "$SCRIPT_DIR/perf-analysis/claude-runner.sh"
+source "$SCRIPT_DIR/perf-analysis/state.sh"
+
+# =============================================================================
+# Argument Parsing
+# =============================================================================
+
+CONTINUE_MODE=false
+
+# Parse optional --continue flag
+if [[ "${1:-}" == "--continue" ]]; then
+    CONTINUE_MODE=true
+    shift
+fi
+
+PREFIX="${1:?Usage: $0 [--continue] <prefix> <prompt-file> [baseline-branch]}"
+PROMPT_FILE="${2:?Usage: $0 [--continue] <prefix> <prompt-file> [baseline-branch]}"
+BASELINE_BRANCH="${3:-main}"
+
 # =============================================================================
 # Configuration
 # =============================================================================
-
-PREFIX="${1:?Usage: $0 <prefix> <prompt-file> [baseline-branch]}"
-PROMPT_FILE="${2:?Usage: $0 <prefix> <prompt-file> [baseline-branch]}"
-BASELINE_BRANCH="${3:-main}"
 
 ITERATIONS_PER_RUN=10
 TOTAL_RUNS=5
@@ -23,134 +46,6 @@ CLEANUP_GRACE_PERIOD=2             # Seconds to wait in cleanup before force kil
 
 PLUGIN_DIR="../cc-truffle-performance-plugin"
 CLAUDE_FLAGS="--dangerously-skip-permissions"
-
-# Benchmark configuration
-declare -A BENCHMARKS=(
-    ["sieve"]="10 10000"
-    ["towers"]="10 300"
-    ["list"]="10 100"
-    ["permute"]="10 10000"
-    ["queens"]="10 3000"
-)
-BENCHMARK_ORDER=("sieve" "towers" "list" "permute" "queens")
-
-# =============================================================================
-# Helper Functions
-# =============================================================================
-
-# Terminates a process and all its children
-# Args: $1 = PID, $2 = grace_period (seconds)
-terminate_process() {
-    local pid=$1
-    local grace_period=${2:-$TERMINATION_GRACE_PERIOD}
-
-    if [[ -z "$pid" ]] || ! kill -0 "$pid" 2>/dev/null; then
-        return 0
-    fi
-
-    echo "Terminating process $pid and children..."
-    kill -TERM "$pid" 2>/dev/null || true
-    pkill -P "$pid" 2>/dev/null || true
-    sleep "$grace_period"
-    kill -KILL "$pid" 2>/dev/null || true
-    pkill -9 -P "$pid" 2>/dev/null || true
-}
-
-# Commits uncommitted changes with a message
-# Args: $1 = commit message
-commit_if_needed() {
-    local message=$1
-
-    if [[ -n $(git status --porcelain) ]]; then
-        echo "Committing changes: $message"
-        git add -A
-        git commit -m "$message" || true
-    fi
-}
-
-# Runs all benchmarks and saves results
-# Args: $1 = output_file, $2 = run_number
-run_benchmarks() {
-    local output_file=$1
-    local run_num=$2
-
-    echo "--- Running benchmarks for run $run_num ---"
-
-    if ! ./mvnw package -q 2>&1; then
-        echo "Warning: Build failed, skipping benchmarks for run $run_num"
-        echo "Build failed - benchmarks skipped" > "$output_file"
-        return 1
-    fi
-
-    {
-        echo "=== Benchmark Results for ${PREFIX}-run-${run_num} ==="
-        echo "Date: $(date)"
-        echo "Final branch: ${PREFIX}-run-${run_num}-iteration-${ITERATIONS_PER_RUN}"
-        echo ""
-
-        for benchmark in "${BENCHMARK_ORDER[@]}"; do
-            echo "--- $benchmark ---"
-            # shellcheck disable=SC2086
-            ./lox harness.lox "$benchmark" ${BENCHMARKS[$benchmark]} || echo "$benchmark benchmark failed"
-            echo ""
-        done
-    } | tee "$output_file"
-
-    echo "Benchmark results saved to: $output_file"
-}
-
-# Builds the iteration-specific prompt
-# Args: $1 = iteration, $2 = base_prompt
-build_iteration_prompt() {
-    local iteration=$1
-    local base_prompt=$2
-    local total=$ITERATIONS_PER_RUN
-
-    cat <<EOF
-$base_prompt
-
-This is iteration $iteration of $total in run $run.
-$(if [[ $iteration -gt 1 ]]; then echo "Build upon the improvements from the previous iteration."; fi)
-$(if [[ $iteration -eq $total ]]; then echo "This is the final iteration of this run."; fi)
-
-When done with your changes for this iteration, commit them with a descriptive message summarizing what you improved.
-EOF
-}
-
-# Runs Claude with timeout management
-# Args: $1 = prompt, $2 = timeout_seconds
-# Returns: 0 on success, 1 on error, 124 on timeout
-run_claude_with_timeout() {
-    local prompt=$1
-    local timeout=$2
-
-    # Start Claude in background
-    claude $CLAUDE_FLAGS --plugin-dir $PLUGIN_DIR -p "$prompt" &
-    CLAUDE_PID=$!
-    sleep "$STARTUP_DELAY"
-
-    # Wait for Claude with timeout
-    local wait_start
-    wait_start=$(date +%s)
-    while kill -0 "$CLAUDE_PID" 2>/dev/null; do
-        local wait_elapsed
-        wait_elapsed=$(($(date +%s) - wait_start))
-
-        if [[ $wait_elapsed -ge $timeout ]]; then
-            echo "Timeout reached (${timeout}s elapsed)"
-            terminate_process "$CLAUDE_PID" "$TERMINATION_GRACE_PERIOD"
-            CLAUDE_PID=""
-            return 124
-        fi
-        sleep 1
-    done
-
-    # Process completed, check exit code
-    local exit_code=0
-    wait "$CLAUDE_PID" || exit_code=$?
-    CLAUDE_PID=""
-    return $exit_code
-}
 
 # =============================================================================
 # Cleanup Handler
@@ -180,14 +75,59 @@ fi
 
 PROMPT=$(cat "$PROMPT_FILE")
 
-if [[ -n $(git status --porcelain) ]]; then
-    echo "Error: Working directory has uncommitted changes. Please commit or stash them first."
-    exit 1
-fi
+# =============================================================================
+# Handle --continue mode
+# =============================================================================
 
-if ! git rev-parse --verify "$BASELINE_BRANCH" >/dev/null 2>&1; then
-    echo "Error: Baseline branch '$BASELINE_BRANCH' does not exist"
-    exit 1
+START_RUN=1
+START_ITERATION=1
+
+if [[ "$CONTINUE_MODE" == true ]]; then
+    if ! load_state "$PREFIX"; then
+        echo "Cannot continue: no saved state for prefix '$PREFIX'"
+        exit 1
+    fi
+
+    BASELINE_BRANCH="$SAVED_BASELINE_BRANCH"
+    START_RUN=$SAVED_RUN
+    START_ITERATION=$((SAVED_ITERATION + 1))
+
+    # If we finished all iterations in the saved run, move to next run
+    if [[ $START_ITERATION -gt $ITERATIONS_PER_RUN ]]; then
+        START_RUN=$((START_RUN + 1))
+        START_ITERATION=1
+    fi
+
+    # Check if there's anything left to do
+    if [[ $START_RUN -gt $TOTAL_RUNS ]]; then
+        echo "All runs already completed. Nothing to continue."
+        clear_state "$PREFIX"
+        exit 0
+    fi
+
+    # Checkout the last successful iteration branch
+    LAST_BRANCH="${PREFIX}-run-${SAVED_RUN}-iteration-${SAVED_ITERATION}"
+    if [[ $SAVED_ITERATION -gt 0 ]] && git rev-parse --verify "$LAST_BRANCH" >/dev/null 2>&1; then
+        echo "Resuming from branch: $LAST_BRANCH"
+        git checkout "$LAST_BRANCH"
+    else
+        echo "Resuming from baseline: $BASELINE_BRANCH"
+        git checkout "$BASELINE_BRANCH"
+    fi
+
+    echo "Continuing from run $START_RUN, iteration $START_ITERATION"
+    echo ""
+else
+    # Fresh run: validate clean working directory and baseline branch
+    if [[ -n $(git status --porcelain) ]]; then
+        echo "Error: Working directory has uncommitted changes. Please commit or stash them first."
+        exit 1
+    fi
+
+    if ! git rev-parse --verify "$BASELINE_BRANCH" >/dev/null 2>&1; then
+        echo "Error: Baseline branch '$BASELINE_BRANCH' does not exist"
+        exit 1
+    fi
 fi
 
 # =============================================================================
@@ -200,27 +140,38 @@ echo "Baseline: $BASELINE_BRANCH"
 echo "Runs: $TOTAL_RUNS"
 echo "Iterations per run: $ITERATIONS_PER_RUN"
 echo "Timeout per run: $((TIMEOUT_SECONDS / 3600))h"
+if [[ "$CONTINUE_MODE" == true ]]; then
+    echo "Mode: CONTINUE (from run $START_RUN, iteration $START_ITERATION)"
+fi
 echo "=================================================="
 echo ""
 
-for run in $(seq 1 $TOTAL_RUNS); do
+for run in $(seq $START_RUN $TOTAL_RUNS); do
     echo ""
     echo "########## STARTING RUN $run of $TOTAL_RUNS ##########"
     echo "Time: $(date)"
     echo ""
 
-    # Reset to baseline
-    if ! git checkout "$BASELINE_BRANCH" 2>/dev/null; then
-        echo "Error: Could not checkout baseline branch $BASELINE_BRANCH"
-        echo "Skipping run $run"
-        continue
+    # Determine starting iteration for this run
+    local_start_iteration=1
+    if [[ $run -eq $START_RUN ]]; then
+        local_start_iteration=$START_ITERATION
     fi
-    git reset --hard "$BASELINE_BRANCH"
+
+    # Reset to baseline at start of a new run (iteration 1)
+    if [[ $local_start_iteration -eq 1 ]]; then
+        if ! git checkout "$BASELINE_BRANCH" 2>/dev/null; then
+            echo "Error: Could not checkout baseline branch $BASELINE_BRANCH"
+            echo "Skipping run $run"
+            continue
+        fi
+        git reset --hard "$BASELINE_BRANCH"
+    fi
 
     # Initialize run timer
     RUN_START=$(date +%s)
 
-    for iteration in $(seq 1 $ITERATIONS_PER_RUN); do
+    for iteration in $(seq $local_start_iteration $ITERATIONS_PER_RUN); do
         BRANCH_NAME="${PREFIX}-run-${run}-iteration-${iteration}"
 
         echo ""
@@ -244,28 +195,64 @@ for run in $(seq 1 $TOTAL_RUNS); do
         # Build prompt and run Claude
         ITERATION_PROMPT=$(build_iteration_prompt "$iteration" "$PROMPT")
 
-        if run_claude_with_timeout "$ITERATION_PROMPT" "$REMAINING"; then
+        run_claude_with_timeout "$ITERATION_PROMPT" "$REMAINING"
+        EXIT_CODE=$?
+
+        if [[ $EXIT_CODE -eq 0 ]]; then
             # Success
             commit_if_needed "Iteration $iteration: Uncommitted changes cleanup"
-        else
-            EXIT_CODE=$?
+        elif [[ $EXIT_CODE -eq 2 ]]; then
+            # Rate limit / API error - revert and stop
+            echo ""
+            echo "Rate limit or API error detected. Reverting iteration changes..."
 
-            if [[ $EXIT_CODE -eq 124 ]]; then
-                # Timeout
-                commit_if_needed "Iteration $iteration (timeout): Partial changes"
-                break
+            # Revert all uncommitted changes
+            git checkout -- . 2>/dev/null || true
+            git clean -fd 2>/dev/null || true
+
+            # Delete the current iteration branch, go back to previous state
+            if [[ $iteration -gt 1 ]]; then
+                PREV_BRANCH="${PREFIX}-run-${run}-iteration-$((iteration - 1))"
+                git checkout "$PREV_BRANCH" 2>/dev/null || git checkout "$BASELINE_BRANCH"
             else
-                # Error
-                echo "Error: Claude exited with code $EXIT_CODE"
-                echo "Skipping iteration $iteration and continuing to next iteration..."
-
                 git checkout "$BASELINE_BRANCH" 2>/dev/null || git checkout main
-                git branch -D "$BRANCH_NAME" 2>/dev/null || true
-
-                echo "Iteration $iteration skipped due to error at $(date)"
-                echo ""
-                continue
             fi
+            git branch -D "$BRANCH_NAME" 2>/dev/null || true
+
+            # Save state so --continue can resume
+            SAVE_ITERATION=$((iteration - 1))
+            if [[ $SAVE_ITERATION -lt 1 ]]; then
+                SAVE_ITERATION=0
+            fi
+            save_state "$PREFIX" "$run" "$SAVE_ITERATION" "$BASELINE_BRANCH"
+
+            echo ""
+            echo "Rate limit reached. Use --continue to resume:"
+            echo "  $0 --continue $PREFIX $PROMPT_FILE"
+            exit 3
+        elif [[ $EXIT_CODE -eq 124 ]]; then
+            # Timeout
+            commit_if_needed "Iteration $iteration (timeout): Partial changes"
+            break
+        else
+            # Generic error
+            echo "Error: Claude exited with code $EXIT_CODE"
+            echo "Skipping iteration $iteration and continuing to next iteration..."
+
+            git checkout -- . 2>/dev/null || true
+            git clean -fd 2>/dev/null || true
+
+            if [[ $iteration -gt 1 ]]; then
+                PREV_BRANCH="${PREFIX}-run-${run}-iteration-$((iteration - 1))"
+                git checkout "$PREV_BRANCH" 2>/dev/null || git checkout "$BASELINE_BRANCH"
+            else
+                git checkout "$BASELINE_BRANCH" 2>/dev/null || git checkout main
+            fi
+            git branch -D "$BRANCH_NAME" 2>/dev/null || true
+
+            echo "Iteration $iteration skipped due to error at $(date)"
+            echo ""
+            continue
         fi
 
         echo ""
@@ -282,6 +269,9 @@ for run in $(seq 1 $TOTAL_RUNS); do
     run_benchmarks "$BENCHMARK_OUTPUT" "$run"
     echo ""
 done
+
+# All runs completed successfully - clear state
+clear_state "$PREFIX"
 
 # Return to baseline
 git checkout "$BASELINE_BRANCH"
