@@ -114,7 +114,6 @@ $(if [[ $iteration -gt 1 ]]; then echo "Build upon the improvements from the pre
 $(if [[ $iteration -eq $total ]]; then echo "This is the final iteration of this run."; fi)
 
 When done with your changes for this iteration, commit them with a descriptive message summarizing what you improved.
-Use skills if available.
 EOF
 }
 
