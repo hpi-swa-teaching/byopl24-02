@@ -81,6 +81,7 @@ PROMPT=$(cat "$PROMPT_FILE")
 
 START_RUN=1
 START_ITERATION=1
+RESUME_SESSION_ID=""
 
 if [[ "$CONTINUE_MODE" == true ]]; then
     if ! load_state "$PREFIX"; then
@@ -90,7 +91,14 @@ if [[ "$CONTINUE_MODE" == true ]]; then
 
     BASELINE_BRANCH="$SAVED_BASELINE_BRANCH"
     START_RUN=$SAVED_RUN
-    START_ITERATION=$((SAVED_ITERATION + 1))
+    # Resume the saved iteration (don't increment - we're continuing the same iteration)
+    START_ITERATION=$SAVED_ITERATION
+    RESUME_SESSION_ID="$SAVED_SESSION_ID"
+
+    # If iteration is 0, it means we need to start iteration 1
+    if [[ $START_ITERATION -eq 0 ]]; then
+        START_ITERATION=1
+    fi
 
     # If we finished all iterations in the saved run, move to next run
     if [[ $START_ITERATION -gt $ITERATIONS_PER_RUN ]]; then
@@ -116,6 +124,9 @@ if [[ "$CONTINUE_MODE" == true ]]; then
     fi
 
     echo "Continuing from run $START_RUN, iteration $START_ITERATION"
+    if [[ -n "$RESUME_SESSION_ID" ]]; then
+        echo "Will resume Claude session: $RESUME_SESSION_ID"
+    fi
     echo ""
 else
     # Fresh run: validate clean working directory and baseline branch
@@ -168,8 +179,10 @@ for run in $(seq $START_RUN $TOTAL_RUNS); do
         git reset --hard "$BASELINE_BRANCH"
     fi
 
-    # Initialize run timer
+    # Initialize run timer and failure tracking
     RUN_START=$(date +%s)
+    CONSECUTIVE_FAILURES=0
+    MAX_CONSECUTIVE_FAILURES=2
 
     for iteration in $(seq $local_start_iteration $ITERATIONS_PER_RUN); do
         BRANCH_NAME="${PREFIX}-run-${run}-iteration-${iteration}"
@@ -180,8 +193,15 @@ for run in $(seq $START_RUN $TOTAL_RUNS); do
         echo "Started: $(date)"
         echo ""
 
-        # Create branch
-        git checkout -b "$BRANCH_NAME"
+        # Create or checkout branch
+        if git rev-parse --verify "$BRANCH_NAME" >/dev/null 2>&1; then
+            # Branch exists (resuming after rate limit) - just check it out
+            echo "Resuming existing branch: $BRANCH_NAME"
+            git checkout "$BRANCH_NAME"
+        else
+            # New branch - create it
+            git checkout -b "$BRANCH_NAME"
+        fi
 
         # Calculate remaining time
         ELAPSED=$(($(date +%s) - RUN_START))
@@ -195,39 +215,40 @@ for run in $(seq $START_RUN $TOTAL_RUNS); do
         # Build prompt and run Claude
         ITERATION_PROMPT=$(build_iteration_prompt "$iteration" "$PROMPT")
 
-        run_claude_with_timeout "$ITERATION_PROMPT" "$REMAINING"
+        # Use saved session ID only on first iteration when continuing
+        if [[ -n "$RESUME_SESSION_ID" ]]; then
+            run_claude_with_timeout "$ITERATION_PROMPT" "$REMAINING" "$RESUME_SESSION_ID"
+            RESUME_SESSION_ID=""  # Clear after first use
+        else
+            run_claude_with_timeout "$ITERATION_PROMPT" "$REMAINING"
+        fi
         EXIT_CODE=$?
 
         if [[ $EXIT_CODE -eq 0 ]]; then
-            # Success
+            # Success - reset failure counter
+            CONSECUTIVE_FAILURES=0
             commit_if_needed "Iteration $iteration: Uncommitted changes cleanup"
         elif [[ $EXIT_CODE -eq 2 ]]; then
-            # Rate limit / API error - revert and stop
+            # Rate limit / API error - save state and stop
             echo ""
-            echo "Rate limit or API error detected. Reverting iteration changes..."
+            echo "Rate limit or API error detected."
+            echo "Keeping current iteration state for resuming..."
 
-            # Revert all uncommitted changes
-            git checkout -- . 2>/dev/null || true
-            git clean -fd 2>/dev/null || true
+            # Commit any uncommitted changes to preserve state
+            commit_if_needed "Iteration $iteration: Work in progress (rate limit hit)"
 
-            # Delete the current iteration branch, go back to previous state
-            if [[ $iteration -gt 1 ]]; then
-                PREV_BRANCH="${PREFIX}-run-${run}-iteration-$((iteration - 1))"
-                git checkout "$PREV_BRANCH" 2>/dev/null || git checkout "$BASELINE_BRANCH"
-            else
-                git checkout "$BASELINE_BRANCH" 2>/dev/null || git checkout main
-            fi
-            git branch -D "$BRANCH_NAME" 2>/dev/null || true
-
-            # Save state so --continue can resume
-            SAVE_ITERATION=$((iteration - 1))
-            if [[ $SAVE_ITERATION -lt 1 ]]; then
-                SAVE_ITERATION=0
-            fi
-            save_state "$PREFIX" "$run" "$SAVE_ITERATION" "$BASELINE_BRANCH"
+            # Save state for CURRENT iteration (not previous) so we can resume it
+            save_state "$PREFIX" "$run" "$iteration" "$BASELINE_BRANCH" "$CLAUDE_SESSION_ID"
 
             echo ""
-            echo "Rate limit reached. Use --continue to resume:"
+            echo "Rate limit reached. State saved for resuming iteration $iteration."
+            echo ""
+            if [[ -n "$CLAUDE_SESSION_ID" ]]; then
+                echo "To resume the Claude session directly:"
+                echo "  claude --continue $CLAUDE_SESSION_ID"
+                echo ""
+            fi
+            echo "To continue the full script (will resume iteration $iteration):"
             echo "  $0 --continue $PREFIX $PROMPT_FILE"
             exit 3
         elif [[ $EXIT_CODE -eq 124 ]]; then
@@ -236,9 +257,42 @@ for run in $(seq $START_RUN $TOTAL_RUNS); do
             break
         else
             # Generic error
-            echo "Error: Claude exited with code $EXIT_CODE"
-            echo "Skipping iteration $iteration and continuing to next iteration..."
+            CONSECUTIVE_FAILURES=$((CONSECUTIVE_FAILURES + 1))
 
+            echo "Error: Claude exited with code $EXIT_CODE"
+            echo "Consecutive failures: $CONSECUTIVE_FAILURES of $MAX_CONSECUTIVE_FAILURES"
+
+            # Check if we should stop due to too many consecutive failures
+            if [[ $CONSECUTIVE_FAILURES -ge $MAX_CONSECUTIVE_FAILURES ]]; then
+                # Too many failures - likely a persistent issue (rate limit, etc.)
+                # Keep the state for resuming
+                echo "Too many consecutive failures detected."
+                echo "Keeping current iteration state for resuming..."
+
+                # Commit any uncommitted changes to preserve state
+                commit_if_needed "Iteration $iteration: Work in progress (multiple failures)"
+
+                # Save state for current iteration
+                save_state "$PREFIX" "$run" "$iteration" "$BASELINE_BRANCH" "$CLAUDE_SESSION_ID"
+
+                echo ""
+                echo "=========================================="
+                echo "ERROR: Too many consecutive failures ($CONSECUTIVE_FAILURES)."
+                echo "This likely indicates a persistent issue (e.g., rate limit, API error)."
+                echo "Stopping to prevent infinite retry loop."
+                echo "=========================================="
+                echo ""
+                if [[ -n "$CLAUDE_SESSION_ID" ]]; then
+                    echo "To resume the Claude session directly:"
+                    echo "  claude --continue $CLAUDE_SESSION_ID"
+                    echo ""
+                fi
+                echo "To continue the script later (will resume iteration $iteration):"
+                echo "  $0 --continue $PREFIX $PROMPT_FILE"
+                exit 4
+            fi
+
+            # Single failure - revert and try next iteration
             git checkout -- . 2>/dev/null || true
             git clean -fd 2>/dev/null || true
 

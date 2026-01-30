@@ -10,12 +10,13 @@ state_file_path() {
 }
 
 # Saves current progress to state file
-# Args: $1 = prefix, $2 = run, $3 = iteration, $4 = baseline_branch
+# Args: $1 = prefix, $2 = run, $3 = iteration, $4 = baseline_branch, $5 = session_id (optional)
 save_state() {
     local prefix=$1
     local run=$2
     local iteration=$3
     local baseline_branch=$4
+    local session_id=${5:-}
     local state_file
     state_file=$(state_file_path "$prefix")
 
@@ -23,11 +24,12 @@ save_state() {
 RUN=$run
 ITERATION=$iteration
 BASELINE_BRANCH=$baseline_branch
+SESSION_ID=$session_id
 EOF
-    echo "State saved: run=$run, iteration=$iteration"
+    echo "State saved: run=$run, iteration=$iteration${session_id:+, session=$session_id}"
 }
 
-# Loads state from file. Sets SAVED_RUN, SAVED_ITERATION, SAVED_BASELINE_BRANCH.
+# Loads state from file. Sets SAVED_RUN, SAVED_ITERATION, SAVED_BASELINE_BRANCH, SAVED_SESSION_ID.
 # Args: $1 = prefix
 # Returns: 0 on success, 1 if no state file found
 load_state() {
@@ -46,8 +48,9 @@ load_state() {
     SAVED_RUN=$RUN
     SAVED_ITERATION=$ITERATION
     SAVED_BASELINE_BRANCH=$BASELINE_BRANCH
+    SAVED_SESSION_ID=${SESSION_ID:-}
 
-    echo "Loaded state: run=$SAVED_RUN, iteration=$SAVED_ITERATION, baseline=$SAVED_BASELINE_BRANCH"
+    echo "Loaded state: run=$SAVED_RUN, iteration=$SAVED_ITERATION, baseline=$SAVED_BASELINE_BRANCH${SAVED_SESSION_ID:+, session=$SAVED_SESSION_ID}"
     return 0
 }
 
